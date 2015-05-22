@@ -1,0 +1,534 @@
+<!-- Copyright (c) 2013-2014 Cloudera, Inc. All rights reserved. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.cloudera.navigator</groupId>
+  <artifactId>plugin</artifactId>
+  <packaging>pom</packaging>
+  <version>2.4.0-SNAPSHOT</version>
+  <name>Cloudera Navigator Metadata Plugin Client</name>
+  <url>https://github.com/cloudera/navigator-plugin</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <test.redirectToFile>true</test.redirectToFile>
+    <eclipse.output.directory>eclipse-classes</eclipse.output.directory>
+    <joda.version>2.1</joda.version>
+    <jetty.version>8.1.14.v20131031</jetty.version>
+    <navigator.version>${project.version}</navigator.version>
+
+    <spring.version>4.0.7.RELEASE</spring.version>
+    <topdir>${project.parent.basedir}</topdir>
+    <guava.version>14.0.1</guava.version>
+    <cxf.version>2.7.5</cxf.version>
+    <httpcomponents.version>4.2.5</httpcomponents.version>
+    <jackson2.version>2.1.0</jackson2.version>
+    <surefire.version>2.16</surefire.version>
+    <minJavaVersion>1.7</minJavaVersion>
+    <maxJavaVersion>1.8</maxJavaVersion>
+    <log4j.version>1.2.16</log4j.version>
+    <avro.version>1.7.4</avro.version>
+    <scala.version>2.10.4</scala.version>
+    <cdh5.version>cdh5.4.0</cdh5.version>
+    <cdh5.hadoop.version>2.6.0-${cdh5.version}</cdh5.hadoop.version>
+
+    <!-- properties based on jdk version -->
+    <maxPermSize>-XX:MaxPermSize=256m</maxPermSize>
+  </properties>
+
+  <!-- From the maven documentation:
+
+     Because modules within a multi-module build can depend on each other, it
+     is important that The reactor sorts all the projects in a way that
+     guarantees any project is built before it is required.
+
+     The following relationships are honoured when sorting projects:
+
+     - a project dependency on another module in the build
+     - a plugin declaration where the plugin is another modules in the build
+     - a plugin dependency on another module in the build
+     - a build extension declaration on another module in the build
+     - the order declared in the <modules> element (if no other rule applies) -->
+  <modules>
+    <module>plugin-model</module>
+    <module>plugin-client</module>
+    <module>examples</module>
+  </modules>
+
+  <issueManagement>
+    <system>GITHUB</system>
+    <url>https://github.com/cloudera/navigator-plugin/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>travis-ci</system>
+    <url></url>
+  </ciManagement>
+
+  <scm>
+    <url>http://github.com/cloudera/navigator-plugin</url>
+    <connection>scm:git:git://github.com/cloudera/navigator.git</connection>
+    <developerConnection>scm:git:git@github.com:cloudera/navigator.git</developerConnection>
+  </scm>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${maven.findbugs.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>emma-maven-plugin</artifactId>
+        <version>1.0-alpha-3</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>index</report>
+              <report>scm</report>
+              <report>cim</report>
+              <report>issue-tracking</report>
+              <report>dependencies</report>
+              <report>dependency-convergence</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${surefire.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.8</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>2.8</version>
+        <configuration>
+          <columnNames>Id,Summary,Reporter,Assignee,Status,Type,Created,Fix Version</columnNames>
+          <onlyCurrentVersion>true</onlyCurrentVersion>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>github-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins </groupId>
+        <artifactId>maven-eclipse-plugin</artifactId>
+        <version>2.8</version>
+        <configuration>
+          <projectNameTemplate>${project.artifactId}</projectNameTemplate>
+          <buildOutputDirectory>${eclipse.output.directory}</buildOutputDirectory>
+          <downloadSources>true</downloadSources>
+          <!--
+              It turns out (or so it seems) that Eclipse is smart enough
+              to use the src jar for javadoc when it's available.  Since
+              almost all of our dependencies have source jars, this
+              makes the build a bit faster.
+          -->
+          <downloadJavadocs>false</downloadJavadocs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.0</version>
+        <inherited>false</inherited>
+        <configuration>
+          <rules>
+            <requireMavenVersion>
+              <version>[3.0.4,)</version>
+            </requireMavenVersion>
+            <requireJavaVersion>
+              <version>[${minJavaVersion}.0,${maxJavaVersion}.1000]</version>
+            </requireJavaVersion>
+          </rules>
+        </configuration>
+        <executions>
+          <execution>
+            <id>clean</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <phase>pre-clean</phase>
+          </execution>
+          <execution>
+            <id>default</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+          <execution>
+            <id>site</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <phase>pre-site</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>${minJavaVersion}</source>
+            <target>${minJavaVersion}</target>
+            <compilerArgs>
+              <arg>-Xlint:all,-processing</arg>
+              <arg>-Werror</arg>
+            </compilerArgs>
+            <!--
+                 Use these settings to show all deprecation
+                 warnings (instead of truncating at the
+                 first so many).
+            -->
+            <!--
+            <fork>true</fork>
+            <showWarnings>true</showWarnings>
+            <showDeprecation>true</showDeprecation>
+            <compilerArguments>
+              <Xmaxwarns>100000</Xmaxwarns>
+            </compilerArguments>
+            -->
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>1.6</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+          <executions>
+            <execution>
+              <!-- Ensure surefire runs after Jasmine.
+                 - https://issues.jenkins-ci.org/browse/JENKINS-13188
+                 - Maven plugins are run in the order specified in pom.xml, with inherited plugins first.
+                 - So we must redefine the "test" goal's execution to be after Jasmine. -->
+              <id>surefire-test</id>
+              <phase>test</phase>
+              <goals>
+                <goal>test</goal>
+              </goals>
+              <configuration>
+                <skipTests>${skipTests}</skipTests>
+              </configuration>
+            </execution>
+          </executions>
+          <configuration>
+            <!--
+              Disable the default maven-surefire-plugin execution from parent pom.
+              See the comment above <id>surefire-test</id> for more details. -->
+            <skipTests>true</skipTests>
+            <redirectTestOutputToFile>${test.redirectToFile}</redirectTestOutputToFile>
+            <useFile>${test.redirectToFile}</useFile>
+            <argLine>-Xmx2048m ${maxPermSize} -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${project.build.outputDirectory}/surefire_oom.dump</argLine>
+            <additionalClasspathElements>
+              <additionalClasspathElement>${topdir}/conf/test</additionalClasspathElement>
+              <additionalClasspathElement>${project.basedir}/src/test/java</additionalClasspathElement>
+            </additionalClasspathElements>
+            <!-- Set this to random or alphabetical if you wish to make the
+                 order nondeterministic or deterministic.  The default
+                 is 'filesystem', which tends to be build-environment
+                 specific. -->
+            <!-- <runOrder>random</runOrder> -->
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>jslint-maven-plugin</artifactId>
+          <version>1.0.0</version>
+
+          <executions>
+            <execution>
+              <goals>
+                <goal>jslint</goal>
+                <goal>test-jslint</goal>
+              </goals>
+            </execution>
+          </executions>
+
+          <configuration>
+            <excludes>
+              <exclude>**/thirdparty/**/*.js</exclude>
+              <exclude>**/*Spec.js</exclude>
+            </excludes>
+            <predefinedVars>window, require, requirejs, define, console, SVGTransform</predefinedVars>
+            <disallowInsecureCharsInRegExp>false</disallowInsecureCharsInRegExp>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.github.klieber</groupId>
+          <artifactId>phantomjs-maven-plugin</artifactId>
+          <version>0.2.1</version>
+          <configuration>
+            <version>1.9.2</version>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.cloudera</groupId>
+          <artifactId>mustache-maven-plugin</artifactId>
+          <version>2.4.0-SNAPSHOT</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.6</version>
+        </plugin>
+        <plugin>
+          <groupId>org.scala-tools</groupId>
+          <artifactId>maven-scala-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals>
+                <goal>compile</goal>
+                <goal>testCompile</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.cloudera.navigator</groupId>
+        <artifactId>plugin-model</artifactId>
+        <version>${navigator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.cloudera.navigator</groupId>
+        <artifactId>plugin-client</artifactId>
+        <version>${navigator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>3.2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-configuration</groupId>
+        <artifactId>commons-configuration</artifactId>
+        <version>1.9</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>${cdh5.hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-web</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>${joda.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <profiles>
+    <profile>
+      <id>findbugs</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>${maven.findbugs.version}</version>
+            <configuration>
+              <excludeFilterFile>${topdir}/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>${log4j.version}</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>findbugs</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk8</id>
+      <activation>
+        <jdk>1.8</jdk>
+      </activation>
+      <properties>
+        <maven.findbugs.version>3.0.0</maven.findbugs.version>
+        <!-- MaxPermSize is no longer valid for JDK 8 -->
+        <maxPermSize/>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk7</id>
+      <activation>
+        <jdk>1.7</jdk>
+      </activation>
+      <properties>
+        <maven.findbugs.version>3.0.0</maven.findbugs.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk6</id>
+      <activation>
+        <jdk>1.6</jdk>
+      </activation>
+      <properties>
+        <maven.findbugs.version>2.5.2</maven.findbugs.version>
+      </properties>
+    </profile>
+  </profiles>
+
+  <repositories>
+    <repository>
+      <id>cdh-dependencies.releases.repo</id>
+      <url>https://repository.cloudera.com/artifactory/libs-release-local</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>cdh.snapshots.repo</id>
+      <url>https://repository.cloudera.com/artifactory/libs-snapshot-local</url>
+    </repository>
+    <repository>
+      <id>Sonatype Snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+      <id>cdh.releases.repo</id>
+      <url>https://repository.cloudera.com/cloudera/libs-release-local</url>
+      <name>CDH Releases Repository</name>
+    </repository>
+    <snapshotRepository>
+      <id>cdh.snapshots.repo</id>
+      <url>http://maven.jenkins.cloudera.com:8081/artifactory/cdh-snapshot-local</url>
+      <name>CDH Snapshots Repository</name>
+    </snapshotRepository>
+  </distributionManagement>
+</project>

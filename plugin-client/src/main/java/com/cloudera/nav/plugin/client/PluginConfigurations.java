@@ -1,0 +1,166 @@
+// (c) Copyright 2015 Cloudera, Inc. All rights reserved.
+package com.cloudera.nav.plugin.client;
+
+import com.google.common.collect.Maps;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+
+import org.apache.hadoop.conf.Configuration;
+
+/**
+ * A set of configuration options needed by the Navigator plugin
+ */
+public class PluginConfigurations {
+
+  private String navigatorUrl;
+  private URI metadataParentUri;
+  private String applicationUrl;
+  private String namespace;
+  private String username;
+  private String password;
+  private Configuration hadoopConf;
+  private FileFormat fileFormat;
+  private Map<String, Object> props;
+
+  public PluginConfigurations() {
+    props = Maps.newHashMap();
+  }
+
+  /**
+   * @return Location of the Navigator API server
+   */
+  public String getNavigatorUrl() {
+    return navigatorUrl;
+  }
+
+  /**
+   * Sets the URL for the Navigator API server
+   * @param navigatorUrl new URL for Navigator API server
+   */
+  public void setNavigatorUrl(String navigatorUrl) {
+    this.navigatorUrl = navigatorUrl;
+  }
+
+  /**
+   * @return URI for the parent under which metadata will be written
+   */
+  public URI getMetadataParentUri() {
+    return metadataParentUri;
+  }
+
+  /**
+   * @return String representation of the metadata parent URI
+   */
+  public String getMetadataParentUriString() {
+    return metadataParentUri.toString();
+  }
+
+  /**
+   * Change the metadata parent location. An URISyntaxException is
+   * thrown if the given String is an invalid URI.
+   * @param metadataParent
+   */
+  public void setMetadataParentUri(String metadataParent)
+      throws URISyntaxException {
+    // for local file paths
+    if (metadataParent.startsWith("/")) {
+      metadataParent = "file://" + metadataParent;
+    }
+    setMetadataParentUri(new URI(metadataParent));
+  }
+
+  /**
+   * Change the metadata parent location
+   * @param metadataParent
+   */
+  public void setMetadataParentUri(URI metadataParent) {
+    this.metadataParentUri = metadataParent;
+  }
+
+  /**
+   * @return application namespace assigned by Navigator
+   */
+  public String getNamespace() {
+    return namespace;
+  }
+
+  /**
+   * Set the application namespace assigned by Navigator
+   * @param namespace
+   */
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  /**
+   * Navigator username
+   * @return
+   */
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(String username) {
+    this.username = username;
+  }
+
+  /**
+   * Navigator password
+   * @return
+   */
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(String password) {
+    this.password = password;
+  }
+
+  /**
+   * @return the client application URL (used to record the source of
+   *         custom entities
+   */
+  public String getApplicationUrl() {
+    return applicationUrl;
+  }
+
+  public void setApplicationUrl(String applicationUrl) {
+    this.applicationUrl = applicationUrl;
+  }
+
+  /**
+   * @return the hadoop configurations used to create a connection to HDFS
+   */
+  public Configuration getHadoopConfigurations() {
+    return hadoopConf;
+  }
+
+  public void setHadoopConfigurations(Configuration conf) {
+    this.hadoopConf = conf;
+  }
+
+  /**
+   * @return the file format used to read and write
+   */
+  public FileFormat getFileFormat() {
+    return fileFormat;
+  }
+
+  public void setFileFormat(FileFormat fileFormat) {
+    this.fileFormat = fileFormat;
+  }
+
+  public void setProperty(String key, Object value) {
+    props.put(key, value);
+  }
+
+  public Map<String, Object> getProperties() {
+    return props;
+  }
+
+  public Object getProperty(String key) {
+    return props.get(key);
+  }
+}
