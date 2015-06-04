@@ -15,6 +15,8 @@
  */
 package com.cloudera.nav.plugin.client;
 
+
+import com.cloudera.com.fasterxml.jackson.core.type.TypeReference;
 import com.cloudera.com.fasterxml.jackson.databind.ObjectMapper;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
@@ -35,6 +37,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -91,61 +94,83 @@ public class NavApiCient {
    *
    * @return
    */
-  public Iterable<Map<String, Object>> getAllUpdated(){
-    Map<String, Integer> newMarker = getNewMarker();
-    String marker= newMarker.toString(); // JSON --use Jackson
-    Map<String, Object>  entitiesUpdated;
-    Map<String, Object>  relationsUpdated;
-    Iterable<Map<String, Object>> updatedResults;
-    //TODO
-    return updatedResults;
+  public UpdatedResults getAllUpdated(){
+    UpdatedResults updatedResults;
+    Map<String, Integer> currentMarker = getCurrentMarker();
+    try {
+      String currentMarkerRep = new ObjectMapper().writeValueAsString(currentMarker);
+      String queryString = "*";
+      updatedResults = aggUpdatedResults(currentMarkerRep, queryString);
+      return updatedResults;
+    } catch (IOException e){
+      System.err.println(e.getMessage());
+      throw Throwables.propagate(e);
+    }
   }
 
   /**Returns all of the entities and relations in the database that have been updated or added since the source iterations indicated by the marker
    *
-   * @param markerRep JSON representation of sourceId : sourceExtractorIteration
+   * @param markerRep JSON representation of sourceId : sourcesourceExtractIteration
    * @return
    */
-  public Iterable<Map<String, Object>> getAllUpdated(String markerRep){
-    try {
-      Map<String, Integer> marker = new ObjectMapper().readValue(markerRep, HashMap.class);
-      Map<String, Integer> newMarker = getNewMarker();
-      ResponseEntity<String> entityResponse = navResponse("entities", marker, newMarker);
-      //TODO
 
+  public UpdatedResults getAllUpdated(String markerRep){
+    UpdatedResults updatedResults;
+    Map<String, Integer> currentMarker = getCurrentMarker();
+    try {
+      String currentMarkerRep = new ObjectMapper().writeValueAsString(currentMarker);
+      Map<String, Integer> marker = new ObjectMapper().readValue(markerRep, new TypeReference<Map<String, Integer>>(){});
+      String extractorQueryString = getExtractorQueryString(marker, currentMarker);
+      updatedResults = aggUpdatedResults(currentMarkerRep, extractorQueryString);
+      return updatedResults;
     } catch (IOException e) {
       System.err.println(e.getMessage());
+      throw Throwables.propagate(e);
     }
-    //incorrect exception handling
-    return new ArrayList<Map<String, Object>>();
   }
 
+  public UpdatedResults aggUpdatedResults(String markerRep, String queryString){
+    UpdatedResults updatedResults;
+    Map<String, Integer> currentMarker = getCurrentMarker();
+    ParameterizedTypeReference<Map<String, Object>[]> mapRef = new ParameterizedTypeReference<Map<String, Object>[]>(){};
+    Map<String, Object>[] entityResult = navResponse("entities", queryString, mapRef);
+    Map<String, Object>[] relationsResult = navResponse("relations", queryString, mapRef);
+    UpdatedResults res = new UpdatedResults(markerRep, Arrays.asList(entityResult), Arrays.asList(relationsResult));
+    return res;
+  }
 
-  public ResponseEntity<String> navResponse(String type, Map marker1, Map marker2){
+  /**
+   *
+   * @param type
+   * @param extractorQuery
+   * @param resultClass
+   * @param <T>
+   * @return
+   */
+  public <T> T navResponse(String type, String extractorQuery, ParameterizedTypeReference<T> resultClass){
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = getAuthHeaders();
     HttpEntity<String> request =new HttpEntity<String>(headers);
-    String extractorQuery = getExtractorQueryString(marker1, marker2);
     String url = getUrl(type, extractorQuery);;
-    ResponseEntity<Object> response = restTemplate.exchange(url, HttpMethod.GET, request);
-    return response;
+    ResponseEntity<T> response = restTemplate.exchange(url, HttpMethod.GET, request, resultClass);
+    T responseResult = response.getBody();
+    return responseResult;
   }
 
   /**
    *
    * @return
    */
-  public Map<String, Integer> getNewMarker(){
+  public Map<String, Integer> getCurrentMarker(){
     Collection<Source> sources = getAllSources(); // Replace with sourceCacheByUrl and loadAllSources ?
-    HashMap<String, Integer> newMarker = new HashMap<String, Integer>();
+    HashMap<String, Integer> newMarker = new HashMap<>();
     for (Source source : sources){
       String id = source.getIdentity();
-      Integer extractorIteration = source.getExtractorIteration();
-      newMarker.put(id, extractorIteration);
+      Integer sourceExtractIteration = Integer.parseInt(source.getSourceExtractIteration());
+      newMarker.put(id, sourceExtractIteration);
     }
     return newMarker;
   }
-
 
   /**
    * Get the Source corresponding to the Hadoop service Url from Navigator.
@@ -209,7 +234,10 @@ public class NavApiCient {
     return headers;
   }
 
-
+  /**
+   *
+   * @return url for querying all sources
+   */
   private String getUrl() {
     // form the url string to request all entities with type equal to SOURCE
     String baseNavigatorUrl = config.getNavigatorUrl();
@@ -218,9 +246,9 @@ public class NavApiCient {
   }
 
   /**
-   *
    * @param type "entities", "relations"
-   * @return
+   * @param queryString result of getExtractorQueryString  made of desired extractorRunId's
+   * @return url for querying entities and relations
    */
   private String getUrl(String type, String queryString) {
     String baseNavigatorUrl = config.getNavigatorUrl();
