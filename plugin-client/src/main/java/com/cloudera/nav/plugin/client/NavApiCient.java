@@ -23,9 +23,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -62,7 +64,7 @@ public class NavApiCient {
    * @param models
    */
   public void registerModels(Collection<Object> models) {
-    throw new UnsupportedOperationException("no yet implemented");
+    throw new UnsupportedOperationException("not yet implemented");
   }
 
   /**
@@ -85,7 +87,58 @@ public class NavApiCient {
   }
 
   /**
-   * Get the Source corresponding to the Hadoop service Url from Navigator.
+   * Constructs url from a type (entity or relation), query, and cursorMark.
+   *  Returns a batch of results that satisfy the query, starting from
+   *  the cursorMark. Called in next() of IncrementalExtractIterator()
+   *
+   * @param type "entities" ,"relations"
+   * @param queryString Solr query string
+   * @return ResultsBatch set of results that satisfy query and next cursor
+   */
+  public ResultsBatch<Map<String, Object>> getResultsBatch(MetadataType type,
+                                                String queryString,
+                                                String cursorMark,
+                                                Integer limit){
+
+    String fullUrlPost = getUrl(type);
+    Map<String, String> queryCriteria = Maps.newHashMap();
+    queryCriteria.put("query", queryString);
+    queryCriteria.put("cursorMark", cursorMark);
+    queryCriteria.put("limit", limit.toString());
+   return queryNav(fullUrlPost, queryCriteria, type);
+  }
+
+  /**
+   * Constructs a POST Request from the given URL and body and returns the
+   * response body contains a batch of results.
+   *
+   * @param url URl being posted to
+   * @param queryCriteria query parameters and criteria for metadata
+   *                      being retrieved to satisfy
+   * @param type type of metadata being retrieved
+   *
+   * @return ResultsBatch of entities or relations that specify the
+   * query parameters in the URL and request body
+   */
+  public ResultsBatch<Map<String, Object>> queryNav(String url,
+                                                    Map<String, String> queryCriteria,
+                                                    MetadataType type){
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders headers = getAuthHeaders();
+    HttpEntity<Map<String, String>> request =
+        new HttpEntity<Map<String, String>>(queryCriteria, headers);
+    Class<? extends ResultsBatch<Map<String, Object>>> resultClass;
+    if(type==MetadataType.ENTITIES){
+      resultClass = EntityResultsBatch.class;
+    } else {
+      resultClass = RelationResultsBatch.class;
+    }
+    return restTemplate.exchange(url, HttpMethod.POST, request,
+        resultClass).getBody();
+  }
+
+  /**
+   * Get the Source corresponding to the Hadoop service Url from Navigator.nvmd
    * A NoSuchElementException is thrown if the url does not correspond to
    * any known Source
    *
@@ -134,6 +187,11 @@ public class NavApiCient {
     sourceCacheByType.invalidateAll();
   }
 
+  /**
+   * Form headers for sending API calls to the Navigator server
+   *
+   * @return HttpHeaders headers for authorizing the plugin
+   */
   private HttpHeaders getAuthHeaders() {
     // basic authentication with base64 encoding
     String plainCreds = String.format("%s:%s", config.getUsername(),
@@ -146,15 +204,28 @@ public class NavApiCient {
     return headers;
   }
 
+  /**
+   * Get url for querying all sources
+   *
+   * @return url for querying all sources
+   */
   private String getSourceUrl() {
     // form the url string to request all entities with type equal to SOURCE
     String baseNavigatorUrl = config.getNavigatorUrl();
-    String entities = joinUrlPath(baseNavigatorUrl, "entities");
-    return String.format("%s?query=%s", entities, SOURCE_QUERY);
+    String entitiesUrl = ClientUtils.joinUrlPath(baseNavigatorUrl, "entities");
+    return String.format("%s?query=%s", entitiesUrl, SOURCE_QUERY);
   }
 
-  private String joinUrlPath(String base, String component) {
-    return base + (base.endsWith("/") ? "" : "/") + component;
+  /**
+   * Get URL for incremental extraction
+   *
+   * @param type "entities", "relations"
+   * @return url for querying entities and relations
+   */
+  private String getUrl(MetadataType type) {
+    String baseNavigatorUrl = config.getNavigatorUrl();
+    String typeUrl = ClientUtils.joinUrlPath(baseNavigatorUrl, type.toString());
+    return typeUrl+"/paging";
   }
 
   private void loadAllSources() {

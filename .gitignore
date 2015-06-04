@@ -1,4 +1,6 @@
 *.class
+*.swp
+/examples/performace_report.txt
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/

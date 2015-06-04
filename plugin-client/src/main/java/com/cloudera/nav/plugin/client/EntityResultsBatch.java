@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.model;
+package com.cloudera.nav.plugin.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.junit.Test;
+import java.util.List;
+import java.util.Map;
 
-public class MD5IdGeneratorTest {
+/**
+ * Wrapper class for deserialization for batch of Entity results.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EntityResultsBatch extends ResultsBatch<Map<String, Object>> {
 
-  @Test
-  public void testBasic() {
-    String hash = MD5IdGenerator.generateIdentity("foo");
-    assertEquals(MD5IdGenerator.generateIdentity("foo"), hash);
-    assertNotEquals(MD5IdGenerator.generateIdentity("bar"), hash);
-    assertEquals(hash.length(), 32);
+  public List<Map<String, Object>> getEntities() {
+    return getResults();
+  }
+
+  public void setEntities(List<Map<String, Object>> results) {
+    setResults(results);
   }
 }

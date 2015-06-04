@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.model;
+package com.cloudera.nav.plugin.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+/** Label for which type of metadata is being retrieved from Navigator,
+ * can be Entities or Relations.
+ */
+public enum MetadataType {
+  ENTITIES("entities"), RELATIONS("relations");
 
-import org.junit.Test;
+  private String queryString;
 
-public class MD5IdGeneratorTest {
-
-  @Test
-  public void testBasic() {
-    String hash = MD5IdGenerator.generateIdentity("foo");
-    assertEquals(MD5IdGenerator.generateIdentity("foo"), hash);
-    assertNotEquals(MD5IdGenerator.generateIdentity("bar"), hash);
-    assertEquals(hash.length(), 32);
+  MetadataType(String type){
+    this.queryString = type;
   }
+
+  @Override
+  public String toString(){
+    return this.queryString;
+  }
+
 }
