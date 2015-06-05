@@ -26,7 +26,12 @@ import com.cloudera.nav.plugin.model.entities.HdfsEntity;
 import com.google.common.collect.Sets;
 
 /**
- * A more convenient/robust way to set tags on HDFS entities
+ * Tagging HDFS Files and Directories
+ *
+ * Tags is an important part of business metadata. This example uses the
+ * Navigator plugin tag an HDFS directory as sensitive. Users and applications
+ * can then the tags to trigger actions such as encryption or changes to
+ * authorization
  */
 public class SetHdfsFileTags {
 

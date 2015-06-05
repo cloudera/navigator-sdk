@@ -27,9 +27,15 @@ import com.cloudera.nav.plugin.model.SourceType;
 import org.joda.time.Instant;
 
 /**
- * In this example we show a more complex example of
- * how to create custom entity types and
- * how to link them to hadoop entities
+ * In this example we show a more complex example of how to create custom entity
+ * types and how to link them to hadoop entities. For a description of the base
+ * example please see {@link com.cloudera.nav.plugin.client.examples.stetson.AddLineage}.
+ *
+ * As an extension of the previous example, we allow the user to specify custom
+ * input and output datasets to a StetsonExecution. We define a new custom
+ * entity called StetsonDataset. This is a logical dataset in the Stetson
+ * application and is physically represented by an HDFS directory.
+ *
  */
 public class AddLineage {
 

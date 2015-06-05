@@ -26,6 +26,10 @@ import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 
+/**
+ * This is a custom logical dataset that is physically backed by an
+ * HDFS directory
+ */
 @MClass
 public class StetsonDataset extends CustomEntity {
 
