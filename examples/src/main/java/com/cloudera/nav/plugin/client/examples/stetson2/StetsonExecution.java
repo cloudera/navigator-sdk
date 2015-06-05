@@ -14,16 +14,23 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.stetson;
+package com.cloudera.nav.plugin.client.examples.stetson2;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
 import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
+import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
+import java.util.Collection;
+
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
 
 /**
@@ -37,9 +44,20 @@ public class StetsonExecution extends CustomEntity {
   private Instant started;
   private Instant ended;
   // MD5(pig.script.id) from the job conf
-  private String pigExecutionId;
-  private String stetsonInstId;
+  private Entity pigExecution;
   private String link;
+  private Collection<StetsonDataset> inputs;
+  private Collection<StetsonDataset> outputs;
+
+  /**
+   * @param namespace
+   */
+  public StetsonExecution(String namespace) {
+    // Because the namespace is given to input/output we ensure it
+    // exists when it is used by adding it as a c'tor parameter
+    Preconditions.checkArgument(StringUtils.isNotEmpty(namespace));
+    setNamespace(namespace);
+  }
 
   /**
    * Stetson executions are defined to be operation execution entities
@@ -58,7 +76,7 @@ public class StetsonExecution extends CustomEntity {
   protected String[] getIdComponents() {
     return new String[] { getNamespace(),
         getTemplate().getIdentity(),
-        getStetsonInstId() };
+        getPigExecution().getIdentity() };
   }
 
   @MProperty
@@ -77,21 +95,19 @@ public class StetsonExecution extends CustomEntity {
   /**
    * The Pig execution id
    */
-  @MRelation(role = RelationRole.PHYSICAL, sourceType = SourceType.PIG)
-  public String getPigExecutionId() {
-    return pigExecutionId;
+  @MRelation(role = RelationRole.PHYSICAL)
+  public Entity getPigExecution() {
+    return pigExecution;
   }
 
-  public void setTemplate(StetsonScript template) {
-    this.template = template;
+  @MRelation(role=RelationRole.SOURCE)
+  public Collection<StetsonDataset> getInputs() {
+    return inputs;
   }
 
-  /**
-   * The external application identifier for this execution
-   */
-  @MProperty
-  public String getStetsonInstId() {
-    return stetsonInstId;
+  @MRelation(role=RelationRole.TARGET)
+  public Collection<StetsonDataset> getOutputs() {
+    return outputs;
   }
 
   /**
@@ -110,12 +126,9 @@ public class StetsonExecution extends CustomEntity {
     return ended;
   }
 
-  public void setPigExecutionId(String pigExecutionId) {
-    this.pigExecutionId = pigExecutionId;
-  }
-
-  public void setStetsonInstId(String stetsonInstId) {
-    this.stetsonInstId = stetsonInstId;
+  public void setPigExecution(String pigExecutionId) {
+    this.pigExecution = new EndPointProxy(pigExecutionId, SourceType.PIG,
+        EntityType.OPERATION_EXECUTION);
   }
 
   public void setStarted(Instant started) {
@@ -128,5 +141,41 @@ public class StetsonExecution extends CustomEntity {
 
   public void setLink(String link) {
     this.link = link;
+  }
+
+  public void setTemplate(StetsonScript template) {
+    this.template = template;
+  }
+
+  public void setInputs(Collection<StetsonDataset> inputs) {
+    this.inputs = Lists.newArrayList(inputs);
+  }
+
+  public void setOutputs(Collection<StetsonDataset> outputs) {
+    this.outputs = Lists.newArrayList(outputs);
+  }
+
+  /**
+   * Not threadsafe
+   * @param name
+   * @param hdfsId
+   */
+  public void addInput(String name, String hdfsId) {
+    if (inputs == null) {
+      inputs = Lists.newArrayList();
+    }
+    inputs.add(new StetsonDataset(name, getNamespace(), hdfsId));
+  }
+
+  /**
+   * Not threadsafe
+   * @param name
+   * @param hdfsId
+   */
+  public void addOutput(String name, String hdfsId) {
+    if (outputs == null) {
+      outputs = Lists.newArrayList();
+    }
+    outputs.add(new StetsonDataset(name, getNamespace(), hdfsId));
   }
 }

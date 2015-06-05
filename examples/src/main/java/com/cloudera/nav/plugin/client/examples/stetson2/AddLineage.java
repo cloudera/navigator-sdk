@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.stetson;
+package com.cloudera.nav.plugin.client.examples.stetson2;
 
+import com.cloudera.nav.plugin.client.NavApiCient;
 import com.cloudera.nav.plugin.client.NavigatorPlugin;
 import com.cloudera.nav.plugin.client.PluginConfigurationFactory;
 import com.cloudera.nav.plugin.client.PluginConfigurations;
+import com.cloudera.nav.plugin.model.MD5IdGenerator;
+import com.cloudera.nav.plugin.model.Source;
+import com.cloudera.nav.plugin.model.SourceType;
 
 import org.joda.time.Instant;
 
 /**
- * In this example we show how to create custom entity types and
+ * In this example we show a more complex example of
+ * how to create custom entity types and
  * how to link them to hadoop entities
  */
 public class AddLineage {
@@ -40,26 +45,37 @@ public class AddLineage {
     // identities based on the job name and job conf
     String operationId = "41d5c5382aa0a15f64522dd700bb5765";
     String execId = "96e1a2bebec347c8b8009b1025294a6c";
+    String inputName = "StetsonInput"; // Stetson's name for the input dataset
+    String outputName = "StetsonOutput"; // Stetson's name for the output data
+    String inputPath = "/dualcore/web_logs"; // path of HDFS dir for input dataset
+    String outputPath = "/dualcore/order_details"; // path of HDFS dir for output dataset
 
     // Create the template
-    StetsonScript script = new StetsonScript();
-    script.setNamespace(config.getNamespace());
+    StetsonScript script = new StetsonScript(config.getNamespace());
     script.setScript("LOAD\nGROUPBY\nAGGREGATE");
     script.setName("myScript");
     script.setOwner("Chang");
-    script.setPigOperationId(operationId);
+    script.setPigOperation(operationId);
     script.setIdentity(script.generateId());
     script.setDescription("I am a custom operation template");
 
     // Create the instance
-    StetsonExecution exec = new StetsonExecution();
-    exec.setNamespace(config.getNamespace());
+    NavApiCient client = new NavApiCient(config);
+    Source hdfs = client.getOnlySource(SourceType.HDFS);
+    String inputHdfsId = MD5IdGenerator.generateIdentity(hdfs.getIdentity(),
+        inputPath);
+    String outputHdfsId = MD5IdGenerator.generateIdentity(hdfs.getIdentity(),
+        outputPath);
+
+    StetsonExecution exec = new StetsonExecution(config.getNamespace());
     exec.setName("myExecution");
     exec.setTemplate(script);
+    exec.setPigExecution(execId);
+    exec.addInput(inputName, inputHdfsId);
+    exec.addOutput(outputName, outputHdfsId);
     exec.setStarted(Instant.now());
     exec.setEnded((new Instant(Instant.now().toDate().getTime() + 10000)));
-    exec.setStetsonInstId("foobarbaz");
-    exec.setPigExecutionId(execId);
+
     exec.setDescription("I am a custom operation instance");
     exec.setLink("http://hasthelargehadroncolliderdestroyedtheworldyet.com/");
 

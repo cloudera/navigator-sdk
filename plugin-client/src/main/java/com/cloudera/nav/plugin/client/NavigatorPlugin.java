@@ -103,8 +103,8 @@ public class NavigatorPlugin {
       writer.begin();
       writer.write(entities);
       writer.end();
-    } finally {
       writer.flush();
+    } finally {
       writer.close();
     }
   }
