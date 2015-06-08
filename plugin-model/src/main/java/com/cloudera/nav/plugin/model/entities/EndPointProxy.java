@@ -35,7 +35,7 @@ public class EndPointProxy extends Entity {
   public EndPointProxy(String id, SourceType sourceType, EntityType type) {
     setIdentity(id);
     setSourceType(sourceType);
-    setEntityType(type);
+    setType(type);
   }
 
   @Override
@@ -54,7 +54,7 @@ public class EndPointProxy extends Entity {
     this.sourceType = sourceType;
   }
 
-  public void setEntityType(EntityType entityType) {
+  public void setType(EntityType entityType) {
     this.entityType = entityType;
   }
 

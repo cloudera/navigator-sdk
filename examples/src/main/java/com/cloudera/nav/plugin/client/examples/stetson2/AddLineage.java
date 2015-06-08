@@ -49,8 +49,8 @@ public class AddLineage {
     // change according to actual operation and executions
     // you can use the PigIdGenerator to generate the correct
     // identities based on the job name and job conf
-    String operationId = "41d5c5382aa0a15f64522dd700bb5765";
-    String execId = "96e1a2bebec347c8b8009b1025294a6c";
+    String operationId = "d232bb9146edace98f5fbddfb05e5ef0";
+    String execId = "f3603812e2c4d95e7e6bbc9afbabc160";
     String inputName = "StetsonInput"; // Stetson's name for the input dataset
     String outputName = "StetsonOutput"; // Stetson's name for the output data
     String inputPath = "/dualcore/web_logs"; // path of HDFS dir for input dataset
