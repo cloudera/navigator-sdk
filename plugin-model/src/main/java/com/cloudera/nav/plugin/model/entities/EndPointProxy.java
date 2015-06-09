@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.cloudera.nav.plugin.model.entities;
 
 import com.cloudera.nav.plugin.model.SourceType;
@@ -20,54 +21,54 @@ import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
 /**
- * A concrete entity that represents HDFS directories or files
+ * A proxy for an Entity to be used as a Relation end-point.
+ * It only has an identity, source type, and entity type.
+ * The remainder of the information either already is on the server or
+ * will be populated by the server
  */
-@MClass(validTypes = {EntityType.DIRECTORY, EntityType.FILE})
-public class HdfsEntity extends Entity {
+@MClass
+public class EndPointProxy extends Entity {
 
-  private String fileSystemPath;
+  private SourceType sourceType;
   private EntityType entityType;
 
-  /**
-   * An HDFS file/directory can be uniquely identified by the path and
-   * the Source id
-   *
-   * @return
-   */
-  @Override
-  protected String[] getIdComponents() {
-    return new String[] { getSourceId(), getFileSystemPath() };
-  }
-
-  /**
-   * @return the full path for this file or directory
-   */
-  @MProperty(required=true)
-  public String getFileSystemPath() {
-    return fileSystemPath;
-  }
-
-  /**
-   * Set the full path of this file or directory
-   * @param fileSystemPath
-   */
-  public void setFileSystemPath(String fileSystemPath) {
-    this.fileSystemPath = fileSystemPath;
+  public EndPointProxy(String id, SourceType sourceType, EntityType type) {
+    setIdentity(id);
+    setSourceType(sourceType);
+    setType(type);
   }
 
   @Override
   @MProperty(required=true)
   public SourceType getSourceType() {
-    return SourceType.HDFS;
+    return sourceType;
   }
 
   @Override
-  @MProperty
+  @MProperty(required=true)
   public EntityType getType() {
     return entityType;
   }
 
+  public void setSourceType(SourceType sourceType) {
+    this.sourceType = sourceType;
+  }
+
   public void setType(EntityType entityType) {
     this.entityType = entityType;
+  }
+
+  /**
+   * Throws UnsupportedOperationException.
+   * The entity id for a proxy must be set explicitly
+   */
+  @Override
+  public String generateId() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  protected String[] getIdComponents() {
+    throw new UnsupportedOperationException();
   }
 }

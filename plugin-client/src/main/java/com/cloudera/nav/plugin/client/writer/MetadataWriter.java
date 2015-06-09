@@ -23,6 +23,7 @@ import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.ValidationUtil;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.relations.Relation;
 import com.google.common.base.Preconditions;
@@ -159,7 +160,9 @@ public abstract class MetadataWriter {
       if (relEntry.isConnectedToEntity()) {
         referred = relEntry.getConnectedEntities(entity);
         for(Entity other : referred) {
-          getAllMClasses(other, idToValues);
+          if (!(other instanceof EndPointProxy)) {
+            getAllMClasses(other, idToValues);
+          }
         }
       }
       rel = relEntry.buildRelation(entity, config.getNamespace());
