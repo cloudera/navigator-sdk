@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.stetson2;
+package com.cloudera.nav.plugin.examples.stetson;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
@@ -26,9 +26,6 @@ import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-
-import java.util.Collection;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
@@ -43,15 +40,9 @@ public class StetsonExecution extends CustomEntity {
   private StetsonScript template;
   private Instant started;
   private Instant ended;
-  // MD5(pig.script.id) from the job conf
-  private Entity pigExecution;
+  private Entity pigExecution; // MD5(pig.script.id) from the job conf
   private String link;
-  private Collection<StetsonDataset> inputs;
-  private Collection<StetsonDataset> outputs;
 
-  /**
-   * @param namespace
-   */
   public StetsonExecution(String namespace) {
     // Because the namespace is given to input/output we ensure it
     // exists when it is used by adding it as a c'tor parameter
@@ -95,19 +86,13 @@ public class StetsonExecution extends CustomEntity {
   /**
    * The Pig execution id
    */
-  @MRelation(role = RelationRole.PHYSICAL)
+  @MRelation(role=RelationRole.PHYSICAL)
   public Entity getPigExecution() {
     return pigExecution;
   }
 
-  @MRelation(role=RelationRole.SOURCE)
-  public Collection<StetsonDataset> getInputs() {
-    return inputs;
-  }
-
-  @MRelation(role=RelationRole.TARGET)
-  public Collection<StetsonDataset> getOutputs() {
-    return outputs;
+  public void setTemplate(StetsonScript template) {
+    this.template = template;
   }
 
   /**
@@ -141,41 +126,5 @@ public class StetsonExecution extends CustomEntity {
 
   public void setLink(String link) {
     this.link = link;
-  }
-
-  public void setTemplate(StetsonScript template) {
-    this.template = template;
-  }
-
-  public void setInputs(Collection<StetsonDataset> inputs) {
-    this.inputs = Lists.newArrayList(inputs);
-  }
-
-  public void setOutputs(Collection<StetsonDataset> outputs) {
-    this.outputs = Lists.newArrayList(outputs);
-  }
-
-  /**
-   * Not threadsafe
-   * @param name
-   * @param hdfsId
-   */
-  public void addInput(String name, String hdfsId) {
-    if (inputs == null) {
-      inputs = Lists.newArrayList();
-    }
-    inputs.add(new StetsonDataset(name, getNamespace(), hdfsId));
-  }
-
-  /**
-   * Not threadsafe
-   * @param name
-   * @param hdfsId
-   */
-  public void addOutput(String name, String hdfsId) {
-    if (outputs == null) {
-      outputs = Lists.newArrayList();
-    }
-    outputs.add(new StetsonDataset(name, getNamespace(), hdfsId));
   }
 }

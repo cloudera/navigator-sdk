@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.stetson2;
+package com.cloudera.nav.plugin.examples.stetson2;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
@@ -27,59 +27,44 @@ import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 
 /**
- * Represents a template defined by a script in a hypothetical custom DSL
+ * This is a custom logical dataset that is physically backed by an
+ * HDFS directory
  */
 @MClass
-public class StetsonScript extends CustomEntity {
+public class StetsonDataset extends CustomEntity {
 
-  private EndPointProxy pigOperation;
-  private String script;
-
-  public StetsonScript(String namespace) {
-    setNamespace(namespace);
-  }
+  private Entity hdfsEntity;
 
   /**
-   * The StetsonScript represents a template and is therefore always an
-   * OPERATION entity
+   * @param name Stetson name for the dataset
+   * @param namespace
+   * @param hdfsEntityId identity of the underlying HDFS directory
    */
+  public StetsonDataset(String name, String namespace, String hdfsEntityId) {
+    setName(name);
+    setNamespace(namespace);
+    setHdfsEntity(hdfsEntityId);
+  }
+
   @Override
   @MProperty
   public EntityType getType() {
-    return EntityType.OPERATION;
+    return EntityType.DATASET;
   }
 
-  /**
-   * The script template is uniquely defined by the name and the owner
-   */
+  @MRelation(role= RelationRole.PHYSICAL)
+  public Entity getHdfsEntity() {
+    return hdfsEntity;
+  }
+
   @Override
   protected String[] getIdComponents() {
-    return new String[] { getName(), getNamespace(), getOwner() };
+    return new String[] { getName(), getNamespace(),
+        getHdfsEntity().getIdentity() };
   }
 
-  /**
-   * The StetsonScript is linked to a PIG operation via a Logical-Physical
-   * relationship where the Pig operation is the PHYSICAL node
-   */
-  @MRelation(role= RelationRole.PHYSICAL)
-  public Entity getPigOperation() {
-    return pigOperation;
-  }
-
-  /**
-   * The script contents in the custom DSL
-   */
-  @MProperty
-  public String getScript() {
-    return script;
-  }
-
-  public void setPigOperation(String pigOperationId) {
-    this.pigOperation = new EndPointProxy(pigOperationId, SourceType.PIG,
-        EntityType.OPERATION);
-  }
-
-  public void setScript(String script) {
-    this.script = script;
+  public void setHdfsEntity(String hdfsEntityId) {
+    hdfsEntity = new EndPointProxy(hdfsEntityId, SourceType.HDFS,
+        EntityType.DIRECTORY);
   }
 }

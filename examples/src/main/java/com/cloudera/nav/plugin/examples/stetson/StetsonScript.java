@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.stetson;
+package com.cloudera.nav.plugin.examples.stetson;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
 import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
+import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
+import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Represents a template defined by a script in a hypothetical custom DSL
@@ -30,8 +35,15 @@ import com.cloudera.nav.plugin.model.relations.RelationRole;
 @MClass
 public class StetsonScript extends CustomEntity {
 
-  private String pigOperationId;
+  private EndPointProxy pigOperation;
   private String script;
+
+  public StetsonScript(String namespace) {
+    // Because the namespace is given to input/output we ensure it
+    // exists when it is used by adding it as a c'tor parameter
+    Preconditions.checkArgument(StringUtils.isNotEmpty(namespace));
+    setNamespace(namespace);
+  }
 
   /**
    * The StetsonScript represents a template and is therefore always an
@@ -48,16 +60,7 @@ public class StetsonScript extends CustomEntity {
    */
   @Override
   protected String[] getIdComponents() {
-    return new String[] { getName(), getNamespace(), getOwner() };
-  }
-
-  /**
-   * The StetsonScript is linked to a PIG operation via a Logical-Physical
-   * relationship where the Pig operation is the PHYSICAL node
-   */
-  @MRelation(role= RelationRole.PHYSICAL, sourceType = SourceType.PIG)
-  public String getPigOperationId() {
-    return pigOperationId;
+    return new String[] { getNamespace(), getPigOperation().getIdentity() };
   }
 
   /**
@@ -68,8 +71,18 @@ public class StetsonScript extends CustomEntity {
     return script;
   }
 
-  public void setPigOperationId(String pigOperationId) {
-    this.pigOperationId = pigOperationId;
+  /**
+   * The StetsonScript is linked to a PIG operation via a Logical-Physical
+   * relationship where the Pig operation is the PHYSICAL node
+   */
+  @MRelation(role=RelationRole.PHYSICAL)
+  public Entity getPigOperation() {
+    return pigOperation;
+  }
+
+  public void setPigOperation(String pigOperationId) {
+    this.pigOperation = new EndPointProxy(pigOperationId, SourceType.PIG,
+        EntityType.OPERATION);
   }
 
   public void setScript(String script) {
