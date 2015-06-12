@@ -15,6 +15,7 @@
  */
 package com.cloudera.nav.plugin.model.entities;
 
+import com.cloudera.nav.plugin.model.HdfsIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
@@ -35,8 +36,9 @@ public class HdfsEntity extends Entity {
    * @return
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getSourceId(), getFileSystemPath() };
+  public String generateId() {
+    return HdfsIdGenerator.generateHdfsEntityId(getSourceId(),
+        getFileSystemPath());
   }
 
   /**

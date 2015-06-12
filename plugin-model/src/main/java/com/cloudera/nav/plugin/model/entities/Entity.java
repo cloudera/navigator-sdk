@@ -15,10 +15,8 @@
  */
 package com.cloudera.nav.plugin.model.entities;
 
-import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -200,13 +198,7 @@ public abstract class Entity {
     this.properties = Maps.newHashMap(properties);
   }
 
-  public String generateId() {
-    String[] components = getIdComponents();
-    for (String comp : components) {
-      Preconditions.checkNotNull(comp, "Entity Id components must not be null");
-    }
-    return MD5IdGenerator.generateIdentity(components);
-  }
+  public abstract String generateId();
 
   @Override
   public boolean equals(Object o) {
@@ -225,11 +217,4 @@ public abstract class Entity {
   public int hashCode() {
     return identity.hashCode();
   }
-
-  /**
-   * Intended to be implemented by custom entity sub-classes to provide
-   * a unique id for the entity
-   * @return
-   */
-  protected abstract String[] getIdComponents();
 }

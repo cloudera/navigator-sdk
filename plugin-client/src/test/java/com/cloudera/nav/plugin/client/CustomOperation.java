@@ -16,6 +16,7 @@
 
 package com.cloudera.nav.plugin.client;
 
+import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
@@ -37,8 +38,8 @@ public class CustomOperation extends CustomEntity {
    * Extend to include all fields that uniquely determine a custom entity
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getName(), getOwner() };
+  public String generateId() {
+    return MD5IdGenerator.generateIdentity(getName(), getOwner());
   }
 
   @MRelation(role= RelationRole.PHYSICAL, sourceType= SourceType.PIG)

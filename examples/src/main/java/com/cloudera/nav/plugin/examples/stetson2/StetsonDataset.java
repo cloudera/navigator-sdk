@@ -16,6 +16,7 @@
 
 package com.cloudera.nav.plugin.examples.stetson2;
 
+import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
@@ -58,9 +59,9 @@ public class StetsonDataset extends CustomEntity {
   }
 
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getName(), getNamespace(),
-        getHdfsEntity().getIdentity() };
+  public String generateId() {
+    return MD5IdGenerator.generateIdentity(getName(), getNamespace(),
+        getHdfsEntity().getIdentity());
   }
 
   public void setHdfsEntity(String hdfsEntityId) {
