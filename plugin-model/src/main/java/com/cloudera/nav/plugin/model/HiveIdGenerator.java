@@ -29,7 +29,9 @@ public class HiveIdGenerator {
             !StringUtils.isEmpty(tableName),
         "SourceId, database name, and table name must be supplied to " +
             "generate Hive table identity");
-    return MD5IdGenerator.generateIdentity(sourceId, databaseName, tableName);
+    return MD5IdGenerator.generateIdentity(sourceId,
+        databaseName.toUpperCase(),
+        tableName.toUpperCase());
   }
 
   public static String generateColumnId(String sourceId, String databaseName,
@@ -40,7 +42,9 @@ public class HiveIdGenerator {
             !StringUtils.isEmpty(columnName),
         "SourceId, database name, table name, and column name must be " +
             "supplied to generate Hive column identity");
-    return MD5IdGenerator.generateIdentity(sourceId, databaseName, tableName,
-        columnName);
+    return MD5IdGenerator.generateIdentity(sourceId,
+        databaseName.toUpperCase(),
+        tableName.toUpperCase(),
+        columnName.toUpperCase());
   }
 }

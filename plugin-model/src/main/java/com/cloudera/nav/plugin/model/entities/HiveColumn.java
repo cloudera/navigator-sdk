@@ -17,8 +17,10 @@
 package com.cloudera.nav.plugin.model.entities;
 
 import com.cloudera.nav.plugin.model.HiveIdGenerator;
+import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
+@MClass
 public class HiveColumn extends HiveTable {
 
   private String columnName;

@@ -20,18 +20,18 @@ import com.cloudera.nav.plugin.client.NavApiCient;
 import com.cloudera.nav.plugin.client.NavigatorPlugin;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.entities.HdfsEntity;
+import com.cloudera.nav.plugin.model.entities.HiveColumn;
 import com.google.common.collect.Sets;
 
 /**
- * Tagging HDFS Files and Directories
+ * Tagging Hive columns
  *
  * Tags is an important part of business metadata. This example uses the
- * Navigator plugin to tag an HDFS directory as sensitive.
+ * Navigator plugin to tag a Hive column as sensitive.
  * Users and applications can then the tags to trigger actions such as
  * encryption, masking, and/or restrictions to permissions.
  */
-public class SetHdfsFileTags {
+public class SetHiveTags {
 
   public static void main(String[] args) {
 
@@ -39,15 +39,17 @@ public class SetHdfsFileTags {
     NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
 
     // send tags for multiple entities to Navigator
-    HdfsEntity dir = new HdfsEntity();
-    dir.setFileSystemPath("/user/hdfs");
-    dir.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
+    HiveColumn column = new HiveColumn();
+    column.setDatabaseName("default");
+    column.setTableName("sample_07");
+    column.setColumnName("code");
+    column.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
         "CONTAINS_SOME_SUPER_SECRET_STUFF"));
 
     NavApiCient client = plugin.getClient();
-    Source hdfs = client.getOnlySource(SourceType.HDFS);
-    dir.setSourceId(hdfs.getIdentity());
+    Source hive = client.getOnlySource(SourceType.HIVE);
+    column.setSourceId(hive.getIdentity());
 
-    plugin.write(dir);
+    plugin.write(column);
   }
 }
