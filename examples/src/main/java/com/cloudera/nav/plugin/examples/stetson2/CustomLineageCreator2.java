@@ -17,7 +17,6 @@
 package com.cloudera.nav.plugin.examples.stetson2;
 
 import com.cloudera.nav.plugin.client.NavApiCient;
-import com.cloudera.nav.plugin.client.NavigatorPlugin;
 import com.cloudera.nav.plugin.examples.stetson.CustomLineageCreator;
 import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.Source;
@@ -44,10 +43,24 @@ import org.joda.time.Instant;
  */
 public class CustomLineageCreator2 extends CustomLineageCreator {
 
+  /**
+   * @param args 1. config file path
+   *             2. Pig operation id
+   *             3. Pig execution id
+   *             4. hdfs file system path of input
+   *             5. hdfs file system path of output
+   */
   public static void main(String[] args) {
     CustomLineageCreator2 lineageCreator = new CustomLineageCreator2(args[0]);
+    lineageCreator.setPigOperationId(args[1]);
+    lineageCreator.setPigExecutionId(args[2]);
+    lineageCreator.setInputPath(args[3]);
+    lineageCreator.setOutputPath(args[4]);
     lineageCreator.run();
   }
+
+  private String inputPath;
+  private String outputPath;
 
   public CustomLineageCreator2(String configFilePath) {
     super(configFilePath);
@@ -56,31 +69,40 @@ public class CustomLineageCreator2 extends CustomLineageCreator {
   @Override
   protected StetsonExecution2 createExecution() {
     StetsonExecution2 exec = new StetsonExecution2(plugin.getNamespace());
-
-    // Change according to actual execution. Use the PigIdGenerator to generate
-    // the correct identities based on the job name and the pig.script.id
-    // from the job conf
-    String pigExecutionId = "f3603812e2c4d95e7e6bbc9afbabc160";
-    exec.setPigExecution(pigExecutionId);
-
+    exec.setPigExecution(getPigExecutionId());
     exec.setName("Stetson Execution");
     exec.setDescription("I am a custom operation instance");
     exec.setLink("http://hasthelargehadroncolliderdestroyedtheworldyet.com/");
     exec.setStarted(Instant.now());
     exec.setEnded((new Instant(Instant.now().toDate().getTime() + 10000)));
+
     // Extend the previous stetson example by linking it to inputs and outputs
     String inputName = "StetsonInput"; // Stetson's name for the input dataset
     String outputName = "StetsonOutput"; // Stetson's name for the output data
-    String inputPath = "/datasets/input"; // path of HDFS dir for input dataset
-    String outputPath = "/datasets/output"; // path of HDFS dir for output dataset
-    exec.addInput(inputName, getHdfsEntityId(inputPath, plugin));
-    exec.addOutput(outputName, getHdfsEntityId(outputPath, plugin));
+    exec.addInput(inputName, getHdfsEntityId(getInputPath()));
+    exec.addOutput(outputName, getHdfsEntityId(getOutputPath()));
     return exec;
   }
 
-  private static String getHdfsEntityId(String path, NavigatorPlugin plugin) {
+  public String getInputPath() {
+    return inputPath;
+  }
+
+  public void setInputPath(String inputPath) {
+    this.inputPath = inputPath;
+  }
+
+  public String getOutputPath() {
+    return outputPath;
+  }
+
+  public void setOutputPath(String outputPath) {
+    this.outputPath = outputPath;
+  }
+
+  private String getHdfsEntityId(String path) {
     NavApiCient client = plugin.getClient();
     Source hdfs = client.getOnlySource(SourceType.HDFS);
     return MD5IdGenerator.generateIdentity(hdfs.getIdentity(), path);
   }
- }
+}

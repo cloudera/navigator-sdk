@@ -44,12 +44,21 @@ import org.joda.time.Instant;
  */
 public class CustomLineageCreator {
 
+  /**
+   * @param args 1. config file path
+   *             2. Pig operation id
+   *             3. Pig execution id
+   */
   public static void main(String[] args) {
     CustomLineageCreator lineageCreator = new CustomLineageCreator(args[0]);
+    lineageCreator.setPigOperationId(args[1]);
+    lineageCreator.setPigExecutionId(args[2]);
     lineageCreator.run();
   }
 
   protected final NavigatorPlugin plugin;
+  private String pigOperationId;
+  private String pigExecutionId;
 
   public CustomLineageCreator(String configFilePath) {
     this.plugin = NavigatorPlugin.fromConfigFile(configFilePath);
@@ -61,21 +70,31 @@ public class CustomLineageCreator {
     // Create the instance
     StetsonExecution exec = createExecution();
     // Connect the template and instance
+    script.setIdentity(script.generateId());
     exec.setTemplate(script);
     // Write metadata
     plugin.write(exec);
   }
 
+  public String getPigOperationId() {
+    return pigOperationId;
+  }
+
+  public String getPigExecutionId() {
+    return pigExecutionId;
+  }
+
+  public void setPigOperationId(String pigOperationId) {
+    this.pigOperationId = pigOperationId;
+  }
+
+  public void setPigExecutionId(String pigExecutionId) {
+    this.pigExecutionId = pigExecutionId;
+  }
+
   protected StetsonScript createStetsonScript() {
     StetsonScript script = new StetsonScript(plugin.getNamespace());
-
-    // Change according to actual operation. Use the PigIdGenerator to generate
-    // the correct identities based on the job name and the pig.logicalPlan.hash
-    // from the job conf
-    String pigOperationId = "d232bb9146edace98f5fbddfb05e5ef0";
-    script.setPigOperation(pigOperationId);
-    script.setIdentity(script.generateId());
-
+    script.setPigOperation(getPigOperationId());
     script.setName("Stetson Script");
     script.setOwner("Chang");
     script.setScript("LOAD\nGROUPBY\nAGGREGATE");
@@ -85,13 +104,7 @@ public class CustomLineageCreator {
 
   protected StetsonExecution createExecution() {
     StetsonExecution exec = new StetsonExecution(plugin.getNamespace());
-
-    // Change according to actual execution. Use the PigIdGenerator to generate
-    // the correct identities based on the job name and the pig.script.id
-    // from the job conf
-    String pigExecutionId = "f3603812e2c4d95e7e6bbc9afbabc160";
-    exec.setPigExecution(pigExecutionId);
-
+    exec.setPigExecution(getPigExecutionId());
     exec.setName("Stetson Execution");
     exec.setDescription("I am a custom operation instance");
     exec.setLink("http://hasthelargehadroncolliderdestroyedtheworldyet.com/");
