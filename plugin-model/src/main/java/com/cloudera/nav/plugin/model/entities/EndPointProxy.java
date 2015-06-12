@@ -66,9 +66,4 @@ public class EndPointProxy extends Entity {
   public String generateId() {
     throw new UnsupportedOperationException();
   }
-
-  @Override
-  protected String[] getIdComponents() {
-    throw new UnsupportedOperationException();
-  }
 }

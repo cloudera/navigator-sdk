@@ -16,6 +16,7 @@
 
 package com.cloudera.nav.plugin.examples.stetson;
 
+import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
@@ -59,8 +60,9 @@ public class StetsonScript extends CustomEntity {
    * The script template is uniquely defined by the name and the owner
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getNamespace(), getPigOperation().getIdentity() };
+  public String generateId() {
+    return MD5IdGenerator.generateIdentity(getNamespace(), 
+        getPigOperation().getIdentity());
   }
 
   /**

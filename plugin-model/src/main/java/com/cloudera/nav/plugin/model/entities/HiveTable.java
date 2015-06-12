@@ -15,6 +15,7 @@
  */
 package com.cloudera.nav.plugin.model.entities;
 
+import com.cloudera.nav.plugin.model.HiveIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
@@ -31,8 +32,9 @@ public class HiveTable extends Entity {
    * @return
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[]{getSourceId(), getDatabaseName(), getTableName()};
+  public String generateId() {
+    return HiveIdGenerator.generateTableId(getSourceId(), getDatabaseName(),
+        getTableName());
   }
 
   @Override
