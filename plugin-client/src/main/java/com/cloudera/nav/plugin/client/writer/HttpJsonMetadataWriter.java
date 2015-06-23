@@ -84,8 +84,8 @@ public class HttpJsonMetadataWriter extends MetadataWriter {
   }
 
   @Override
-  public void close() {
-    super.close();
+  public void flush() {
+    super.flush();
     try {
       // request is not sent until response code is requested
       if (conn.getResponseCode() >= HttpStatus.SC_BAD_REQUEST) {

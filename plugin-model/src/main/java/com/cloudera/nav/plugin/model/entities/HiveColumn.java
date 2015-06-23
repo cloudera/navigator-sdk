@@ -16,8 +16,11 @@
 
 package com.cloudera.nav.plugin.model.entities;
 
+import com.cloudera.nav.plugin.model.HiveIdGenerator;
+import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
+@MClass
 public class HiveColumn extends HiveTable {
 
   private String columnName;
@@ -29,9 +32,9 @@ public class HiveColumn extends HiveTable {
    * @return
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[]{getSourceId(), getDatabaseName(), getTableName(),
-        getColumnName()};
+  public String generateId() {
+    return HiveIdGenerator.generateColumnId(getSourceId(), getDatabaseName(),
+        getTableName(), getColumnName());
   }
 
   @MProperty

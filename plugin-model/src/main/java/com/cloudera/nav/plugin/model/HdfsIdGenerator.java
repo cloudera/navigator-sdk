@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.model.entities;
 
-/**
- * Type of a given custom entity
- */
-public enum EntityType {
-  DATABASE,
-  DATASET,
-  DIRECTORY,
-  FIELD,
-  FILE,
-  OPERATION,
-  OPERATION_EXECUTION,
-  SUB_OPERATION,
-  TABLE
+package com.cloudera.nav.plugin.model;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang.StringUtils;
+
+public class HdfsIdGenerator {
+
+  public static String generateHdfsEntityId(String sourceId,
+                                            String fileSystemPath) {
+    Preconditions.checkArgument(!StringUtils.isEmpty(sourceId) &&
+        !StringUtils.isEmpty(fileSystemPath), "SourceId and fileSystemPath " +
+        "must be supplied to generate HDFS entity identity");
+    return MD5IdGenerator.generateIdentity(sourceId, fileSystemPath);
+  }
 }

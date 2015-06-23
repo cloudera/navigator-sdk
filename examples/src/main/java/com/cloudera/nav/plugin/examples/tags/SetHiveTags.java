@@ -14,39 +14,42 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.tags;
+package com.cloudera.nav.plugin.examples.tags;
 
 import com.cloudera.nav.plugin.client.NavApiCient;
 import com.cloudera.nav.plugin.client.NavigatorPlugin;
-import com.cloudera.nav.plugin.client.PluginConfigurationFactory;
-import com.cloudera.nav.plugin.client.PluginConfigurations;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.entities.HdfsEntity;
+import com.cloudera.nav.plugin.model.entities.HiveColumn;
 import com.google.common.collect.Sets;
 
 /**
- * A more convenient/robust way to set tags on HDFS entities
+ * Tagging Hive columns
+ *
+ * Tags is an important part of business metadata. This example uses the
+ * Navigator plugin to tag a Hive column as sensitive.
+ * Users and applications can then the tags to trigger actions such as
+ * encryption, masking, and/or restrictions to permissions.
  */
-public class SetHdfsFileTags {
+public class SetHiveTags {
 
   public static void main(String[] args) {
 
     // setup the plugin and api client
-    String configFilePath = args[0];
-    PluginConfigurations config = (new PluginConfigurationFactory())
-        .readConfigurations(configFilePath);
-    NavigatorPlugin plugin = new NavigatorPlugin(config);
-    NavApiCient client = new NavApiCient(config);
-    Source hdfs = client.getOnlySource(SourceType.HDFS);
+    NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
 
     // send tags for multiple entities to Navigator
-    HdfsEntity dir = new HdfsEntity();
-    dir.setSourceId(hdfs.getIdentity());
-    dir.setFileSystemPath("/user/hdfs");
-    dir.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
+    HiveColumn column = new HiveColumn();
+    column.setDatabaseName("default");
+    column.setTableName("sample_07");
+    column.setColumnName("code");
+    column.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
         "CONTAINS_SOME_SUPER_SECRET_STUFF"));
 
-    plugin.write(dir);
+    NavApiCient client = plugin.getClient();
+    Source hive = client.getOnlySource(SourceType.HIVE);
+    column.setSourceId(hive.getIdentity());
+
+    plugin.write(column);
   }
 }

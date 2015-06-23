@@ -19,6 +19,7 @@ package com.cloudera.nav.plugin.client;
 import com.google.common.base.Throwables;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -60,5 +61,20 @@ public class PluginConfigurationFactory {
     } catch (ConfigurationException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  public PluginConfigurations fromConfigMap(Map<String, Object> props) {
+    PluginConfigurations config = new PluginConfigurations();
+    config.setApplicationUrl(props.get(APP_URL).toString());
+    FileFormat format = props.containsKey(FILE_FORMAT) ?
+        FileFormat.valueOf(props.get(FILE_FORMAT).toString()) :
+        FileFormat.JSON;
+    config.setFileFormat(format);
+    config.setMetadataParentUri(URI.create(props.get(METADATA_URI).toString()));
+    config.setNamespace(props.get(NAMESPACE).toString());
+    config.setNavigatorUrl(props.get(NAV_URL).toString());
+    config.setUsername(props.get(USERNAME).toString());
+    config.setPassword(props.get(PASSWORD).toString());
+    return config;
   }
 }

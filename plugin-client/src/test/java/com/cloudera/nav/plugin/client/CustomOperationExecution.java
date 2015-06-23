@@ -16,6 +16,7 @@
 
 package com.cloudera.nav.plugin.client;
 
+import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
@@ -43,9 +44,9 @@ public class CustomOperationExecution extends CustomEntity {
   }
 
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getTemplate().getIdentity(),
-        getCustomOperationInstanceId() };
+  public String generateId() {
+    return MD5IdGenerator.generateIdentity(getTemplate().getIdentity(),
+        getCustomOperationInstanceId());
   }
 
   @MRelation(role = RelationRole.INSTANCE)

@@ -14,55 +14,58 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client;
+package com.cloudera.nav.plugin.examples.stetson2;
 
-import com.cloudera.nav.plugin.model.MD5IdGenerator;
+import com.cloudera.nav.plugin.model.CustomIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
 import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
+import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 
 /**
- * Represents a template defined by a script in a custom DSL
+ * This is a custom logical dataset that is physically backed by an
+ * HDFS directory
  */
 @MClass
-public class CustomOperation extends CustomEntity {
+public class StetsonDataset extends CustomEntity {
 
-  private String pigOperationId;
-  private String script;
+  private Entity hdfsEntity;
 
   /**
-   * Extend to include all fields that uniquely determine a custom entity
+   * @param name Stetson name for the dataset
+   * @param namespace
+   * @param hdfsEntityId identity of the underlying HDFS directory
    */
-  @Override
-  public String generateId() {
-    return MD5IdGenerator.generateIdentity(getName(), getOwner());
-  }
-
-  @MRelation(role= RelationRole.PHYSICAL, sourceType= SourceType.PIG)
-  public String getPigOperationId() {
-    return pigOperationId;
+  public StetsonDataset(String name, String namespace, String hdfsEntityId) {
+    setName(name);
+    setNamespace(namespace);
+    setHdfsEntity(hdfsEntityId);
   }
 
   @Override
   @MProperty
   public EntityType getType() {
-    return EntityType.OPERATION;
+    return EntityType.DATASET;
   }
 
-  public void setPigOperationId(String pigOperationId) {
-    this.pigOperationId = pigOperationId;
+  @MRelation(role= RelationRole.PHYSICAL)
+  public Entity getHdfsEntity() {
+    return hdfsEntity;
   }
 
-  @MProperty
-  public String getScript() {
-    return script;
+  @Override
+  public String generateId() {
+    return CustomIdGenerator.generateIdentity(getName(), getNamespace(),
+        getHdfsEntity().getIdentity());
   }
 
-  public void setScript(String script) {
-    this.script = script;
+  public void setHdfsEntity(String hdfsEntityId) {
+    hdfsEntity = new EndPointProxy(hdfsEntityId, SourceType.HDFS,
+        EntityType.DIRECTORY);
   }
 }

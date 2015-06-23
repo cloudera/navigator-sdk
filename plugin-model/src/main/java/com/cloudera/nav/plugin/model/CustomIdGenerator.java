@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.model.entities;
 
-/**
- * Type of a given custom entity
- */
-public enum EntityType {
-  DATABASE,
-  DATASET,
-  DIRECTORY,
-  FIELD,
-  FILE,
-  OPERATION,
-  OPERATION_EXECUTION,
-  SUB_OPERATION,
-  TABLE
+package com.cloudera.nav.plugin.model;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.commons.lang.StringUtils;
+
+public class CustomIdGenerator {
+
+  public static String generateIdentity(String...args) {
+    for (String s : args) {
+      Preconditions.checkArgument(!StringUtils.isEmpty(s),
+          "An identity component must not be null or empty");
+    }
+    return MD5IdGenerator.generateIdentity(args);
+  }
 }
