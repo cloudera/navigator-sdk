@@ -49,7 +49,7 @@ public class HiveTable extends Entity {
     return SourceType.HIVE;
   }
 
-  @MProperty
+  @MProperty(required = true)
   public String getDatabaseName() {
     return databaseName;
   }
@@ -58,7 +58,7 @@ public class HiveTable extends Entity {
     this.databaseName = databaseName;
   }
 
-  @MProperty
+  @MProperty(required = true)
   public String getTableName() {
     return tableName;
   }

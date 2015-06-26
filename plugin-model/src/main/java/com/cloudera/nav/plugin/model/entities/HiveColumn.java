@@ -17,12 +17,15 @@
 package com.cloudera.nav.plugin.model.entities;
 
 import com.cloudera.nav.plugin.model.HiveIdGenerator;
+import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
 @MClass
-public class HiveColumn extends HiveTable {
+public class HiveColumn extends Entity {
 
+  private String databaseName;
+  private String tableName;
   private String columnName;
 
   /**
@@ -37,7 +40,7 @@ public class HiveColumn extends HiveTable {
         getTableName(), getColumnName());
   }
 
-  @MProperty
+  @MProperty(required = true)
   public String getColumnName() {
     return columnName;
   }
@@ -47,13 +50,41 @@ public class HiveColumn extends HiveTable {
   }
 
   @Override
+  public SourceType getSourceType() {
+    return SourceType.HIVE;
+  }
+
+  @Override
   @MProperty(attribute = "originalName")
   public String getName() {
     return getColumnName();
   }
 
   @Override
+  public EntityType getType() {
+    return null;
+  }
+
+  @MProperty(required = true)
+  public String getTableName() {
+    return tableName;
+  }
+
+  @MProperty(required = true)
+  public String getDatabaseName() {
+    return databaseName;
+  }
+
+  @Override
   public void setName(String name) {
     setColumnName(name);
+  }
+
+  public void setDatabaseName(String databaseName) {
+    this.databaseName = databaseName;
+  }
+
+  public void setTableName(String tableName) {
+    this.tableName = tableName;
   }
 }
