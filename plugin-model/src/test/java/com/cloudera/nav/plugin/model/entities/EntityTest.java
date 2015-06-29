@@ -48,7 +48,8 @@ public class EntityTest {
     entity.setTableName("table");
     entity.setSourceId(hive1.getIdentity());
     String id = MD5IdGenerator.generateIdentity(hive1.getIdentity(),
-        entity.getDatabaseName(), entity.getTableName());
+        entity.getDatabaseName().toUpperCase(),
+        entity.getTableName().toUpperCase());
     assertEquals(id, entity.generateId());
   }
 
@@ -62,8 +63,9 @@ public class EntityTest {
     entity.setColumnName("column");
     entity.setSourceId(hive1.getIdentity());
     String id = MD5IdGenerator.generateIdentity(hive1.getIdentity(),
-        entity.getDatabaseName(), entity.getTableName(),
-        entity.getColumnName());
+        entity.getDatabaseName().toUpperCase(),
+        entity.getTableName().toUpperCase(),
+        entity.getColumnName().toUpperCase());
     assertEquals(id, entity.generateId());
   }
 }
