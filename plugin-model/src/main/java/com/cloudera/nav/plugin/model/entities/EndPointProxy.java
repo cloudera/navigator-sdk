@@ -18,7 +18,6 @@ package com.cloudera.nav.plugin.model.entities;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
-import com.cloudera.nav.plugin.model.annotations.MProperty;
 
 /**
  * A proxy for an Entity to be used as a Relation end-point.
@@ -29,33 +28,10 @@ import com.cloudera.nav.plugin.model.annotations.MProperty;
 @MClass
 public class EndPointProxy extends Entity {
 
-  private SourceType sourceType;
-  private EntityType entityType;
-
   public EndPointProxy(String id, SourceType sourceType, EntityType type) {
     setIdentity(id);
     setSourceType(sourceType);
-    setType(type);
-  }
-
-  @Override
-  @MProperty(required=true)
-  public SourceType getSourceType() {
-    return sourceType;
-  }
-
-  @Override
-  @MProperty(required=true)
-  public EntityType getType() {
-    return entityType;
-  }
-
-  public void setSourceType(SourceType sourceType) {
-    this.sourceType = sourceType;
-  }
-
-  public void setType(EntityType entityType) {
-    this.entityType = entityType;
+    setEntityType(type);
   }
 
   /**

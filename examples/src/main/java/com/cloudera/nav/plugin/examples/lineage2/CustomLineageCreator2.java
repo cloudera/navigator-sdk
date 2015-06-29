@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.examples.stetson2;
+package com.cloudera.nav.plugin.examples.lineage2;
 
 import com.cloudera.nav.plugin.client.NavApiCient;
-import com.cloudera.nav.plugin.examples.stetson.CustomLineageCreator;
+import com.cloudera.nav.plugin.examples.lineage.CustomLineageCreator;
 import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
@@ -27,7 +27,7 @@ import org.joda.time.Instant;
 /**
  * In this example we show a more complex example of how to create custom entity
  * types and how to link them to hadoop entities. For a description of the base
- * example please see {@link com.cloudera.nav.plugin.examples.stetson.CustomLineageCreator}.
+ * example please see {@link com.cloudera.nav.plugin.examples.lineage.CustomLineageCreator}.
  *
  * As an extension of the previous example, we allow the user to specify custom
  * input and output datasets to a StetsonExecution. We define a new custom

@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.examples.stetson;
+package com.cloudera.nav.plugin.examples.lineage;
 
 import com.cloudera.nav.plugin.model.CustomIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
-import com.cloudera.nav.plugin.model.entities.CustomEntity;
 import com.cloudera.nav.plugin.model.entities.EndPointProxy;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
@@ -34,9 +33,11 @@ import org.apache.commons.lang.StringUtils;
  * Represents a template defined by a script in a hypothetical custom DSL
  */
 @MClass
-public class StetsonScript extends CustomEntity {
+public class StetsonScript extends Entity {
 
+  @MRelation(role = RelationRole.PHYSICAL)
   private EndPointProxy pigOperation;
+  @MProperty
   private String script;
 
   public StetsonScript(String namespace) {
@@ -44,16 +45,6 @@ public class StetsonScript extends CustomEntity {
     // exists when it is used by adding it as a c'tor parameter
     Preconditions.checkArgument(StringUtils.isNotEmpty(namespace));
     setNamespace(namespace);
-  }
-
-  /**
-   * The StetsonScript represents a template and is therefore always an
-   * OPERATION entity
-   */
-  @Override
-  @MProperty
-  public EntityType getType() {
-    return EntityType.OPERATION;
   }
 
   /**
@@ -65,10 +56,23 @@ public class StetsonScript extends CustomEntity {
         getPigOperation().getIdentity());
   }
 
+  @Override
+  public SourceType getSourceType() {
+    return SourceType.PLUGIN;
+  }
+
+  /**
+   * The StetsonScript represents a template and is therefore always an
+   * OPERATION entity
+   */
+  @Override
+  public EntityType getEntityType() {
+    return EntityType.OPERATION;
+  }
+
   /**
    * The script contents in the custom DSL
    */
-  @MProperty
   public String getScript() {
     return script;
   }
@@ -77,7 +81,6 @@ public class StetsonScript extends CustomEntity {
    * The StetsonScript is linked to a PIG operation via a Logical-Physical
    * relationship where the Pig operation is the PHYSICAL node
    */
-  @MRelation(role=RelationRole.PHYSICAL)
   public Entity getPigOperation() {
     return pigOperation;
   }

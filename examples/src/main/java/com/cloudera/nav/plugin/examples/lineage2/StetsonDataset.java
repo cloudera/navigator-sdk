@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.examples.stetson2;
+package com.cloudera.nav.plugin.examples.lineage2;
 
 import com.cloudera.nav.plugin.model.CustomIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
-import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
-import com.cloudera.nav.plugin.model.entities.CustomEntity;
 import com.cloudera.nav.plugin.model.entities.EndPointProxy;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
@@ -32,8 +30,9 @@ import com.cloudera.nav.plugin.model.relations.RelationRole;
  * HDFS directory
  */
 @MClass
-public class StetsonDataset extends CustomEntity {
+public class StetsonDataset extends Entity {
 
+  @MRelation(role= RelationRole.PHYSICAL)
   private Entity hdfsEntity;
 
   /**
@@ -48,12 +47,15 @@ public class StetsonDataset extends CustomEntity {
   }
 
   @Override
-  @MProperty
-  public EntityType getType() {
+  public SourceType getSourceType() {
+    return SourceType.PLUGIN;
+  }
+
+  @Override
+  public EntityType getEntityType() {
     return EntityType.DATASET;
   }
 
-  @MRelation(role= RelationRole.PHYSICAL)
   public Entity getHdfsEntity() {
     return hdfsEntity;
   }
