@@ -22,7 +22,7 @@ import com.cloudera.nav.plugin.model.entities.Entity;
 
 import java.util.Collection;
 
-@MClass
+@MClass(model="test")
 public class MetadataClass extends Entity {
 
   @MProperty(required = true)

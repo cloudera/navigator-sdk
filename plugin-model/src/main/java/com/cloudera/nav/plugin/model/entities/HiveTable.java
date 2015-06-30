@@ -24,7 +24,7 @@ import com.cloudera.nav.plugin.model.annotations.MProperty;
  * Represents a Hive table; uniquely identified by the source id, database name,
  * and table name
  */
-@MClass
+@MClass(model = "hv_table")
 public class HiveTable extends Entity {
 
   @MProperty
@@ -33,7 +33,6 @@ public class HiveTable extends Entity {
   public HiveTable() {
     setSourceType(SourceType.HIVE);
     setEntityType(EntityType.TABLE);
-    setNamespace(NAVIGATOR);
   }
 
   public HiveTable(String sourceId, String db, String table) {

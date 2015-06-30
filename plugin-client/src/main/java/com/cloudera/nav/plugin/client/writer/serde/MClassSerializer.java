@@ -25,11 +25,11 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
-public abstract class MClassSerializer<T> extends StdSerializer<T> {
+public class MClassSerializer<T> extends StdSerializer<T> {
 
   private final MClassRegistry registry;
 
-  protected MClassSerializer(Class<T> aClass, MClassRegistry registry) {
+  public MClassSerializer(Class<T> aClass, MClassRegistry registry) {
     super(aClass);
     this.registry = registry;
   }

@@ -32,7 +32,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * Represents a template defined by a script in a hypothetical custom DSL
  */
-@MClass
+@MClass(model = "stetson_op")
 public class StetsonScript extends Entity {
 
   @MRelation(role = RelationRole.PHYSICAL)

@@ -16,7 +16,6 @@
 package com.cloudera.nav.plugin.model.relations;
 
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.google.common.collect.ImmutableList;
 
@@ -27,7 +26,6 @@ import java.util.Collections;
  * many-to-many relation between sources and targets of data movement
  * (e.g., input data to MR operation and output data from MR operation)
  */
-@MClass
 public final class DataFlowRelation extends Relation {
 
   public static class Builder<T extends Builder<T>> extends Relation.Builder<T> {

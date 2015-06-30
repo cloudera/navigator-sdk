@@ -29,7 +29,7 @@ import com.cloudera.nav.plugin.model.relations.RelationRole;
 /**
  * Represents a specific execution of a StetsonScript
  */
-@MClass
+@MClass(model="cust_op_exec")
 public class CustomOperationExecution extends Entity {
 
   @MRelation(role = RelationRole.INSTANCE)

@@ -28,37 +28,43 @@ import java.util.Map;
  * a flat representation of entities and relations starting with
  * a particular Entity instance and following @MRelation annotations
  */
-class MetadataGraph {
+public class MClassWrapper {
 
   private final Map<String, Entity> entities;
   private final Map<String, Relation> relations;
 
-  MetadataGraph() {
+  public MClassWrapper() {
     this.entities = Maps.newHashMap();
     this.relations = Maps.newHashMap();
   }
 
-  Collection<Entity> getEntities() {
+  public Collection<Entity> getEntities() {
     return entities.values();
   }
 
-  boolean hasEntity(Entity en) {
+  public boolean hasEntity(Entity en) {
     return entities.containsKey(en.getIdentity());
   }
 
-  void addEntity(Entity en) {
+  public void addEntity(Entity en) {
     entities.put(en.getIdentity(), en);
   }
 
-  Collection<Relation> getRelations() {
+  public Collection<Relation> getRelations() {
     return relations.values();
   }
 
-  boolean hasRelation(Relation r) {
+  public boolean hasRelation(Relation r) {
     return relations.containsKey(r.getIdentity());
   }
 
-  void addRelation(Relation r) {
+  public void addRelation(Relation r) {
     relations.put(r.getIdentity(), r);
+  }
+
+  public void addRelations(Collection<Relation> relations) {
+    for (Relation r : relations) {
+      addRelation(r);
+    }
   }
 }

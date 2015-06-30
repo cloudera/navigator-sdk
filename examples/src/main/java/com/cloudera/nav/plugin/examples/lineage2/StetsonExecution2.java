@@ -38,7 +38,7 @@ import java.util.Collection;
  *    relationships between the StetsonDataset and the HDFS directory (as
  *    specified by StetsonDataset)
  */
-@MClass
+@MClass(model = "stetson_exec")
 public class StetsonExecution2 extends
     StetsonExecution {
 

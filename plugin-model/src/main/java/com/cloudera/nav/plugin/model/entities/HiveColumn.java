@@ -27,7 +27,7 @@ import com.cloudera.nav.plugin.model.annotations.MProperty;
  * table name, and column name. Note that the source type, entity type, and
  * namespace should not be modified.
  */
-@MClass
+@MClass(model="hv_column")
 public class HiveColumn extends Entity {
 
   @MProperty
@@ -38,7 +38,6 @@ public class HiveColumn extends Entity {
   public HiveColumn() {
     setSourceType(SourceType.HIVE);
     setEntityType(EntityType.FIELD);
-    setNamespace(NAVIGATOR);
   }
 
   public HiveColumn(String sourceId, String db, String table, String column) {

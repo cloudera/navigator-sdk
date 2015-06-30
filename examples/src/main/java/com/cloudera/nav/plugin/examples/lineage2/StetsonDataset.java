@@ -29,7 +29,7 @@ import com.cloudera.nav.plugin.model.relations.RelationRole;
  * This is a custom logical dataset that is physically backed by an
  * HDFS directory
  */
-@MClass
+@MClass(model = "stetson_dataset")
 public class StetsonDataset extends Entity {
 
   @MRelation(role= RelationRole.PHYSICAL)

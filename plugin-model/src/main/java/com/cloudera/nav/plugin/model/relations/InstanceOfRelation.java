@@ -16,7 +16,6 @@
 package com.cloudera.nav.plugin.model.relations;
 
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -27,7 +26,6 @@ import java.util.Collections;
 /**
  * Represents the relationship between an operation template and execution
  */
-@MClass
 public final class InstanceOfRelation extends Relation {
 
   public static class Builder<T extends Builder<T>> extends Relation.Builder<T> {
