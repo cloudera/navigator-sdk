@@ -20,7 +20,7 @@ import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.DatasetField;
 
-@MClass
+@MClass(model="fc_field")
 public class FireCircleField extends DatasetField {
 
   public FireCircleField() {

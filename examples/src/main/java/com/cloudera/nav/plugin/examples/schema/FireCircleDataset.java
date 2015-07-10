@@ -32,7 +32,7 @@ import com.google.common.base.Preconditions;
  * are represented as separate {@link com.cloudera.nav.plugin.examples.schema.FireCircleField}
  * entities.
  */
-@MClass
+@MClass(model="fc_dataset")
 public class FireCircleDataset extends Dataset {
 
   @MRelation(role = RelationRole.PHYSICAL)
