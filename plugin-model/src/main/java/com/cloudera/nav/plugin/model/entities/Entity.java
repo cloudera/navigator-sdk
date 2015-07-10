@@ -17,8 +17,7 @@ package com.cloudera.nav.plugin.model.entities;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Map;
@@ -60,9 +59,9 @@ public abstract class Entity {
   @MProperty
   private Long deletionTime;
   @MProperty
-  private Collection<String> tags;
+  private TagChangeSet tags;
   @MProperty
-  private Map<String, String> properties;
+  private UDPChangeSet properties;
   @MProperty
   private Instant created;
   @MProperty
@@ -220,26 +219,85 @@ public abstract class Entity {
   }
 
   /**
-   * @return a collection of string tags associated with this entity
+   * @return added and removed tags
    */
-  public Collection<String> getTags() {
+  public TagChangeSet getTags() {
+    if (tags == null) {
+      tags = new TagChangeSet();
+    }
     return tags;
   }
 
   /**
-   * Set the tags for this custom entity.
+   * Override tags for entity
+   * @param tags
+   */
+  public void setTags(String...tags) {
+    setTags(Sets.newHashSet(tags));
+  }
+
+  /**
+   * Override tags for entity
    * @param tags
    */
   public void setTags(Collection<String> tags) {
-    this.tags = ImmutableSet.copyOf(tags);
+    getTags().clear();
+    addAll(tags);
   }
 
-  public Map<String, String> getProperties() {
+  /**
+   * Append new tags for entity without removing existing tags
+   * @param tags
+   */
+  public void addTags(String...tags) {
+    addAll(Sets.newHashSet(tags));
+  }
+
+  /**
+   * Append new tags for entity without removing existing tags
+   * @param tags
+   */
+  public void addAll(Collection<String> tags) {
+    getTags().addTags(tags);
+  }
+
+  /**
+   * Remove existing tags
+   * @param tags
+   */
+  public void removeTags(String...tags) {
+    removeTags(Sets.newHashSet(tags));
+  }
+
+  /**
+   * Remove existing tags
+   * @param tags
+   */
+  public void removeTags(Collection<String> tags) {
+    getTags().removeAll(tags);
+  }
+
+  /**
+   * @return new and removed properties
+   */
+  public UDPChangeSet getProperties() {
+    if (properties == null) {
+      properties = new UDPChangeSet();
+    }
     return properties;
   }
 
   public void setProperties(Map<String, String> properties) {
-    this.properties = Maps.newHashMap(properties);
+    getProperties().clear();
+    addProperties(properties);
+  }
+
+  public void addProperties(Map<String, String> properties) {
+    getProperties().addAll(properties);
+  }
+
+  public void removeProperties(Collection<String> keys) {
+    getProperties().removeAll(keys);
   }
 
   public String getDescription() {

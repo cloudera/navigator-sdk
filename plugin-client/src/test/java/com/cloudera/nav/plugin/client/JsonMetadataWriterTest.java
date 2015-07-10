@@ -25,6 +25,8 @@ import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
+import com.cloudera.nav.plugin.model.entities.TagChangeSet;
+import com.cloudera.nav.plugin.model.entities.UDPChangeSet;
 import com.cloudera.nav.plugin.model.relations.DataFlowRelation;
 import com.cloudera.nav.plugin.model.relations.Relation;
 import com.cloudera.nav.plugin.model.relations.RelationIdGenerator;
@@ -32,6 +34,7 @@ import com.cloudera.nav.plugin.model.relations.RelationType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -69,6 +72,9 @@ public class JsonMetadataWriterTest {
     entity.setFileSystemPath("/user/test");
     entity.setEntityType(EntityType.DIRECTORY);
     entity.setTags(ImmutableList.of("foo", "bar"));
+    Map<String, String> props = Maps.newHashMap();
+    props.put("foo", "bar");
+    entity.setProperties(props);
 
     JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
         mockConn);
@@ -85,9 +91,20 @@ public class JsonMetadataWriterTest {
     assertEquals(values.get("sourceType"), SourceType.HDFS.name());
     assertEquals(values.get("type"), EntityType.DIRECTORY.name());
     assertEquals(values.get("deleted"), false);
-    assertTrue(CollectionUtils.isEqualCollection(
-        (Collection<String>) values.get("tags"),
-        ImmutableList.of("foo", "bar")));
+
+    Map<String, Object> tChanges = (Map<String, Object>)values.get("tags");
+    Collection<String> newTags = (Collection<String>)tChanges.get("newTags");
+    Collection<String> delTags = (Collection<String>)tChanges.get("delTags");
+    assertTrue(CollectionUtils.isEqualCollection(ImmutableList.of("foo", "bar"),
+        newTags));
+    assertEquals(TagChangeSet.WILDCARD, Iterables.getOnlyElement(delTags));
+
+    Map<String, Object> pDelta = (Map<String, Object>)values.get("properties");
+    Map<String, String> newP = (Map<String, String>)pDelta.get("newProperties");
+    Collection<String> dp = (Collection<String>)pDelta.get("removeProperties");
+    assertEquals(1, newP.size());
+    assertEquals("bar", newP.get("foo"));
+    assertEquals(UDPChangeSet.WILDCARD, Iterables.getOnlyElement(dp));
   }
 
   @SuppressWarnings("unchecked")
