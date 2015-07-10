@@ -15,17 +15,24 @@
  */
 package com.cloudera.nav.plugin.client.writer.registry;
 
-import com.google.common.base.Preconditions;
+import com.cloudera.nav.plugin.model.MClassUtil;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
+import java.beans.IntrospectionException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Map;
 
-public abstract class AbstractRegistryFactory<T> {
+/**
+ * Abstract factory for creating a new registry of MClass objects
+ * @param <T> the type of registry entries
+ */
+public abstract class RegistryEntryFactory<T> {
 
   private static final int MAX_CACHE_SIZE = 100;
 
@@ -39,28 +46,18 @@ public abstract class AbstractRegistryFactory<T> {
         });
   }
 
-  private Collection<T> parseMClass(Class<?> aClass) {
-    Collection<T> properties = Lists.newArrayList();
-    for (Method method : aClass.getMethods()) {
-      if (isValidMethod(method)) {
-        properties.add(createEntry(method));
-      }
+  private Collection<T> parseMClass(Class<?> aClass)
+      throws IntrospectionException {
+    Map<Field, Method> annInfo = MClassUtil.getAnnotatedProperties(aClass,
+        getTypeClass());
+    Collection<T> properties = Lists.newLinkedList();
+    for (Map.Entry<Field, Method> entry : annInfo.entrySet()) {
+      properties.add(createEntry(entry.getKey(), entry.getValue()));
     }
     return properties;
   }
 
-  private boolean isValidMethod(Method method) {
-    if (method.isAnnotationPresent(getTypeClass()) &&
-        !method.isBridge()) {
-      // TODO can we validate earlier?
-      Preconditions.checkArgument(method.getParameterTypes().length == 0,
-          "MProperty should only be used on getter methods");
-      return true;
-    }
-    return false;
-  }
-
   protected abstract Class<? extends Annotation> getTypeClass();
 
-  protected abstract T createEntry(Method method);
+  protected abstract T createEntry(Field field, Method getter);
 }

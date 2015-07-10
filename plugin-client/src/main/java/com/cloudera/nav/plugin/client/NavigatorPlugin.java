@@ -122,9 +122,7 @@ public class NavigatorPlugin {
   public void write(Collection<Entity> entities) {
     MetadataWriter writer = factory.newWriter(config);
     try {
-      writer.begin();
       writer.write(entities);
-      writer.end();
       writer.flush();
     } finally {
       writer.close();

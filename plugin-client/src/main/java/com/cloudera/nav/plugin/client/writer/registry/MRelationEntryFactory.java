@@ -18,10 +18,11 @@ package com.cloudera.nav.plugin.client.writer.registry;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-public class MRelationRegistryFactory extends
-    AbstractRegistryFactory<MRelationEntry> {
+public class MRelationEntryFactory extends
+    RegistryEntryFactory<MRelationEntry> {
 
   @Override
   protected Class<? extends Annotation> getTypeClass() {
@@ -29,8 +30,8 @@ public class MRelationRegistryFactory extends
   }
 
   @Override
-  protected MRelationEntry createEntry(Method method) {
-    return new MRelationEntry(method);
+  protected MRelationEntry createEntry(Field field, Method getter) {
+    return new MRelationEntry(field, getter);
   }
 
 }

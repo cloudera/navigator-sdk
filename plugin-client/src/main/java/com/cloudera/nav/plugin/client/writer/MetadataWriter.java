@@ -17,25 +17,17 @@ package com.cloudera.nav.plugin.client.writer;
 
 import com.cloudera.nav.plugin.client.PluginConfigurations;
 import com.cloudera.nav.plugin.client.writer.registry.MClassRegistry;
-import com.cloudera.nav.plugin.client.writer.registry.MPropertyEntry;
 import com.cloudera.nav.plugin.client.writer.registry.MRelationEntry;
-import com.cloudera.nav.plugin.model.MD5IdGenerator;
-import com.cloudera.nav.plugin.model.ValidationUtil;
-import com.cloudera.nav.plugin.model.annotations.MClass;
-import com.cloudera.nav.plugin.model.entities.CustomEntity;
 import com.cloudera.nav.plugin.model.entities.EndPointProxy;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.relations.Relation;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -50,27 +42,14 @@ public abstract class MetadataWriter {
   // attribute name for type of entity (declared in MCLASS)
   public static final String ETYPE = "__ETYPE__";
   protected final PluginConfigurations config;
-  protected final Writer writer;
-  private final MClassRegistry registry;
-  private final ValidationUtil validationUtil;
+  protected final OutputStream stream;
+  protected final MClassRegistry registry;
 
-  public MetadataWriter(PluginConfigurations config,
-                        Writer writer) {
+  public MetadataWriter(PluginConfigurations config, OutputStream stream) {
     this.config = config;
-    this.writer = writer;
+    this.stream = stream;
     registry = new MClassRegistry();
-    validationUtil = new ValidationUtil();
   }
-
-  /**
-   * Mark that writing metadata entities and relationships are about to start
-   */
-  public abstract void begin();
-
-  /**
-   * Mark the end of metadata writing
-   */
-  public abstract void end();
 
   /**
    * Write the given entity based on @MProperty annotations.
@@ -82,22 +61,32 @@ public abstract class MetadataWriter {
   }
 
   public void write(Collection<Entity> entities) {
-    Collection<Map<String, Object>> mObjects = Lists.newLinkedList();
+    MetadataGraph graph = new MetadataGraph();
     for (Entity entity : entities) {
-      mObjects.addAll(getAllMClasses(entity));
+      Preconditions.checkNotNull(entity);
+      getAllMClasses(entity, graph);
     }
-    persistMetadataValues(mObjects);
+    persistMetadataValues(graph);
   }
 
-  protected abstract void persistMetadataValues(
-      Collection<Map<String, Object>> values);
+  public void writeRelation(Relation relation) {
+    writeRelations(Collections.singleton(relation));
+  }
+
+  public void writeRelations(Collection<Relation> relations) {
+    persistMetadataValues(relations);
+  }
+
+  protected abstract void persistMetadataValues(MetadataGraph graph);
+
+  protected abstract void persistMetadataValues(Collection<Relation> relations);
 
   /**
    * Flush the data that has been written but still not yet persisted
    */
   public void flush() {
     try {
-      writer.flush();
+      stream.flush();
     } catch (IOException e) {
       Throwables.propagate(e);
     }
@@ -108,98 +97,38 @@ public abstract class MetadataWriter {
    */
   public void close() {
     try {
-      writer.close();
+      stream.close();
     } catch (IOException e) {
       Throwables.propagate(e);
     }
     registry.reset();
   }
 
-  /**
-   * Retrieve the MProperty attributes from the given entity and create
-   * appropriate MProperty attribute maps from MRelations and referred
-   * entities
-   *
-   * @param entity
-   * @return collection of converted MClass object attributes
-   */
-  protected Collection<Map<String, Object>> getAllMClasses(Entity entity) {
-    Preconditions.checkNotNull(entity);
-    Map<String, Map<String, Object>> idToValues = Maps.newHashMap();
-    getAllMClasses(entity, idToValues);
-    return idToValues.values();
-  }
-
-  private void getAllMClasses(Entity entity,
-                              Map<String, Map<String, Object>> idToValues) {
-    if (StringUtils.isEmpty(entity.getSourceId()) &&
-        (entity instanceof CustomEntity)) {
-      entity.setSourceId(MD5IdGenerator.generateIdentity(
-          config.getApplicationUrl()));
-    }
+  private void getAllMClasses(Entity entity, MetadataGraph graph) {
     if (StringUtils.isEmpty(entity.getIdentity())) {
       entity.setIdentity(entity.generateId());
     }
 
-    validationUtil.validateRequiredMProperties(entity);
-    if (!idToValues.containsKey(entity.getIdentity())) {
-      idToValues.put(entity.getIdentity(), getMClassAttributes(entity));
-      getMRelations(entity, idToValues);
+    registry.validateRequiredMProperties(entity);
+    if (!graph.hasEntity(entity)) {
+      graph.addEntity(entity);
+      getMRelations(entity, graph);
     }
   }
 
-  private void getMRelations(Entity entity,
-                             Map<String, Map<String, Object>> idToValues) {
+  private void getMRelations(Entity entity, MetadataGraph graph) {
     // get all MRelation entries
-    Collection<MRelationEntry> relationAttrs =
-        registry.getRelations(entity.getClass());
-    Relation rel;
-    Collection<? extends Entity> referred;
+    Collection<MRelationEntry> relationAttrs = registry.getRelations(
+        entity.getClass());
     for (MRelationEntry relEntry : relationAttrs) {
-      // getAllMClasses if there's a referred entity instead of a String id
-      if (relEntry.isConnectedToEntity()) {
-        referred = relEntry.getConnectedEntities(entity);
-        for(Entity other : referred) {
-          if (!(other instanceof EndPointProxy)) {
-            getAllMClasses(other, idToValues);
-          }
+      for(Entity other : relEntry.getConnectedEntities(entity)) {
+        if (!(other instanceof EndPointProxy)) {
+          getAllMClasses(other, graph);
         }
       }
-      rel = relEntry.buildRelation(entity, config.getNamespace());
-      // add Relation attributes
-      idToValues.put(rel.getIdentity(), getMClassAttributes(rel));
+      // add Relation after doing the getAllMClasses call so the connected
+      // entity id's have all been generated if necessary
+      graph.addRelation(relEntry.buildRelation(entity, config.getNamespace()));
     }
-  }
-
-  private Map<String, Object> getMClassAttributes(Entity entity) {
-    Map<String, Object> values = getAttributes(entity);
-    values.put(MTYPE, Entity.MTYPE);
-    values.put(ETYPE, entity.getClass().getCanonicalName());
-    return values;
-  }
-
-  private Map<String, Object> getMClassAttributes(Relation rel) {
-    Map<String, Object> values = getAttributes(rel);
-    values.put(MTYPE, Relation.MTYPE);
-    return values;
-  }
-
-  /**
-   * Return a Map of MProperty attributes to appropriate values from the given
-   * MClass annotated object
-   *
-   * @param mClassObj
-   * @return
-   */
-  private Map<String, Object> getAttributes(Object mClassObj) {
-    Preconditions.checkArgument(mClassObj.getClass()
-        .isAnnotationPresent(MClass.class));
-    Collection<MPropertyEntry> properties =
-        registry.getProperties(mClassObj.getClass());
-    Map<String, Object> valueMap = Maps.newHashMap();
-    for (MPropertyEntry prop : properties) {
-      valueMap.put(prop.getAttribute(), prop.getValue(mClassObj));
-    }
-    return valueMap;
   }
 }

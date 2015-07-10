@@ -19,14 +19,12 @@ import com.cloudera.nav.plugin.client.PluginConfigurations;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 
-import java.io.BufferedWriter;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -76,10 +74,8 @@ public class MetadataWriterFactory {
     } else {
       try {
         HttpURLConnection conn = createHttpStream(config);
-        Writer dataWriter = null;
-        dataWriter = new BufferedWriter(new OutputStreamWriter(
-            conn.getOutputStream()));
-        return new HttpJsonMetadataWriter(config, dataWriter, conn);
+        OutputStream stream = new BufferedOutputStream(conn.getOutputStream());
+        return new JsonMetadataWriter(config, stream, conn);
       } catch (IOException e) {
         throw Throwables.propagate(e);
       }
