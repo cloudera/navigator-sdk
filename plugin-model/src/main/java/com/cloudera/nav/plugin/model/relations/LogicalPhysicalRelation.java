@@ -16,7 +16,6 @@
 package com.cloudera.nav.plugin.model.relations;
 
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -28,7 +27,6 @@ import java.util.Collections;
  * 1-to-many relationship between a logical entity and its physical
  * manifestations (e.g., Hive table and HDFS directory/files)
  */
-@MClass
 public final class LogicalPhysicalRelation extends Relation {
 
   public static class Builder<T extends Builder<T>> extends Relation.Builder<T> {

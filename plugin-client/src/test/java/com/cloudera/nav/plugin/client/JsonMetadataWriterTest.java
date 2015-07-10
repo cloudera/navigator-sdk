@@ -20,10 +20,8 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import com.cloudera.nav.plugin.client.writer.JsonMetadataWriter;
-import com.cloudera.nav.plugin.client.writer.MetadataWriter;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
 import com.cloudera.nav.plugin.model.relations.DataFlowRelation;
@@ -38,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -75,9 +74,10 @@ public class JsonMetadataWriterTest {
 
     String value = new String(stream.toByteArray());
     ObjectMapper mapper = new ObjectMapper();
-    Map<String, Object> values = (Map<String, Object>)mapper.readValue(value,
-        Map[].class)[0];
+    Map<String, Object> values = ((List<Map<String, Object>>)mapper.readValue(value,
+        Map.class).get("entities")).get(0);
     assertEquals(values.get("identity"), entity.getIdentity());
+    assertEquals(values.get("internalType"), "fselement");
     assertEquals(values.get("fileSystemPath"), entity.getFileSystemPath());
     assertEquals(values.get("sourceId"), source.getIdentity());
     assertEquals(values.get("sourceType"), SourceType.HDFS.name());
@@ -106,6 +106,7 @@ public class JsonMetadataWriterTest {
         .source(inputData)
         .target(outputData)
         .namespace("test")
+        .userSpecified(true)
         .build();
 
     JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
@@ -114,9 +115,10 @@ public class JsonMetadataWriterTest {
 
     String value = new String(stream.toByteArray());
     ObjectMapper mapper = new ObjectMapper();
-    Map<String, Object> values = (Map<String, Object>)mapper.readValue(value,
-        Map[].class)[0];
+    Map<String, Object> values = ((List<Map<String, Object>>)mapper
+        .readValue(value, Map.class).get("relations")).get(0);
     assertEquals(values.get("identity"), rel.getIdentity());
+    assertEquals(values.get("namespace"), "test");
     assertEquals(values.get("type"), RelationType.DATA_FLOW.name());
     assertEquals(values.get("ep1SourceId"), source.getIdentity());
     assertEquals(values.get("ep2SourceId"), source.getIdentity());
@@ -124,6 +126,7 @@ public class JsonMetadataWriterTest {
     assertEquals(values.get("ep2SourceType"), SourceType.HDFS.name());
     assertEquals(values.get("ep1Type"), EntityType.DIRECTORY.name());
     assertEquals(values.get("ep2Type"), EntityType.DIRECTORY.name());
+    assertTrue(Boolean.valueOf(values.get("userSpecified").toString()));
     assertEquals(Iterables.getOnlyElement(
             (Collection<String>) values.get("ep1Ids")),
         inputData.getIdentity());
@@ -144,26 +147,14 @@ public class JsonMetadataWriterTest {
 
     ObjectMapper mapper = new ObjectMapper();
     String value = new String(stream.toByteArray());
-    Map<String, Object>[] values = mapper.readValue(value, Map[].class);
+    Map data = mapper.readValue(value, Map.class);
+    Collection<?> entities = (Collection<?>) data.get("entities");
+    Collection<?> relations = (Collection<?>) data.get("relations");
 
-    int relationCount = 0;
-    int entityCount = 0;
-    String mtype;
-    for (Map<String, Object> v : values) {
-      mtype = v.get(MetadataWriter.MTYPE).toString();
-      if (mtype.equals(Entity.MTYPE)) {
-        entityCount++;
-      } else if (mtype.equals(Relation.MTYPE)) {
-        relationCount++;
-      } else {
-        throw new AssertionError("Unrecognized metadata type " +
-            String.valueOf(mtype));
-      }
-    }
     // custom op and exec
-    assertEquals(entityCount, 2);
+    assertEquals(entities.size(), 2);
     // custom op -> pig op, custom exec -> pig exec, custom op -> exec
-    assertEquals(relationCount, 3);
+    assertEquals(relations.size(), 3);
   }
 
   private CustomOperationExecution prepExec(Source source) {

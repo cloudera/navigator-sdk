@@ -38,29 +38,19 @@ import org.apache.commons.lang.StringUtils;
  */
 public abstract class Relation {
 
-  public static final String NAVIGATOR = "nav";
-
   public static abstract class Builder<T extends Builder<T>> {
     private final RelationType type;
     private String namespace;
-    @MProperty(required=true)
     private String identity;
-    @MProperty(required=true)
     private Collection<String> ep1Ids;
-    @MProperty
     private EntityType ep1Type;
-    @MProperty(required=true)
     private SourceType ep1SourceType;
-    @MProperty
     private String ep1SourceId;
-    @MProperty(required=true)
     private Collection<String> ep2Ids;
-    @MProperty
     private EntityType ep2Type;
-    @MProperty(required=true)
     private SourceType ep2SourceType;
-    @MProperty
     private String ep2SourceId;
+    private boolean userSpecified;
     private RelationIdGenerator idGenerator;
 
     protected Builder(RelationType type) {
@@ -124,6 +114,11 @@ public abstract class Relation {
       return self();
     }
 
+    public T userSpecified(boolean userSpecified) {
+      this.userSpecified = userSpecified;
+      return self();
+    }
+
     /**
      * Must have same source and type
      * @param ep1Entities
@@ -175,8 +170,6 @@ public abstract class Relation {
     public abstract Relation build();
   }
 
-  public static final String MTYPE = "RELATION"; // type of metadata object
-
   private static RelationValidator validator = new RelationValidator();
 
   @MProperty(required=true)
@@ -193,14 +186,16 @@ public abstract class Relation {
   private Collection<String> ep2Ids;
   @MProperty(required=true)
   private SourceType ep2SourceType;
-  @MProperty
+  @MProperty(required=true)
   private EntityType ep1Type;
+  @MProperty(required=true)
+  private EntityType ep2Type;
   @MProperty
   private String ep1SourceId;
   @MProperty
-  private EntityType ep2Type;
-  @MProperty
   private String ep2SourceId;
+  @MProperty
+  private boolean userSpecified;
 
   protected Relation(Builder<?> builder) {
     Preconditions.checkState(builder.identity != null ||
@@ -222,6 +217,7 @@ public abstract class Relation {
     this.ep2Type = builder.ep2Type;
     this.ep2SourceType = builder.ep2SourceType;
     this.ep2SourceId = builder.ep2SourceId;
+    this.userSpecified = builder.userSpecified;
     validator.validateRequiredMProperties(this);
   }
 
@@ -282,5 +278,9 @@ public abstract class Relation {
 
   public String getEp2SourceId() {
     return ep2SourceId;
+  }
+
+  public boolean isUserSpecified() {
+    return userSpecified;
   }
 }

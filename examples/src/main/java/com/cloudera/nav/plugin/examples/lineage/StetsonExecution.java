@@ -34,7 +34,7 @@ import org.joda.time.Instant;
  * Represents a specific execution of a hypothetical custom application
  * represented by a StetsonScript
  */
-@MClass
+@MClass(model = "stetson_exec")
 public class StetsonExecution extends Entity {
 
   @MRelation(role = RelationRole.TEMPLATE)

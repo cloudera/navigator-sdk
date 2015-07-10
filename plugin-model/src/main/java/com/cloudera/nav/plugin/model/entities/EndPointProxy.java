@@ -25,7 +25,7 @@ import com.cloudera.nav.plugin.model.annotations.MClass;
  * The remainder of the information either already is on the server or
  * will be populated by the server
  */
-@MClass
+@MClass(model="proxy")
 public class EndPointProxy extends Entity {
 
   public EndPointProxy(String id, SourceType sourceType, EntityType type) {

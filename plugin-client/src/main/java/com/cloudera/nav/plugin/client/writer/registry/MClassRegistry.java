@@ -18,6 +18,7 @@ package com.cloudera.nav.plugin.client.writer.registry;
 
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.Entity;
+import com.cloudera.nav.plugin.model.relations.Relation;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.LoadingCache;
@@ -43,8 +44,14 @@ public class MClassRegistry {
     relationRegistry = (new MRelationEntryFactory()).newRegistry();
   }
 
+  /**
+   * Get the @MProperty annotation information from a given class
+   * @param aClass
+   * @return
+   */
   public Collection<MPropertyEntry> getProperties(Class<?> aClass) {
-    Preconditions.checkArgument(aClass.isAnnotationPresent(MClass.class));
+    Preconditions.checkArgument(Relation.class.isAssignableFrom(aClass) ||
+        aClass.isAnnotationPresent(MClass.class));
     try {
       return propertyRegistry.get(aClass);
     } catch (ExecutionException e) {
@@ -52,6 +59,11 @@ public class MClassRegistry {
     }
   }
 
+  /**
+   * Get the @MRelation annotation information from a given Entity subclass
+   * @param aClass
+   * @return
+   */
   public Collection<MRelationEntry> getRelations(
       Class<? extends Entity> aClass) {
     try {

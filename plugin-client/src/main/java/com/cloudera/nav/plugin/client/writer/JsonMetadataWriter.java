@@ -19,16 +19,13 @@ package com.cloudera.nav.plugin.client.writer;
 import com.cloudera.nav.plugin.client.PluginConfigurations;
 import com.cloudera.nav.plugin.client.writer.serde.EntitySerializer;
 import com.cloudera.nav.plugin.client.writer.serde.RelationSerializer;
-import com.cloudera.nav.plugin.model.relations.Relation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.util.Collection;
 
 import org.apache.commons.httpclient.HttpStatus;
 
@@ -47,22 +44,10 @@ public class JsonMetadataWriter extends MetadataWriter {
   }
 
   @Override
-  protected void persistMetadataValues(MetadataGraph graph) {
+  protected void persistMetadataValues(MClassWrapper mclassWrapper) {
     try {
       ObjectMapper mapper = newMapper();
-      Collection<Object> all = Lists.<Object>newLinkedList(graph.getEntities());
-      all.addAll(graph.getRelations());
-      mapper.writeValue(stream, all);
-    } catch (IOException e) {
-      Throwables.propagate(e);
-    }
-  }
-
-  @Override
-  protected void persistMetadataValues(Collection<Relation> relations) {
-    try {
-      ObjectMapper mapper = newMapper();
-      mapper.writeValue(stream, relations);
+      mapper.writeValue(stream, mclassWrapper);
     } catch (IOException e) {
       Throwables.propagate(e);
     }

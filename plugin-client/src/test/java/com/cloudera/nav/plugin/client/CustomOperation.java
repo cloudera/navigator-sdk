@@ -29,7 +29,7 @@ import com.cloudera.nav.plugin.model.relations.RelationRole;
 /**
  * Represents a template defined by a script in a custom DSL
  */
-@MClass
+@MClass(model="cust_op")
 public class CustomOperation extends Entity {
 
   @MRelation(role = RelationRole.PHYSICAL)

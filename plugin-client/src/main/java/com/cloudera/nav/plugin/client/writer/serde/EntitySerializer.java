@@ -16,8 +16,8 @@
 
 package com.cloudera.nav.plugin.client.writer.serde;
 
-import com.cloudera.nav.plugin.client.writer.MetadataWriter;
 import com.cloudera.nav.plugin.client.writer.registry.MClassRegistry;
+import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -30,11 +30,9 @@ public class EntitySerializer extends MClassSerializer<Entity> {
   }
 
   @Override
-  protected void writeProperties(Entity entity, JsonGenerator jg)
-      throws IOException {
-    jg.writeStringField(MetadataWriter.MTYPE, Entity.MTYPE);
-    jg.writeStringField(MetadataWriter.ETYPE, entity.getClass()
-        .getCanonicalName());
-    super.writeProperties(entity, jg);
+  protected void writeProperties(Entity t, JsonGenerator jg) throws IOException {
+    super.writeProperties(t, jg);
+    String modelName = t.getClass().getAnnotation(MClass.class).model();
+    jg.writeStringField("internalType", modelName);
   }
 }

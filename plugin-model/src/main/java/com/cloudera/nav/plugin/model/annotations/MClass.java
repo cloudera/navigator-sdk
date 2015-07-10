@@ -29,6 +29,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface MClass {
 
+  /** internal model name **/
+  String model();
+
   /** Valid EntityTypes that can be represented by this MClass. **/
   EntityType[] validTypes() default {};
 }

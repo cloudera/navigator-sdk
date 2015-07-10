@@ -24,7 +24,7 @@ import com.cloudera.nav.plugin.model.annotations.MProperty;
  * A concrete entity that represents HDFS directories or files. Note that the
  * source type and namespace should not be modified.
  */
-@MClass(validTypes = {EntityType.DIRECTORY, EntityType.FILE})
+@MClass(model="fselement", validTypes = {EntityType.DIRECTORY, EntityType.FILE})
 public class HdfsEntity extends Entity {
 
   @MProperty
@@ -32,7 +32,6 @@ public class HdfsEntity extends Entity {
 
   public HdfsEntity() {
     setSourceType(SourceType.HDFS);
-    setNamespace(NAVIGATOR);
   }
 
   public HdfsEntity(String sourceId, String fileSystemPath, EntityType type) {

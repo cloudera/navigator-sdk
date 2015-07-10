@@ -16,23 +16,11 @@
 
 package com.cloudera.nav.plugin.client.writer.serde;
 
-import com.cloudera.nav.plugin.client.writer.MetadataWriter;
 import com.cloudera.nav.plugin.client.writer.registry.MClassRegistry;
 import com.cloudera.nav.plugin.model.relations.Relation;
-import com.fasterxml.jackson.core.JsonGenerator;
-
-import java.io.IOException;
 
 public class RelationSerializer extends MClassSerializer<Relation> {
-
   public RelationSerializer(MClassRegistry registry) {
     super(Relation.class, registry);
-  }
-
-  @Override
-  protected void writeProperties(Relation relation, JsonGenerator jg)
-      throws IOException {
-    jg.writeStringField(MetadataWriter.MTYPE, Relation.MTYPE);
-    super.writeProperties(relation, jg);
   }
 }

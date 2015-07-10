@@ -37,9 +37,7 @@ import org.joda.time.Instant;
  */
 public abstract class Entity {
 
-  public static final String MTYPE = "ENTITY"; // type of metadata object
   public static final CharSequence ID_SEPARATOR = "##";
-  public static final String NAVIGATOR = "nav";
 
   // required properties
   @MProperty(required=true)
@@ -48,9 +46,9 @@ public abstract class Entity {
   private SourceType sourceType;
   @MProperty(required=true, attribute = "type")
   private EntityType entityType;
-  @MProperty(required = true)
-  private String namespace;
 
+  @MProperty
+  private String namespace;
   @MProperty
   private String sourceId;
   @MProperty(attribute = "originalName")

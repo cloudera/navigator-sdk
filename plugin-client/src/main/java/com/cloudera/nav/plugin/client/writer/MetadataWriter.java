@@ -37,10 +37,6 @@ import org.apache.commons.lang.StringUtils;
  */
 public abstract class MetadataWriter {
 
-  // attribute name for type of metadata object (ENTITY or RELATION)
-  public static final String MTYPE = "__MTYPE__";
-  // attribute name for type of entity (declared in MCLASS)
-  public static final String ETYPE = "__ETYPE__";
   protected final PluginConfigurations config;
   protected final OutputStream stream;
   protected final MClassRegistry registry;
@@ -61,12 +57,12 @@ public abstract class MetadataWriter {
   }
 
   public void write(Collection<Entity> entities) {
-    MetadataGraph graph = new MetadataGraph();
+    MClassWrapper mclassWrapper = new MClassWrapper();
     for (Entity entity : entities) {
       Preconditions.checkNotNull(entity);
-      getAllMClasses(entity, graph);
+      getAllMClasses(entity, mclassWrapper);
     }
-    persistMetadataValues(graph);
+    persistMetadataValues(mclassWrapper);
   }
 
   public void writeRelation(Relation relation) {
@@ -74,12 +70,12 @@ public abstract class MetadataWriter {
   }
 
   public void writeRelations(Collection<Relation> relations) {
-    persistMetadataValues(relations);
+    MClassWrapper mClassWrapper = new MClassWrapper();
+    mClassWrapper.addRelations(relations);
+    persistMetadataValues(mClassWrapper);
   }
 
-  protected abstract void persistMetadataValues(MetadataGraph graph);
-
-  protected abstract void persistMetadataValues(Collection<Relation> relations);
+  protected abstract void persistMetadataValues(MClassWrapper graph);
 
   /**
    * Flush the data that has been written but still not yet persisted
@@ -104,7 +100,7 @@ public abstract class MetadataWriter {
     registry.reset();
   }
 
-  private void getAllMClasses(Entity entity, MetadataGraph graph) {
+  private void getAllMClasses(Entity entity, MClassWrapper graph) {
     if (StringUtils.isEmpty(entity.getIdentity())) {
       entity.setIdentity(entity.generateId());
     }
@@ -116,7 +112,7 @@ public abstract class MetadataWriter {
     }
   }
 
-  private void getMRelations(Entity entity, MetadataGraph graph) {
+  private void getMRelations(Entity entity, MClassWrapper graph) {
     // get all MRelation entries
     Collection<MRelationEntry> relationAttrs = registry.getRelations(
         entity.getClass());
