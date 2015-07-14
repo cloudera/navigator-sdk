@@ -17,7 +17,6 @@ package com.cloudera.nav.plugin.model.relations;
 
 
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.ValidationUtil;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
@@ -28,6 +27,7 @@ import com.google.common.collect.Lists;
 import java.util.Collection;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * An abstract base class for representing relationships between custom entities
@@ -50,6 +50,7 @@ public abstract class Relation {
     private EntityType ep2Type;
     private SourceType ep2SourceType;
     private String ep2SourceId;
+    private boolean userSpecified;
     private RelationIdGenerator idGenerator;
 
     protected Builder(RelationType type) {
@@ -113,6 +114,11 @@ public abstract class Relation {
       return self();
     }
 
+    public T userSpecified(boolean userSpecified) {
+      this.userSpecified = userSpecified;
+      return self();
+    }
+
     /**
      * Must have same source and type
      * @param ep1Entities
@@ -123,7 +129,7 @@ public abstract class Relation {
       Entity proto = Iterables.getFirst(ep1Entities, null);
       Preconditions.checkNotNull(proto);
       return ep1Ids(ids).ep1SourceType(proto.getSourceType())
-          .ep1Type(proto.getType())
+          .ep1Type(proto.getEntityType())
           .ep1SourceId(proto.getSourceId());
     }
 
@@ -137,7 +143,7 @@ public abstract class Relation {
       Entity proto = Iterables.getFirst(ep2Entities, null);
       Preconditions.checkNotNull(proto);
       return ep2Ids(ids).ep2SourceType(proto.getSourceType())
-          .ep2Type(proto.getType())
+          .ep2Type(proto.getEntityType())
           .ep2SourceId(proto.getSourceId());
     }
 
@@ -153,9 +159,9 @@ public abstract class Relation {
           proto = en;
         } else {
           Preconditions.checkArgument(
-              proto.getSourceId().equals(en.getSourceId()) &&
-                  proto.getSourceType().equals(en.getSourceType()) &&
-                  proto.getType() == en.getType());
+              StringUtils.equals(proto.getSourceId(), en.getSourceId()) &&
+                  proto.getSourceType() == en.getSourceType() &&
+                  proto.getEntityType() == en.getEntityType());
         }
       }
       return ids;
@@ -164,19 +170,32 @@ public abstract class Relation {
     public abstract Relation build();
   }
 
-  public static final String MTYPE = "RELATION"; // type of metadata object
+  private static RelationValidator validator = new RelationValidator();
 
+  @MProperty(required=true)
   private String namespace;
+  @MProperty(required=true)
   private String identity;
-  private Collection<String> ep1Ids;
-  private EntityType ep1Type;
-  private String ep1SourceId;
-  private SourceType ep1SourceType;
-  private Collection<String> ep2Ids;
-  private EntityType ep2Type;
-  private SourceType ep2SourceType;
-  private String ep2SourceId;
+  @MProperty(required=true)
   private RelationType type;
+  @MProperty(required=true)
+  private Collection<String> ep1Ids;
+  @MProperty(required=true)
+  private SourceType ep1SourceType;
+  @MProperty(required=true)
+  private Collection<String> ep2Ids;
+  @MProperty(required=true)
+  private SourceType ep2SourceType;
+  @MProperty(required=true)
+  private EntityType ep1Type;
+  @MProperty(required=true)
+  private EntityType ep2Type;
+  @MProperty
+  private String ep1SourceId;
+  @MProperty
+  private String ep2SourceId;
+  @MProperty
+  private boolean userSpecified;
 
   protected Relation(Builder<?> builder) {
     Preconditions.checkState(builder.identity != null ||
@@ -198,14 +217,13 @@ public abstract class Relation {
     this.ep2Type = builder.ep2Type;
     this.ep2SourceType = builder.ep2SourceType;
     this.ep2SourceId = builder.ep2SourceId;
-    ValidationUtil validationUtil = new ValidationUtil();
-    validationUtil.validateRequiredMProperties(this);
+    this.userSpecified = builder.userSpecified;
+    validator.validateRequiredMProperties(this);
   }
 
   /**
    * @return Navigator assigned namespace for the custom relation
    */
-  @MProperty(required=true)
   public String getNamespace() {
     return namespace;
   }
@@ -213,7 +231,6 @@ public abstract class Relation {
   /**
    * @return id for this custom relation
    */
-  @MProperty(required=true)
   public String getIdentity() {
     return identity;
   }
@@ -221,7 +238,6 @@ public abstract class Relation {
   /**
    * @return the type of this relation
    */
-  @MProperty(required=true)
   public RelationType getType() {
     return type;
   }
@@ -229,12 +245,10 @@ public abstract class Relation {
   /**
    * @return id's for endpoint1 of this relation
    */
-  @MProperty(required=true)
   public Collection<String> getEp1Ids() {
     return ep1Ids;
   }
 
-  @MProperty
   public EntityType getEp1Type() {
     return ep1Type;
   }
@@ -242,33 +256,31 @@ public abstract class Relation {
   /**
    * @return id's for endpoint2 of this relation
    */
-  @MProperty(required=true)
   public Collection<String> getEp2Ids() {
     return ep2Ids;
   }
 
-  @MProperty
   public EntityType getEp2Type() {
     return ep2Type;
   }
 
-  @MProperty(required=true)
   public SourceType getEp1SourceType() {
     return ep1SourceType;
   }
 
-  @MProperty
   public String getEp1SourceId() {
     return ep1SourceId;
   }
 
-  @MProperty(required=true)
   public SourceType getEp2SourceType() {
     return ep2SourceType;
   }
 
-  @MProperty
   public String getEp2SourceId() {
     return ep2SourceId;
+  }
+
+  public boolean isUserSpecified() {
+    return userSpecified;
   }
 }

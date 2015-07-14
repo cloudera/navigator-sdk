@@ -15,22 +15,31 @@
  */
 package com.cloudera.nav.plugin.client.writer.registry;
 
+import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.google.common.base.Throwables;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
- * Registry entry for MProperty used by the MClassRegistry
+ * Registry entry for a particular instance of the @MProperty annotation
  */
 public class MPropertyEntry {
 
   private final String attribute;
-  private final Method method;
+  private final Field field;
+  private final Method getter;
+  private final MProperty ann;
 
-  public MPropertyEntry(String attribute, Method method) {
-    this.attribute = attribute;
-    this.method = method;
+  public MPropertyEntry(Field field, Method getter) {
+    ann = field.getAnnotation(MProperty.class);
+    String attr = ann.attribute();
+    this.attribute = StringUtils.isEmpty(attr) ? field.getName() : attr;
+    this.field = field;
+    this.getter = getter;
   }
 
   /**
@@ -41,10 +50,24 @@ public class MPropertyEntry {
   }
 
   /**
+   * @return the Field that is associated with the @MProperty annotation
+   */
+  public Field getField() {
+    return field;
+  }
+
+  /**
    * @return Getter method that takes no parameters and return the value
    */
-  public Method getMethod() {
-    return method;
+  public Method getReadMethod() {
+    return getter;
+  }
+
+  /**
+   * @return the @MProperty annotation associated with this field
+   */
+  public MProperty getAnnotation() {
+    return ann;
   }
 
   /**
@@ -55,11 +78,18 @@ public class MPropertyEntry {
    */
   public Object getValue(Object mClassObj) {
     try {
-      return method.invoke(mClassObj);
+      return getter.invoke(mClassObj);
     } catch (IllegalAccessException e) {
       throw Throwables.propagate(e);
     } catch (InvocationTargetException e) {
       throw Throwables.propagate(e);
     }
+  }
+
+  /**
+   * @return whether this is a required property
+   */
+  public boolean required() {
+    return ann.required();
   }
 }

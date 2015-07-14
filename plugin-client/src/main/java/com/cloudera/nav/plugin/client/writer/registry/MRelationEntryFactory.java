@@ -13,11 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.model;
+package com.cloudera.nav.plugin.client.writer.registry;
 
-/**
- * Constant string names for default Source types
- */
-public enum SourceType {
-  NONE, MAPREDUCE, YARN, HDFS, HIVE, PIG, IMPALA, OOZIE, PLUGIN, SPARK
+import com.cloudera.nav.plugin.model.annotations.MRelation;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+public class MRelationEntryFactory extends
+    RegistryEntryFactory<MRelationEntry> {
+
+  @Override
+  protected Class<? extends Annotation> getTypeClass() {
+    return MRelation.class;
+  }
+
+  @Override
+  protected MRelationEntry createEntry(Field field, Method getter) {
+    return new MRelationEntry(field, getter);
+  }
+
 }

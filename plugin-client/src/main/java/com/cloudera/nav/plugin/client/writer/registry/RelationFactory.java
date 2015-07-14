@@ -15,7 +15,6 @@
  */
 package com.cloudera.nav.plugin.client.writer.registry;
 
-import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.relations.DataFlowRelation;
 import com.cloudera.nav.plugin.model.relations.InstanceOfRelation;
@@ -26,6 +25,7 @@ import com.cloudera.nav.plugin.model.relations.RelationIdGenerator;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 import com.cloudera.nav.plugin.model.relations.RelationType;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 
 import java.util.Collection;
 
@@ -35,22 +35,18 @@ import java.util.Collection;
 public class RelationFactory {
 
   public Relation createRelation(RelationType type, Entity entity,
-                                 Object other, RelationRole roleOfOther,
-                                 SourceType sourceTypeOfOther,
-                                 String namespace) {
+                                 Collection<? extends Entity> other,
+                                 RelationRole roleOfOther, String namespace) {
     switch(type) {
       case DATA_FLOW:
-        return createDataFlowRelation(roleOfOther, sourceTypeOfOther, entity,
-            other, namespace);
+        return createDataFlowRelation(roleOfOther, entity, other, namespace);
       case PARENT_CHILD:
-        return createParentChildRelation(roleOfOther, sourceTypeOfOther,
-            entity, other, namespace);
+        return createParentChildRelation(roleOfOther, entity, other, namespace);
       case LOGICAL_PHYSICAL:
-        return createLogicalPhysicalRelation(roleOfOther, sourceTypeOfOther,
-            entity, other, namespace);
+        return createLogicalPhysicalRelation(roleOfOther, entity, other,
+            namespace);
       case INSTANCE_OF:
-        return createInstanceOfRelation(roleOfOther, sourceTypeOfOther,
-            entity, other, namespace);
+        return createInstanceOfRelation(roleOfOther, entity, other, namespace);
       default:
         throw new IllegalArgumentException("Invalid RelationType " +
             type.toString());
@@ -58,49 +54,15 @@ public class RelationFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private Relation createDataFlowRelation(RelationRole roleOfOther,
-                                          SourceType sourceTypeOfOther,
-                                          Entity entity, Object other,
+  private Relation createDataFlowRelation(RelationRole roleOfOther, 
+                                          Entity entity,
+                                          Collection<? extends Entity> other,
                                           String namespace) {
     DataFlowRelation.Builder builder = DataFlowRelation.builder();
     if (roleOfOther == RelationRole.SOURCE) {
-      builder.target(entity);
-      if (other instanceof Entity) {
-        builder.source((Entity)other);
-      } else if (other instanceof String) {
-        builder.sourceId((String)other)
-        .sourceTypeOfSource(sourceTypeOfOther);
-      } else if (other instanceof Collection) {
-        Preconditions.checkArgument(((Collection)other).size() > 0);
-        Object firstOther = ((Collection) other).iterator().next();
-        if (firstOther instanceof Entity) {
-          builder.sources((Collection<Entity>) other);
-        } else if (firstOther instanceof String) {
-          builder.sourceIds((Collection<String>) other)
-          .sourceTypeOfSource(sourceTypeOfOther);
-        } else {
-          throw new IllegalArgumentException("Invalid type for sources");
-        }
-      }
+      builder.target(entity).sources(other);
     } else {
-      builder.source(entity);
-      if (Entity.class.isAssignableFrom(other.getClass())) {
-        builder.target((Entity)other);
-      } else if (other instanceof String) {
-        builder.targetId((String)other)
-        .sourceTypeOfTarget(sourceTypeOfOther);
-      } else if (other instanceof Collection) {
-        Preconditions.checkArgument(((Collection)other).size() > 0);
-        Object firstOther = ((Collection) other).iterator().next();
-        if (firstOther instanceof Entity) {
-          builder.targets((Collection<Entity>) other);
-        } else if (firstOther instanceof String) {
-          builder.targetIds((Collection<String>) other)
-          .sourceTypeOfTarget(sourceTypeOfOther);
-        }
-      } else {
-        throw new IllegalArgumentException("Invalid type for targets");
-      }
+      builder.source(entity).targets(other);
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();
@@ -108,39 +70,16 @@ public class RelationFactory {
 
   @SuppressWarnings("unchecked")
   private Relation createParentChildRelation(RelationRole roleOfOther,
-                                             SourceType sourceTypeOfOther,
-                                             Entity entity, Object other,
+                                             Entity entity,
+                                             Collection<? extends Entity> other,
                                              String namespace) {
     ParentChildRelation.Builder builder = ParentChildRelation.builder();
     if (roleOfOther == RelationRole.PARENT) {
-      builder.child(entity);
-      if (other instanceof Entity) {
-        builder.parent((Entity) other);
-      } else if (other instanceof String) {
-        builder.parentId((String) other)
-        .sourceTypeOfParent(sourceTypeOfOther);
-      } else {
-        throw new IllegalArgumentException("Only one parent allowed");
-      }
+      Preconditions.checkArgument(other.size() == 1,
+          "Only 1 parent is allowed in a parent-child relationship");
+      builder.child(entity).parent(Iterables.getOnlyElement(other));
     } else {
-      builder.parent(entity);
-      if (other instanceof Entity) {
-        builder.child((Entity) other);
-      } else if (other instanceof String) {
-        builder.childId((String) other)
-        .sourceTypeOfChildren(sourceTypeOfOther);
-      } else if (other instanceof Collection) {
-        Preconditions.checkArgument(((Collection)other).size() > 0);
-        Object firstOther = ((Collection) other).iterator().next();
-        if (firstOther instanceof Entity) {
-          builder.children((Collection<Entity>) other);
-        } else if (firstOther instanceof String) {
-          builder.childrenIds((Collection<String>) other)
-          .sourceTypeOfChildren(sourceTypeOfOther);
-        }
-      } else {
-        throw new IllegalArgumentException("Invalid type for children");
-      }
+      builder.parent(entity).children(other);
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();
@@ -148,70 +87,32 @@ public class RelationFactory {
 
   @SuppressWarnings("unchecked")
   private Relation createInstanceOfRelation(RelationRole roleOfOther,
-                                            SourceType sourceTypeOfOther,
-                                            Entity entity, Object other,
+                                            Entity entity,
+                                            Collection<? extends Entity> other,
                                             String namespace) {
+    Preconditions.checkArgument(other.size() == 1,
+        "Only one instance and template are allowed");
     InstanceOfRelation.Builder builder = InstanceOfRelation.builder();
     if (roleOfOther == RelationRole.TEMPLATE) {
-      builder.instance(entity);
-      if (other instanceof Entity) {
-        builder.template((Entity) other);
-      } else if (other instanceof String) {
-        builder.templateId((String) other)
-        .sourceTypeOfTemplate(sourceTypeOfOther);
-      } else {
-        throw new IllegalArgumentException("Only one template allowed");
-      }
+      builder.instance(entity).template(Iterables.getOnlyElement(other));
     } else {
-      builder.template(entity);
-      if (other instanceof Entity) {
-        builder.instance((Entity) other);
-      } else if (other instanceof String) {
-        builder.instanceId((String) other)
-        .sourceTypeOfInstance(sourceTypeOfOther);
-      } else {
-        throw new IllegalArgumentException("Only one instance allowed");
-      }
+      builder.template(entity).instance(Iterables.getOnlyElement(other));
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();
   }
 
   @SuppressWarnings("unchecked")
-  private Relation createLogicalPhysicalRelation(RelationRole roleOfOther,
-                                                 SourceType sourceTypeOfOther,
-                                                 Entity entity, Object other,
-                                                 String namespace) {
+  private Relation createLogicalPhysicalRelation(
+      RelationRole roleOfOther, Entity entity,
+      Collection<? extends Entity> other, String namespace) {
     LogicalPhysicalRelation.Builder builder = LogicalPhysicalRelation.builder();
     if (roleOfOther == RelationRole.LOGICAL) {
-      builder.physical(entity);
-      if (other instanceof Entity) {
-        builder.logical((Entity) other);
-      } else if (other instanceof String) {
-        builder.logicalId((String) other)
-        .sourceTypeOfLogical(sourceTypeOfOther);
-      } else {
-        throw new IllegalArgumentException("Only one logical allowed");
-      }
+      Preconditions.checkArgument(other.size() == 1,
+          "Only 1 logical allowed in each logical-physical relationship");
+      builder.physical(entity).logical(Iterables.getOnlyElement(other));
     } else {
-      builder.logical(entity);
-      if (other instanceof Entity) {
-        builder.physical((Entity) other);
-      } else if (other instanceof String) {
-        builder.physicalId((String) other)
-        .sourceTypeOfPhysical(sourceTypeOfOther);
-      } else if (other instanceof Collection) {
-        Preconditions.checkArgument(((Collection)other).size() > 0);
-        Object firstOther = ((Collection) other).iterator().next();
-        if (firstOther instanceof Entity) {
-          builder.physical((Collection<Entity>) other);
-        } else if (firstOther instanceof String) {
-          builder.physicalIds((Collection<String>) other)
-          .sourceTypeOfPhysical(sourceTypeOfOther);
-        }
-      } else {
-        throw new IllegalArgumentException("Invalid type for physical");
-      }
+      builder.logical(entity).physical(other);
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();

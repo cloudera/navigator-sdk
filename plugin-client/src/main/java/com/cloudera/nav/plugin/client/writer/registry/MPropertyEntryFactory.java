@@ -13,34 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.model.entities;
+package com.cloudera.nav.plugin.client.writer.registry;
 
-import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
-/**
- * Abstract base classes for creating custom entities defined by non-Hadoop
- * applications
- */
-public abstract class CustomEntity extends Entity {
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
-  private String namespace;
+public class MPropertyEntryFactory extends
+    RegistryEntryFactory<MPropertyEntry> {
 
-  /**
-   * @return Navigator assigned namespace for the custom entity
-   */
-  @MProperty(required=true)
-  public String getNamespace() {
-    return namespace;
+  @Override
+  protected MPropertyEntry createEntry(Field field, Method getter) {
+    return new MPropertyEntry(field, getter);
   }
 
   @Override
-  @MProperty(required=true)
-  public SourceType getSourceType() {
-    return SourceType.PLUGIN;
-  }
-
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
+  protected Class<? extends Annotation> getTypeClass() {
+    return MProperty.class;
   }
 }

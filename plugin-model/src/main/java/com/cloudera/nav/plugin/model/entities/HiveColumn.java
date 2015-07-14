@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2015 Cloudera, Inc.
  *
@@ -21,18 +22,37 @@ import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
-@MClass
+/**
+ * Represents a Hive column; uniquely identified by the source id, database name,
+ * table name, and column name. Note that the source type, entity type, and
+ * namespace should not be modified.
+ */
+@MClass(model="hv_column")
 public class HiveColumn extends Entity {
 
+  @MProperty
   private String databaseName;
+  @MProperty
   private String tableName;
-  private String columnName;
 
+  public HiveColumn() {
+    setSourceType(SourceType.HIVE);
+    setEntityType(EntityType.FIELD);
+  }
+
+  public HiveColumn(String sourceId, String db, String table, String column) {
+    this();
+    setSourceId(sourceId);
+    setDatabaseName(db);
+    setTableName(table);
+    setColumnName(column);
+    setIdentity(generateId());
+  }
   /**
    * A Hive column is identified by the source id, database name, table name,
    * and column name
    *
-   * @return
+   * @return the entity id for this Hive column
    */
   @Override
   public String generateId() {
@@ -40,51 +60,35 @@ public class HiveColumn extends Entity {
         getTableName(), getColumnName());
   }
 
-  @MProperty(required = true)
-  public String getColumnName() {
-    return columnName;
-  }
-
-  public void setColumnName(String columnName) {
-    this.columnName = columnName;
-  }
-
-  @Override
-  public SourceType getSourceType() {
-    return SourceType.HIVE;
-  }
-
-  @Override
-  @MProperty(attribute = "originalName")
-  public String getName() {
-    return getColumnName();
-  }
-
-  @Override
-  public EntityType getType() {
-    return null;
-  }
-
-  @MProperty(required = true)
-  public String getTableName() {
-    return tableName;
-  }
-
-  @MProperty(required = true)
   public String getDatabaseName() {
     return databaseName;
-  }
-
-  @Override
-  public void setName(String name) {
-    setColumnName(name);
   }
 
   public void setDatabaseName(String databaseName) {
     this.databaseName = databaseName;
   }
 
+  public String getTableName() {
+    return tableName;
+  }
+
   public void setTableName(String tableName) {
     this.tableName = tableName;
   }
+
+  /**
+   * @return the column name. Aliases {@link com.cloudera.nav.plugin.model.entities.HiveColumn#getName}
+   */
+  public String getColumnName() {
+    return getName();
+  }
+
+  /**
+   * Changes the column name. Aliases {@link com.cloudera.nav.plugin.model.entities.HiveColumn#setName}
+   * @param columnName
+   */
+  public void setColumnName(String columnName) {
+    setName(columnName);
+  }
+
 }

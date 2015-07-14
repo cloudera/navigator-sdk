@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.model;
 
-/**
- * Constant string names for default Source types
- */
-public enum SourceType {
-  NONE, MAPREDUCE, YARN, HDFS, HIVE, PIG, IMPALA, OOZIE, PLUGIN, SPARK
+package com.cloudera.nav.plugin.client.writer.serde;
+
+import com.cloudera.nav.plugin.client.writer.registry.MClassRegistry;
+import com.cloudera.nav.plugin.model.relations.Relation;
+
+public class RelationSerializer extends MClassSerializer<Relation> {
+  public RelationSerializer(MClassRegistry registry) {
+    super(Relation.class, registry);
+  }
 }

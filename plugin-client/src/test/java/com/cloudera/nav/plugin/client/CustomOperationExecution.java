@@ -21,35 +21,38 @@ import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
-import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
+import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 
 /**
  * Represents a specific execution of a StetsonScript
  */
-@MClass
-public class CustomOperationExecution extends CustomEntity {
+@MClass(model="cust_op_exec")
+public class CustomOperationExecution extends Entity {
 
+  @MRelation(role = RelationRole.INSTANCE)
   private CustomOperation template;
-  private Long startTime;
-  // MD5(pig.script.id) from the job conf
-  private String pigExecutionId;
-  private String customOperationInstanceId;
+  @MRelation(role = RelationRole.PHYSICAL)
+  private Entity pigExecution;
 
-  @Override
   @MProperty
-  public EntityType getType() {
-    return EntityType.OPERATION_EXECUTION;
+  private Long startTime;
+  @MProperty
+  private Long endTime;
+
+  public CustomOperationExecution() {
+    setSourceType(SourceType.PLUGIN);
+    setEntityType(EntityType.OPERATION_EXECUTION);
   }
 
   @Override
   public String generateId() {
     return MD5IdGenerator.generateIdentity(getTemplate().getIdentity(),
-        getCustomOperationInstanceId());
+        getPigExecutionId());
   }
 
-  @MRelation(role = RelationRole.INSTANCE)
   public CustomOperation getTemplate() {
     return template;
   }
@@ -58,16 +61,19 @@ public class CustomOperationExecution extends CustomEntity {
     this.template = template;
   }
 
-  @MRelation(role = RelationRole.PHYSICAL, sourceType = SourceType.PIG)
+  public Entity getPigExecution() {
+    return pigExecution;
+  }
+
   public String getPigExecutionId() {
-    return pigExecutionId;
+    return pigExecution.getIdentity();
   }
 
   public void setPigExecutionId(String pigExecutionId) {
-    this.pigExecutionId = pigExecutionId;
+    this.pigExecution = new EndPointProxy(pigExecutionId, SourceType.PIG,
+        EntityType.OPERATION_EXECUTION);
   }
 
-  @MProperty
   public Long getStartTime() {
     return startTime;
   }
@@ -76,12 +82,11 @@ public class CustomOperationExecution extends CustomEntity {
     this.startTime = startTime;
   }
 
-  @MProperty
-  public String getCustomOperationInstanceId() {
-    return customOperationInstanceId;
+  public Long getEndTime() {
+    return endTime;
   }
 
-  public void setCustomOperationId(String customOperationInstanceId) {
-    this.customOperationInstanceId = customOperationInstanceId;
+  public void setEndTime(Long endTime) {
+    this.endTime = endTime;
   }
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.examples.stetson2;
+package com.cloudera.nav.plugin.examples.lineage2;
 
-import com.cloudera.nav.plugin.examples.stetson.StetsonExecution;
+import com.cloudera.nav.plugin.examples.lineage.StetsonExecution;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
@@ -38,11 +38,13 @@ import java.util.Collection;
  *    relationships between the StetsonDataset and the HDFS directory (as
  *    specified by StetsonDataset)
  */
-@MClass
+@MClass(model = "stetson_exec")
 public class StetsonExecution2 extends
     StetsonExecution {
 
+  @MRelation(role=RelationRole.SOURCE)
   private Collection<StetsonDataset> inputs;
+  @MRelation(role=RelationRole.TARGET)
   private Collection<StetsonDataset> outputs;
 
   /**
@@ -55,7 +57,6 @@ public class StetsonExecution2 extends
   /**
    * @return all input datasets
    */
-  @MRelation(role=RelationRole.SOURCE)
   public Collection<StetsonDataset> getInputs() {
     return inputs;
   }
@@ -63,7 +64,6 @@ public class StetsonExecution2 extends
   /**
    * @return all output datasets
    */
-  @MRelation(role=RelationRole.TARGET)
   public Collection<StetsonDataset> getOutputs() {
     return outputs;
   }

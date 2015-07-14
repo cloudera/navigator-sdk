@@ -14,32 +14,24 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.model.entities;
+package com.cloudera.nav.plugin.examples.schema;
 
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
+import com.cloudera.nav.plugin.model.entities.DatasetField;
 
-/**
- * A proxy for an Entity to be used as a Relation end-point.
- * It only has an identity, source type, and entity type.
- * The remainder of the information either already is on the server or
- * will be populated by the server
- */
-@MClass(model="proxy")
-public class EndPointProxy extends Entity {
+@MClass(model="fc_field")
+public class FireCircleField extends DatasetField {
 
-  public EndPointProxy(String id, SourceType sourceType, EntityType type) {
-    setIdentity(id);
-    setSourceType(sourceType);
-    setEntityType(type);
+  public FireCircleField() {
+    super();
+    setSourceType(SourceType.PLUGIN);
+    setNamespace("FireCircle");
   }
 
-  /**
-   * Throws UnsupportedOperationException.
-   * The entity id for a proxy must be set explicitly
-   */
-  @Override
-  public String generateId() {
-    throw new UnsupportedOperationException();
+  public FireCircleField(String name, String type) {
+    this();
+    setName(name);
+    setDataType(type);
   }
 }

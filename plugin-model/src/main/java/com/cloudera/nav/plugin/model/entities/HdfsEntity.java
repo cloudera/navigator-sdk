@@ -21,13 +21,26 @@ import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
 /**
- * A concrete entity that represents HDFS directories or files
+ * A concrete entity that represents HDFS directories or files. Note that the
+ * source type and namespace should not be modified.
  */
-@MClass(validTypes = {EntityType.DIRECTORY, EntityType.FILE})
+@MClass(model="fselement", validTypes = {EntityType.DIRECTORY, EntityType.FILE})
 public class HdfsEntity extends Entity {
 
+  @MProperty
   private String fileSystemPath;
-  private EntityType entityType;
+
+  public HdfsEntity() {
+    setSourceType(SourceType.HDFS);
+  }
+
+  public HdfsEntity(String sourceId, String fileSystemPath, EntityType type) {
+    this();
+    setSourceId(sourceId);
+    setFileSystemPath(fileSystemPath);
+    setEntityType(type);
+    setIdentity(generateId());
+  }
 
   /**
    * An HDFS file/directory can be uniquely identified by the path and
@@ -44,7 +57,6 @@ public class HdfsEntity extends Entity {
   /**
    * @return the full path for this file or directory
    */
-  @MProperty(required=true)
   public String getFileSystemPath() {
     return fileSystemPath;
   }
@@ -55,21 +67,5 @@ public class HdfsEntity extends Entity {
    */
   public void setFileSystemPath(String fileSystemPath) {
     this.fileSystemPath = fileSystemPath;
-  }
-
-  @Override
-  @MProperty(required=true)
-  public SourceType getSourceType() {
-    return SourceType.HDFS;
-  }
-
-  @Override
-  @MProperty
-  public EntityType getType() {
-    return entityType;
-  }
-
-  public void setType(EntityType entityType) {
-    this.entityType = entityType;
   }
 }

@@ -31,7 +31,7 @@ public class EntityTest {
     Source hdfs1 = new Source("HDFS-1", SourceType.HDFS, "Cluster",
         "http://ns1","1");
     HdfsEntity entity = new HdfsEntity();
-    entity.setType(EntityType.DIRECTORY);
+    entity.setEntityType(EntityType.DIRECTORY);
     entity.setFileSystemPath("/user/test");
     entity.setSourceId(hdfs1.getIdentity());
     String id = MD5IdGenerator.generateIdentity(hdfs1.getIdentity(),

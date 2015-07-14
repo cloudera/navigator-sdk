@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.examples.stetson;
+package com.cloudera.nav.plugin.examples.lineage;
 
 import com.cloudera.nav.plugin.client.NavigatorPlugin;
 
@@ -23,16 +23,16 @@ import org.joda.time.Instant;
 /**
  * In this example we show how to create custom entity types and
  * how to link them to hadoop entities. We define a custom operation entity
- * called StetsonScript and a custom operation execution entity called
- * StetsonExecution. A StetsonScript is the template for a StetsonExecution
- * and so we use the @MRelation annotation to specify an InstanceOf relationship
- * between the StetsonExecution and StetsonScript.
+ * from a hypothetical application called Stetson. The Stetson application
+ * defines a custom operations called StetsonScript and a custom operation
+ * execution entity called StetsonExecution. A StetsonScript is the template
+ * for a StetsonExecution and so we use the @MRelation annotation to specify an
+ * InstanceOf relationship between the StetsonExecution and StetsonScript.
  *
- * StetsonScript and StetsonExecution are logical entities that exist in a
- * hypothetical Stetson application. In Hadoop, these operations are carried out
- * using Pig. In order to establish the relationship between the Stetson
- * custom entities and the hadoop entities, we again use the @MRelation
- * annotation to form LogicalPhysical relationships.
+ * In Hadoop, Stetson operations are carried out using Pig. In order to 
+ * establish the relationship between the Stetson custom entities and the 
+ * hadoop entities, we again use the @MRelation annotation to form 
+ * LogicalPhysical relationships.
  *
  * Relations created:
  *

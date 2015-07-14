@@ -17,70 +17,49 @@
 package com.cloudera.nav.plugin.client.writer;
 
 import com.cloudera.nav.plugin.client.PluginConfigurations;
+import com.cloudera.nav.plugin.client.writer.serde.EntitySerializer;
+import com.cloudera.nav.plugin.client.writer.serde.RelationSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.base.Throwables;
 
 import java.io.IOException;
-import java.io.Writer;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.util.Collection;
-import java.util.Map;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * Write metadata in JSON format over an HTTP connection
+ * Write metadata in JSON format
  */
-public class HttpJsonMetadataWriter extends MetadataWriter {
-
-  private static final Logger LOG = LoggerFactory.getLogger(
-      HttpJsonMetadataWriter.class);
+public class JsonMetadataWriter extends MetadataWriter {
 
   private final HttpURLConnection conn;
-  private int count;
 
-  public HttpJsonMetadataWriter(PluginConfigurations config, Writer writer,
-                                HttpURLConnection conn) {
-    super(config, writer);
+  public JsonMetadataWriter(PluginConfigurations config,
+                            OutputStream stream,
+                            HttpURLConnection conn) {
+    super(config, stream);
     this.conn = conn;
-    count = 0;
   }
 
   @Override
-  public void begin() {
+  protected void persistMetadataValues(MClassWrapper mclassWrapper) {
     try {
-      writer.append("[");
-      count = 0;
+      ObjectMapper mapper = newMapper();
+      mapper.writeValue(stream, mclassWrapper);
     } catch (IOException e) {
       Throwables.propagate(e);
     }
   }
 
-  @Override
-  public void end() {
-    try {
-      writer.append("]");
-    } catch (IOException e) {
-      Throwables.propagate(e);
-    }
-  }
-
-  @Override
-  protected void persistMetadataValues(Collection<Map<String, Object>> values) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      for (Map<String, Object> json : values) {
-        if (count > 0) {
-          writer.append(",");
-        }
-        writer.append(mapper.writeValueAsString(json));
-        count++;
-      }
-    } catch (IOException e) {
-      Throwables.propagate(e);
-    }
+  private ObjectMapper newMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    SimpleModule module = new SimpleModule("MetadataSerializer");
+    module.addSerializer(new EntitySerializer(registry));
+    module.addSerializer(new RelationSerializer(registry));
+    mapper.registerModule(module);
+    return mapper;
   }
 
   @Override
