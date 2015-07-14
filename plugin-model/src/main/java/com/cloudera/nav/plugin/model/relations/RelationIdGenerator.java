@@ -33,12 +33,12 @@ public class RelationIdGenerator {
   public String generateRelationIdentity(
       Collection<String> ep1Ids, SourceType ep1SourceType,
       Collection<String> ep2Ids, SourceType ep2SourceType,
-      RelationType relType) {
+      RelationType relType, String namespace) {
     List<String> sortedEp1Ids = Lists.newArrayList(ep1Ids);
     Collections.sort(sortedEp1Ids);
     List<String> sortedEp2Ids = Lists.newArrayList(ep2Ids);
     Collections.sort(sortedEp2Ids);
-    return MD5IdGenerator.generateIdentity(relType.name(),
+    return MD5IdGenerator.generateIdentity(namespace, relType.name(),
         Joiner.on(",").join(sortedEp1Ids), ep1SourceType.name(),
         Joiner.on(",").join(sortedEp2Ids), ep2SourceType.name());
   }

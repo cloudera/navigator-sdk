@@ -16,52 +16,93 @@
 
 package com.cloudera.nav.plugin.model.entities;
 
-import com.cloudera.nav.plugin.model.MD5IdGenerator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Add, remove, and override tags
  */
 public class TagChangeSet {
 
-  public static final String WILDCARD = MD5IdGenerator.generateIdentity("*");
+  @JsonProperty("add")
   private final Set<String> newTags;
+  @JsonProperty("del")
   private final Set<String> delTags;
+  @JsonProperty("set")
+  private Set<String> overrideTags;
 
   public TagChangeSet() {
     newTags = Sets.newHashSet();
     delTags = Sets.newHashSet();
+    overrideTags = null;
   }
 
   /**
-   * Append given tags
+   * Add specified tags to the set of tags to be appended
    * @param tags
    */
-  public void addTags(Collection<String> tags) {
-    delTags.removeAll(tags);
-    newTags.addAll(tags);
+  public void appendTags(Collection<String> tags) {
+    if (CollectionUtils.isNotEmpty(tags)) {
+      newTags.addAll(tags);
+      delTags.removeAll(tags);
+      if (overrideTags != null) {
+        overrideTags.removeAll(tags);
+      }
+    }
   }
 
   /**
-   * Remove given tags
+   * Add the specified tags to the set of tags to be removed
    * @param tags
    */
-  public void removeAll(Collection<String> tags) {
-    newTags.removeAll(tags);
-    delTags.addAll(tags);
+  public void removeTags(Collection<String> tags) {
+    if (CollectionUtils.isNotEmpty(tags)) {
+      delTags.addAll(tags);
+      newTags.removeAll(tags);
+      if (overrideTags != null) {
+        overrideTags.removeAll(tags);
+      }
+    }
   }
 
-  public void clear() {
+  /**
+   * Replace existing tags with specified tags
+   * @param tags if null then no overriding, if empty set then remove all tags
+   */
+  public void setTags(Collection<String> tags) {
+    if (tags == null) {
+      overrideTags = null;
+    } else {
+      overrideTags = Sets.newHashSet(tags);
+      delTags.removeAll(tags);
+      newTags.removeAll(tags);
+    }
+  }
+
+  /**
+   * Clear this change set
+   */
+  public void reset() {
     newTags.clear();
     delTags.clear();
-    delTags.add(WILDCARD);
+    overrideTags = null;
   }
 
   public Set<String> getNewTags() {
     return newTags;
+  }
+
+  /**
+   * Set of tags to replace existing tags. Null means no replacement,
+   * empty set means remove all existing tags
+   */
+  public Set<String> getOverrideTags() {
+    return overrideTags;
   }
 
   public Set<String> getDelTags() {

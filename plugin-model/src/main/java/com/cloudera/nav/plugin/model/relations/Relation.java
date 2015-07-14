@@ -205,7 +205,8 @@ public abstract class Relation {
     } else {
       this.identity = builder.idGenerator.generateRelationIdentity(
           builder.ep1Ids, builder.ep1SourceType,
-          builder.ep2Ids, builder.ep2SourceType, builder.type);
+          builder.ep2Ids, builder.ep2SourceType, builder.type, 
+          builder.namespace);
     }
     this.type = builder.type;
     this.namespace = builder.namespace;

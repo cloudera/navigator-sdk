@@ -39,8 +39,9 @@ public class RelationIdGeneratorTest {
     String id = idGenerator.generateRelationIdentity(
         ImmutableList.of("ep1", "ep11"), SourceType.PLUGIN,
         ImmutableList.of("ep2", "ep21"), SourceType.PIG,
-        RelationType.DATA_FLOW);
-    assertEquals(MD5IdGenerator.generateIdentity(RelationType.DATA_FLOW.name(),
+        RelationType.DATA_FLOW, "test");
+    assertEquals(MD5IdGenerator.generateIdentity("test",
+        RelationType.DATA_FLOW.name(),
         "ep1,ep11", SourceType.PLUGIN.name(),
         "ep2,ep21", SourceType.PIG.name()), id);
   }
@@ -50,11 +51,11 @@ public class RelationIdGeneratorTest {
     String result = idGenerator.generateRelationIdentity(
         ImmutableList.of("ep11", "ep1"), SourceType.PLUGIN,
         ImmutableList.of("ep21", "ep2"), SourceType.PIG,
-        RelationType.DATA_FLOW);
+        RelationType.DATA_FLOW, "test");
     String expected = idGenerator.generateRelationIdentity(
         ImmutableList.of("ep1", "ep11"), SourceType.PLUGIN,
         ImmutableList.of("ep2", "ep21"), SourceType.PIG,
-        RelationType.DATA_FLOW);
+        RelationType.DATA_FLOW, "test");
     assertEquals(expected, result);
   }
 }

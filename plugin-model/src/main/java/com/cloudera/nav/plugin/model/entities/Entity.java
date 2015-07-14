@@ -156,6 +156,15 @@ public abstract class Entity {
     this.name = name;
   }
 
+
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
   /**
    * Get the path of the parent of this entity.
    * The parent path means different things depending on the
@@ -219,7 +228,7 @@ public abstract class Entity {
   }
 
   /**
-   * @return added and removed tags
+   * @return added, removed, and override tags
    */
   public TagChangeSet getTags() {
     if (tags == null) {
@@ -241,24 +250,23 @@ public abstract class Entity {
    * @param tags
    */
   public void setTags(Collection<String> tags) {
-    getTags().clear();
-    addAll(tags);
+    getTags().setTags(tags);
   }
 
   /**
    * Append new tags for entity without removing existing tags
    * @param tags
    */
-  public void addTags(String...tags) {
-    addAll(Sets.newHashSet(tags));
+  public void addTags(String... tags) {
+    addTags(Sets.newHashSet(tags));
   }
 
   /**
    * Append new tags for entity without removing existing tags
    * @param tags
    */
-  public void addAll(Collection<String> tags) {
-    getTags().addTags(tags);
+  public void addTags(Collection<String> tags) {
+    getTags().appendTags(tags);
   }
 
   /**
@@ -274,11 +282,11 @@ public abstract class Entity {
    * @param tags
    */
   public void removeTags(Collection<String> tags) {
-    getTags().removeAll(tags);
+    getTags().removeTags(tags);
   }
 
   /**
-   * @return new and removed properties
+   * @return new, removed, and override properties
    */
   public UDPChangeSet getProperties() {
     if (properties == null) {
@@ -287,17 +295,28 @@ public abstract class Entity {
     return properties;
   }
 
+  /**
+   * Replace existing user-defined properties
+   * @param properties
+   */
   public void setProperties(Map<String, String> properties) {
-    getProperties().clear();
-    addProperties(properties);
+    getProperties().setProperties(properties);
   }
 
+  /**
+   * Add/update user-defined properties
+   * @param properties
+   */
   public void addProperties(Map<String, String> properties) {
-    getProperties().addAll(properties);
+    getProperties().addProperties(properties);
   }
 
+  /**
+   * Remove existing user-defined properties
+   * @param keys
+   */
   public void removeProperties(Collection<String> keys) {
-    getProperties().removeAll(keys);
+    getProperties().removeProperties(keys);
   }
 
   public String getDescription() {
@@ -324,13 +343,5 @@ public abstract class Entity {
   @Override
   public int hashCode() {
     return identity.hashCode();
-  }
-
-  public String getAlias() {
-    return alias;
-  }
-
-  public void setAlias(String alias) {
-    this.alias = alias;
   }
 }

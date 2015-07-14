@@ -25,21 +25,22 @@ import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
-import com.cloudera.nav.plugin.model.entities.TagChangeSet;
-import com.cloudera.nav.plugin.model.entities.UDPChangeSet;
 import com.cloudera.nav.plugin.model.relations.DataFlowRelation;
 import com.cloudera.nav.plugin.model.relations.Relation;
 import com.cloudera.nav.plugin.model.relations.RelationIdGenerator;
 import com.cloudera.nav.plugin.model.relations.RelationType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -93,18 +94,65 @@ public class JsonMetadataWriterTest {
     assertEquals(values.get("deleted"), false);
 
     Map<String, Object> tChanges = (Map<String, Object>)values.get("tags");
-    Collection<String> newTags = (Collection<String>)tChanges.get("newTags");
-    Collection<String> delTags = (Collection<String>)tChanges.get("delTags");
+    Collection<String> tags = (Collection<String>)tChanges.get("set");
     assertTrue(CollectionUtils.isEqualCollection(ImmutableList.of("foo", "bar"),
-        newTags));
-    assertEquals(TagChangeSet.WILDCARD, Iterables.getOnlyElement(delTags));
-
+        tags));
     Map<String, Object> pDelta = (Map<String, Object>)values.get("properties");
-    Map<String, String> newP = (Map<String, String>)pDelta.get("newProperties");
-    Collection<String> dp = (Collection<String>)pDelta.get("removeProperties");
-    assertEquals(1, newP.size());
-    assertEquals("bar", newP.get("foo"));
-    assertEquals(UDPChangeSet.WILDCARD, Iterables.getOnlyElement(dp));
+    Map<String, String> udp = (Map<String, String>)pDelta.get("set");
+    assertEquals(1, udp.size());
+    assertEquals("bar", udp.get("foo"));
+  }
+
+  /**
+   * Test add/del/set tags and UDP
+   */
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testChangeSets() throws IOException {
+    Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
+        "http://ns1");
+    HdfsEntity entity = new HdfsEntity(source.getIdentity(), "/user/test",
+        EntityType.DIRECTORY);
+    entity.setTags("foo", "bar");
+    entity.removeTags("bar", "baz");
+    entity.addTags("baz", "fizz");
+
+    Map<String, String> props = Maps.newHashMap();
+    props.put("foo", "A");
+    props.put("bar", "B");
+    entity.setProperties(props);
+    entity.removeProperties(ImmutableSet.of("bar", "baz"));
+    Map<String, String> newP = Maps.newHashMap();
+    newP.put("baz", "C");
+    newP.put("fizz", "D");
+    entity.addProperties(newP);
+
+    JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
+        mockConn);
+    mWriter.write(entity);
+
+    String value = new String(stream.toByteArray());
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> values = ((List<Map<String, Object>>)mapper.readValue(value,
+        Map.class).get("entities")).get(0);
+
+    Map<String, Object> tChanges = (Map<String, Object>)values.get("tags");
+    Collection<String> overrides = (Collection<String>)tChanges.get("set");
+    Collection<String> add = (Collection<String>)tChanges.get("add");
+    Collection<String> del = (Collection<String>)tChanges.get("del");
+    assertEquals(Collections.singleton("foo"), Sets.newHashSet(overrides));
+    assertEquals(Sets.newHashSet("baz", "fizz"), Sets.newHashSet(add));
+    assertEquals(Collections.singleton("bar"), Sets.newHashSet(del));
+
+    Map<String, Object> pChanges = (Map<String, Object>)values
+        .get("properties");
+    Map<String, String> overProps = (Map<String, String>)pChanges.get("set");
+    Map<String, String> newProps = (Map<String, String>)pChanges.get("add");
+    Collection<String> delProps = (Collection<String>)pChanges.get("del");
+    assertTrue(overProps.size() == 1 && overProps.get("foo").equals("A"));
+    assertTrue(newProps.size() == 2 && newProps.get("baz").equals("C")
+        && newProps.get("fizz").equals("D"));
+    assertEquals(Collections.singleton("bar"), Sets.newHashSet(delProps));
   }
 
   @SuppressWarnings("unchecked")
@@ -192,5 +240,4 @@ public class JsonMetadataWriterTest {
     exec.setSourceId(source.getIdentity());
     return exec;
   }
-
 }

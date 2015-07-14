@@ -16,7 +16,7 @@
 
 package com.cloudera.nav.plugin.model.entities;
 
-import com.cloudera.nav.plugin.model.MD5IdGenerator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -24,43 +24,102 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+
 /**
- * Add, remove, override properties
+ * Add, remove, override user-defined properties
  */
 public class UDPChangeSet {
 
-  public static final String WILDCARD = MD5IdGenerator.generateIdentity("*");
-  private final Map<String, String> newProperties;
-  private final Set<String> removeProperties;
+  @JsonProperty("add")
+  private Map<String, String> newProperties;
+  @JsonProperty("del")
+  private Set<String> removeProperties;
+  @JsonProperty("set")
+  private Map<String, String> overrideProperties;
 
   public UDPChangeSet() {
     newProperties = Maps.newHashMap();
     removeProperties = Sets.newHashSet();
+    overrideProperties = null;
   }
 
-  public void clear() {
+  public void reset() {
     newProperties.clear();
     removeProperties.clear();
-    removeProperties.add(WILDCARD);
+    overrideProperties = null;
   }
 
-  public void addAll(Map<String, String> properties) {
-    removeProperties.removeAll(properties.keySet());
-    newProperties.putAll(properties);
-  }
-
-  public void removeAll(Collection<String> keys) {
-    for (String k : keys) {
-      newProperties.remove(k);
+  /**
+   * Add specified properties to properties to be added
+   * @param properties
+   */
+  public void addProperties(Map<String, String> properties) {
+    if (MapUtils.isNotEmpty(properties)) {
+      newProperties.putAll(properties);
+      removeProperties.removeAll(properties.keySet());
+      if (overrideProperties != null) {
+        overrideProperties = Maps.newHashMap(Maps.difference(overrideProperties,
+            properties).entriesOnlyOnLeft());
+      }
     }
-    removeProperties.addAll(keys);
+  }
+
+  /**
+   * Add specified properties to properties to be removed
+   * @param keys
+   */
+  public void removeProperties(Collection<String> keys) {
+    if (CollectionUtils.isNotEmpty(keys)) {
+      removeProperties.addAll(keys);
+      for (String k : keys) {
+        newProperties.remove(k);
+      }
+      if (overrideProperties != null) {
+        for (String k : keys) {
+          overrideProperties.remove(k);
+        }
+      }
+    }
+  }
+
+  /**
+   * Replace existing properties with specified properties
+   * @param properties
+   */
+  public void setProperties(Map<String, String> properties) {
+    if (properties == null) {
+      overrideProperties = null;
+    } else {
+      removeProperties.removeAll(properties.keySet());
+      newProperties = Maps.newHashMap(Maps.difference(newProperties, properties)
+          .entriesOnlyOnLeft());
+      overrideProperties = Maps.newHashMap(properties);
+    }
   }
 
   public Map<String, String> getNewProperties() {
     return newProperties;
   }
 
+  public void setNewProperties(Map<String, String> newProperties) {
+    this.newProperties = newProperties;
+  }
+
+  public Map<String, String> getOverrideProperties() {
+    return overrideProperties;
+  }
+
+  public void setOverrideProperties(Map<String, String> overrideProperties) {
+    this.overrideProperties = overrideProperties;
+  }
+
   public Set<String> getRemoveProperties() {
     return removeProperties;
+  }
+
+  public void setRemoveProperties(Set<String> removeProperties) {
+    this.removeProperties = removeProperties;
   }
 }
