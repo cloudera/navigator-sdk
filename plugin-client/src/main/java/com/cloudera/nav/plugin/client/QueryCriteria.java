@@ -13,24 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.cloudera.nav.plugin.client;
 
-/** Label for which type of metadata is being retrieved from Navigator,
- * can be Entities or Relations.
+/**
+ * Wrapper class for query criteria to be sent in POST request to Navigator API.
  */
-public enum MetadataType {
-  ENTITIES("entities"), RELATIONS("relations");
+public class QueryCriteria {
 
-  private String queryString;
+  private final String query;
+  private final Integer limit;
+  private final String cursorMark;
 
-  MetadataType(String type){
-    this.queryString = type;
+  public QueryCriteria(String query, Integer limit, String cursorMark){
+    this.query = query;
+    this.limit = limit;
+    this.cursorMark = cursorMark;
   }
 
-  @Override
-  public String toString(){
-    return this.queryString;
+  public String getQuery() {
+    return query;
   }
 
+  public Integer getLimit() {
+    return limit;
+  }
+
+  public String getCursorMark() {
+    return cursorMark;
+  }
 }

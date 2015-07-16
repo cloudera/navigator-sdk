@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.cloudera.nav.plugin.client.examples.extraction;
 
 import com.cloudera.com.fasterxml.jackson.core.type.TypeReference;
 import com.cloudera.com.fasterxml.jackson.databind.ObjectMapper;
-import com.cloudera.nav.plugin.client.MetadataType;
 import com.cloudera.nav.plugin.client.NavApiCient;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;

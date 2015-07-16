@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.cloudera.nav.plugin.client.examples.extraction;
 
-
 import com.cloudera.nav.plugin.client.ClientUtils;
-import com.cloudera.nav.plugin.client.MetadataType;
 import com.cloudera.nav.plugin.client.NavApiCient;
+import com.cloudera.nav.plugin.client.QueryCriteria;
 import com.cloudera.nav.plugin.client.ResultsBatch;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 
 import java.util.Iterator;
@@ -98,16 +97,31 @@ public class IncrementalExtractIterator implements Iterator<Map<String, Object>>
 
   @VisibleForTesting
   public void getNextBatch(){
-    ResultsBatch<Map<String, Object>> response = client.getResultsBatch(type,
-        fullQuery, cursorMark, limit);
-    resultsBatch = response.getResults();
-    resultsBatchIterator = resultsBatch.iterator();
-    hasNext = resultsBatchIterator.hasNext();
-    cursorMark = response.getCursorMark();
-    if(!hasNext && partitionIterator.hasNext()) {
-      getNextQuery();
-      getNextBatch();
+    try {
+      ResultsBatch<Map<String, Object>> response = getResultsBatch();
+      resultsBatch = response.getResults();
+      resultsBatchIterator = resultsBatch.iterator();
+      hasNext = resultsBatchIterator.hasNext();
+      cursorMark = response.getCursorMark();
+      if (!hasNext && partitionIterator.hasNext()) {
+        getNextQuery();
+        getNextBatch();
+      }
+    } catch (Exception e){
+      throw Throwables.propagate(e);
     }
+  }
+
+  private ResultsBatch<Map<String, Object>> getResultsBatch() throws EnumConstantNotPresentException{
+    QueryCriteria queryCriteria = new QueryCriteria(fullQuery, limit, cursorMark);
+      switch(type) {
+        case ENTITIES:
+          return client.getEntityBatch(queryCriteria);
+        case RELATIONS:
+          return client.getRelationBatch(queryCriteria);
+        default:
+          throw new EnumConstantNotPresentException(MetadataType.class, type.name());
+      }
   }
 
   private void getNextQuery(){

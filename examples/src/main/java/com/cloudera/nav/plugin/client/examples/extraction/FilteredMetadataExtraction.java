@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.cloudera.nav.plugin.client.examples.extraction;
 
 import com.cloudera.nav.plugin.client.ClientUtils;
@@ -60,7 +59,7 @@ public class FilteredMetadataExtraction {
     Source hdfsSource = client.getOnlySource(SourceType.HDFS);
     Iterable<Map<String, Object>> HdfsSingleSource =
         extractor.extractMetadata(marker, null,  "sourceType:HDFS AND " +
-            "identity: " + hdfsSource.getIdentity(), null).getEntities();
+            "sourceId:" + hdfsSource.getIdentity(), null).getEntities();
     getFirstResult(HdfsSingleSource);
   }
 

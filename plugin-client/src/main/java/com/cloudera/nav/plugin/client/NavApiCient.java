@@ -17,13 +17,13 @@ package com.cloudera.nav.plugin.client;
 
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
@@ -87,25 +87,24 @@ public class NavApiCient {
   }
 
   /**
-   * Constructs url from a type (entity or relation), query, and cursorMark.
-   *  Returns a batch of results that satisfy the query, starting from
-   *  the cursorMark. Called in next() of IncrementalExtractIterator()
+   * Constructs relation API call from query, and cursorMark.Returns a batch of
+   * results that satisfy the query, starting from the cursorMark.
+   * Called in next() of IncrementalExtractIterator()
    *
-   * @param type "entities" ,"relations"
-   * @param queryString Solr query string
+   * @param queryCriteria Solr query string, cursormark and limit
    * @return ResultsBatch set of results that satisfy query and next cursor
    */
-  public ResultsBatch<Map<String, Object>> getResultsBatch(MetadataType type,
-                                                String queryString,
-                                                String cursorMark,
-                                                Integer limit){
+  public ResultsBatch<Map<String, Object>> getRelationBatch(QueryCriteria queryCriteria){
+    String fullUrlPost = getUrl("relations");
+    return queryNav(fullUrlPost, queryCriteria, RelationResultsBatch.class);
+  }
 
-    String fullUrlPost = getUrl(type);
-    Map<String, String> queryCriteria = Maps.newHashMap();
-    queryCriteria.put("query", queryString);
-    queryCriteria.put("cursorMark", cursorMark);
-    queryCriteria.put("limit", limit.toString());
-   return queryNav(fullUrlPost, queryCriteria, type);
+  /**
+   * {@link #getRelationBatch(QueryCriteria) getRelationBatch} with entities
+   */
+  public ResultsBatch<Map<String, Object>> getEntityBatch(QueryCriteria queryCriteria){
+    String fullUrlPost = getUrl("entities");
+    return queryNav(fullUrlPost, queryCriteria, EntityResultsBatch.class);
   }
 
   /**
@@ -113,26 +112,19 @@ public class NavApiCient {
    * response body contains a batch of results.
    *
    * @param url URl being posted to
-   * @param queryCriteria query parameters and criteria for metadata
-   *                      being retrieved to satisfy
-   * @param type type of metadata being retrieved
-   *
+   * @param queryCriteria query criteria for metadata being retrieved to satisfy
+   *@param resultClass type of ResultsBatch to be returned
    * @return ResultsBatch of entities or relations that specify the
    * query parameters in the URL and request body
    */
+  @VisibleForTesting
   public ResultsBatch<Map<String, Object>> queryNav(String url,
-                                                    Map<String, String> queryCriteria,
-                                                    MetadataType type){
+         QueryCriteria queryCriteria,
+         Class<? extends ResultsBatch<Map<String, Object>>> resultClass){
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = getAuthHeaders();
-    HttpEntity<Map<String, String>> request =
-        new HttpEntity<Map<String, String>>(queryCriteria, headers);
-    Class<? extends ResultsBatch<Map<String, Object>>> resultClass;
-    if(type==MetadataType.ENTITIES){
-      resultClass = EntityResultsBatch.class;
-    } else {
-      resultClass = RelationResultsBatch.class;
-    }
+    HttpEntity<QueryCriteria> request =
+        new HttpEntity<QueryCriteria>(queryCriteria, headers);
     return restTemplate.exchange(url, HttpMethod.POST, request,
         resultClass).getBody();
   }
@@ -222,9 +214,9 @@ public class NavApiCient {
    * @param type "entities", "relations"
    * @return url for querying entities and relations
    */
-  private String getUrl(MetadataType type) {
+  private String getUrl(String type) {
     String baseNavigatorUrl = config.getNavigatorUrl();
-    String typeUrl = ClientUtils.joinUrlPath(baseNavigatorUrl, type.toString());
+    String typeUrl = ClientUtils.joinUrlPath(baseNavigatorUrl, type);
     return typeUrl+"/paging";
   }
 

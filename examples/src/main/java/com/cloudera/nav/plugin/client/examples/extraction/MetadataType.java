@@ -13,24 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.client;
+package com.cloudera.nav.plugin.client.examples.extraction;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import java.util.List;
-import java.util.Map;
-
-/**
- * Wrapper class for deserialization for batch of Entity results.
+/** Label for which type of metadata is being retrieved from Navigator,
+ * can be Entities or Relations.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class EntityResultsBatch extends ResultsBatch<Map<String, Object>> {
-
-  public List<Map<String, Object>> getEntities() {
-    return getResults();
-  }
-
-  public void setEntities(List<Map<String, Object>> results) {
-    setResults(results);
-  }
+public enum MetadataType {
+  ENTITIES, RELATIONS
 }
