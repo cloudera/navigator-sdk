@@ -20,6 +20,7 @@ import com.cloudera.nav.plugin.client.NavigatorPlugin;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.entities.EntityType;
+import com.cloudera.nav.plugin.model.entities.FileFormat;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
 import com.google.common.collect.ImmutableList;
 
@@ -33,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 public class FireCircleSchemaCreator {
 
   /**
-   * We assume the directory name is the
+   * We assume the directory name is the dataset container
    * @param args
    */
   public static void main(String[] args) {
@@ -42,17 +43,17 @@ public class FireCircleSchemaCreator {
     NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
 
     // get the HDFS source
-    Source hdfs = plugin.getClient().getOnlySource(SourceType.HDFS);
+    Source fs = plugin.getClient().getOnlySource(SourceType.HDFS);
 
     // specify the HDFS directory that contains the data
     String path = args[1];
-    HdfsEntity container = new HdfsEntity(hdfs.getIdentity(), path,
-        EntityType.DIRECTORY);
+    HdfsEntity container = new HdfsEntity(path, EntityType.DIRECTORY,
+        fs.getIdentity());
 
     FireCircleDataset dataset = new FireCircleDataset();
     dataset.setName("My Dataset");
     dataset.setDataContainer(container);
-    dataset.setFileFormat("CSV");
+    dataset.setFileFormat(FileFormat.CSV);
     // "4","4","2","","2008-07-31 00:00:00",""
     dataset.setFields(ImmutableList.of(
         new FireCircleField("col1", "integer"),
