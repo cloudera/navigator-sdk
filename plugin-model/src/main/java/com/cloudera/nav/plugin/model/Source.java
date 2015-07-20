@@ -30,6 +30,7 @@ public class Source {
   private final String identity;
   private final Integer sourceExtractIteration;
 
+
   /**
    * @param name
    * @param clusterName
@@ -98,9 +99,7 @@ public class Source {
     return identity;
   }
 
-  public Integer getSourceExtractIteration(){
-    return sourceExtractIteration;
-  }
+  public Integer getSourceExtractIteration(){ return sourceExtractIteration; }
 
   @Override
   public boolean equals(Object o) {
@@ -118,4 +117,6 @@ public class Source {
   public int hashCode() {
     return identity.hashCode();
   }
+
+
 }

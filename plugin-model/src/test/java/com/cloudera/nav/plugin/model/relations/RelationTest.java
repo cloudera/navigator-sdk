@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.cloudera.nav.plugin.model.entities.Entity;
+import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -37,11 +38,13 @@ public class RelationTest {
     String sourceIdOfSource = "sourceIdOfSourceEntity";
     source.setIdentity(idOfSource);
     source.setSourceId(sourceIdOfSource);
+    source.setEntityType(EntityType.DIRECTORY);
     HdfsEntity target = new HdfsEntity();
     String idOfTarget = "targetEntityId";
     String sourceIdOfTarget = "sourceIdOfTargetEntity";
     target.setIdentity(idOfTarget);
     target.setSourceId(sourceIdOfTarget);
+    target.setEntityType(EntityType.DIRECTORY);
 
     DataFlowRelation rel = DataFlowRelation.builder()
         .source(source)
@@ -64,15 +67,18 @@ public class RelationTest {
     String sourceIdOfParent = "sourceIdOfParent";
     parent.setIdentity(idOfParent);
     parent.setSourceId(sourceIdOfParent);
+    parent.setEntityType(EntityType.DIRECTORY);
     HdfsEntity child1 = new HdfsEntity();
     String idOfChild1 = "child1EntityId";
     String sourceIdOfChild = "sourceIdOfChildEntity";
     child1.setIdentity(idOfChild1);
     child1.setSourceId(sourceIdOfChild);
+    child1.setEntityType(EntityType.DIRECTORY);
     HdfsEntity child2 = new HdfsEntity();
     String idOfChild2 = "child1EntityId";
     child2.setIdentity(idOfChild2);
     child2.setSourceId(sourceIdOfChild);
+    child2.setEntityType(EntityType.DIRECTORY);
 
     ParentChildRelation rel = ParentChildRelation.builder()
         .parent(parent)
@@ -96,15 +102,18 @@ public class RelationTest {
     String sourceIdOfLogical = "sourceIdOfLogicalEntity";
     logical.setIdentity(idOfLogical);
     logical.setSourceId(sourceIdOfLogical);
+    logical.setEntityType(EntityType.DIRECTORY);
     HdfsEntity physical1 = new HdfsEntity();
     String idOfPhysical = "physicalEntityId";
     String sourceIdOfPhysical = "sourceIdOfPhysicalEntity";
     physical1.setIdentity(idOfPhysical);
     physical1.setSourceId(sourceIdOfPhysical);
+    physical1.setEntityType(EntityType.DIRECTORY);
     HdfsEntity physical2 = new HdfsEntity();
     String idOfPhysical2 = "physical2EntityId";
     physical2.setIdentity(idOfPhysical2);
     physical2.setSourceId(sourceIdOfPhysical);
+    physical2.setEntityType(EntityType.DIRECTORY);
 
     LogicalPhysicalRelation rel = LogicalPhysicalRelation.builder()
         .logical(logical)
@@ -129,11 +138,13 @@ public class RelationTest {
     String sourceIdOfTemplate = "sourceIdOfTemplateEntity";
     template.setIdentity(idOfTemplate);
     template.setSourceId(sourceIdOfTemplate);
+    template.setEntityType(EntityType.DIRECTORY);
     HdfsEntity instance = new HdfsEntity();
     String idOfInstance = "instanceEntityId";
     String sourceIdOfInstance = "sourceIdOfInstanceEntity";
     instance.setIdentity(idOfInstance);
     instance.setSourceId(sourceIdOfInstance);
+    instance.setEntityType(EntityType.DIRECTORY);
 
     InstanceOfRelation rel = InstanceOfRelation.builder()
         .template(template)

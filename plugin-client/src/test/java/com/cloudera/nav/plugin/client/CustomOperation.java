@@ -16,47 +16,54 @@
 
 package com.cloudera.nav.plugin.client;
 
+import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
-import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
+import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
 
 /**
  * Represents a template defined by a script in a custom DSL
  */
-@MClass
-public class CustomOperation extends CustomEntity {
+@MClass(model="cust_op")
+public class CustomOperation extends Entity {
 
-  private String pigOperationId;
+  @MRelation(role = RelationRole.PHYSICAL)
+  private Entity pigOperation;
+  @MProperty
   private String script;
+
+  public CustomOperation() {
+    setEntityType(EntityType.OPERATION);
+    setSourceType(SourceType.PLUGIN);
+  }
 
   /**
    * Extend to include all fields that uniquely determine a custom entity
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getName(), getOwner() };
+  public String generateId() {
+    return MD5IdGenerator.generateIdentity(getSourceId(), getNamespace(),
+        getName(), getOwner());
   }
 
-  @MRelation(role= RelationRole.PHYSICAL, sourceType= SourceType.PIG)
-  public String getPigOperationId() {
-    return pigOperationId;
+  public Entity getPigOperation() {
+    return pigOperation;
   }
 
-  @Override
-  @MProperty
-  public EntityType getType() {
-    return EntityType.OPERATION;
+  public String getPigOperationEntityId() {
+    return pigOperation.getIdentity();
   }
 
   public void setPigOperationId(String pigOperationId) {
-    this.pigOperationId = pigOperationId;
+    this.pigOperation = new EndPointProxy(pigOperationId,
+        SourceType.PIG, EntityType.OPERATION);
   }
 
-  @MProperty
   public String getScript() {
     return script;
   }

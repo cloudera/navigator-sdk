@@ -13,24 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.client.writer.registry;
 
-import com.cloudera.nav.plugin.model.annotations.MRelation;
+package com.cloudera.nav.plugin.model.entities;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-
-public class MRelationRegistryFactory extends
-    AbstractRegistryFactory<MRelationEntry> {
-
-  @Override
-  protected Class<? extends Annotation> getTypeClass() {
-    return MRelation.class;
-  }
-
-  @Override
-  protected MRelationEntry createEntry(Method method) {
-    return new MRelationEntry(method);
-  }
-
+public enum DefaultFileFormats {
+  AVRO,
+  CSV,
+  JSON,
+  PARQUET,
+  XML
 }

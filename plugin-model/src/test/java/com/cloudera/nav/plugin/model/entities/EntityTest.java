@@ -29,9 +29,10 @@ public class EntityTest {
   @Test
   public void testHdfsEntity() {
     Source hdfs1 = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1", 0);
+        "http://ns1",1);
+
     HdfsEntity entity = new HdfsEntity();
-    entity.setType(EntityType.DIRECTORY);
+    entity.setEntityType(EntityType.DIRECTORY);
     entity.setFileSystemPath("/user/test");
     entity.setSourceId(hdfs1.getIdentity());
     String id = MD5IdGenerator.generateIdentity(hdfs1.getIdentity(),
@@ -42,28 +43,30 @@ public class EntityTest {
   @Test
   public void testHiveTable() {
     Source hive1 = new Source("HIVE-1", SourceType.HIVE, "Cluster",
-        "http://hive-server:port", 0);
+        "http://hive-server:port", 1);
     HiveTable entity = new HiveTable();
     entity.setDatabaseName("db");
     entity.setTableName("table");
     entity.setSourceId(hive1.getIdentity());
     String id = MD5IdGenerator.generateIdentity(hive1.getIdentity(),
-        entity.getDatabaseName(), entity.getTableName());
+        entity.getDatabaseName().toUpperCase(),
+        entity.getTableName().toUpperCase());
     assertEquals(id, entity.generateId());
   }
 
   @Test
   public void testHiveColumn() {
     Source hive1 = new Source("HIVE-1", SourceType.HIVE, "Cluster",
-        "http://hive-server:port", 0);
+        "http://hive-server:port",1);
     HiveColumn entity = new HiveColumn();
     entity.setDatabaseName("db");
     entity.setTableName("table");
     entity.setColumnName("column");
     entity.setSourceId(hive1.getIdentity());
     String id = MD5IdGenerator.generateIdentity(hive1.getIdentity(),
-        entity.getDatabaseName(), entity.getTableName(),
-        entity.getColumnName());
+        entity.getDatabaseName().toUpperCase(),
+        entity.getTableName().toUpperCase(),
+        entity.getColumnName().toUpperCase());
     assertEquals(id, entity.generateId());
   }
 }

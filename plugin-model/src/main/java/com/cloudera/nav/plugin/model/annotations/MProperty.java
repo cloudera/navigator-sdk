@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * Identifies a getter method as an index property.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.FIELD)
 public @interface MProperty {
 
   String attribute() default "";

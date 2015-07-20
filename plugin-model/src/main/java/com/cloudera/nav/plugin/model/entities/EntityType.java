@@ -20,6 +20,7 @@ package com.cloudera.nav.plugin.model.entities;
  */
 public enum EntityType {
   DATABASE,
+  DATASET,
   DIRECTORY,
   FIELD,
   FILE,

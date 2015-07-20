@@ -31,7 +31,7 @@ class SourceAttrs {
   private SourceType sourceType;
   private String sourceUrl;
   private String identity;
-private Integer sourceExtractIteration;
+  private Integer sourceExtractIteration;
 
   public String getClusterName() {
     return clusterName;
@@ -82,7 +82,7 @@ private Integer sourceExtractIteration;
   }
 
   public Source createSource() {
-    return new Source(getOriginalName(), getSourceType(), getClusterName(),
-                      getSourceUrl(), getIdentity(), getSourceExtractIteration());
+    return new Source(getOriginalName(), getSourceType(),
+        getClusterName(), getSourceUrl(), getIdentity(), getSourceExtractIteration());
   }
 }

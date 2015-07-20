@@ -20,41 +20,39 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
-import com.cloudera.nav.plugin.client.writer.HttpJsonMetadataWriter;
-import com.cloudera.nav.plugin.client.writer.MetadataWriter;
+import com.cloudera.nav.plugin.client.writer.JsonMetadataWriter;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
+import com.cloudera.nav.plugin.model.relations.DataFlowRelation;
 import com.cloudera.nav.plugin.model.relations.Relation;
+import com.cloudera.nav.plugin.model.relations.RelationIdGenerator;
+import com.cloudera.nav.plugin.model.relations.RelationType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Iterables;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.*;
 
-public class HttpJsonMetadataWriterTest {
+public class JsonMetadataWriterTest {
 
-  private Writer mockWriter;
+  private ByteArrayOutputStream stream;
   private PluginConfigurations config;
   private HttpURLConnection mockConn;
 
   @Before
   public void setUp() throws IOException {
-    mockWriter = mock(Writer.class);
+    stream = new ByteArrayOutputStream();
     mockConn = mock(HttpURLConnection.class);
     doReturn(200).when(mockConn).getResponseCode();
     config = mock(PluginConfigurations.class);
@@ -63,26 +61,25 @@ public class HttpJsonMetadataWriterTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testWriteBasic() throws IOException {
+  public void testWriteEntity() throws IOException {
     Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
         "http://ns1", 0);
     HdfsEntity entity = new HdfsEntity();
     entity.setSourceId(source.getIdentity());
     entity.setFileSystemPath("/user/test");
-    entity.setType(EntityType.DIRECTORY);
+    entity.setEntityType(EntityType.DIRECTORY);
     entity.setTags(ImmutableList.of("foo", "bar"));
 
-    HttpJsonMetadataWriter mWriter = new HttpJsonMetadataWriter(config,
-        mockWriter, mockConn);
+    JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
+        mockConn);
     mWriter.write(entity);
 
-    ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-    verify(mockWriter).append(captor.capture());
-    String value = captor.getValue();
+    String value = new String(stream.toByteArray());
     ObjectMapper mapper = new ObjectMapper();
-    Map<String, Object> values = (Map<String, Object>)mapper.readValue(value,
-        Map.class);
+    Map<String, Object> values = ((List<Map<String, Object>>)mapper.readValue(value,
+        Map.class).get("entities")).get(0);
     assertEquals(values.get("identity"), entity.getIdentity());
+    assertEquals(values.get("internalType"), "fselement");
     assertEquals(values.get("fileSystemPath"), entity.getFileSystemPath());
     assertEquals(values.get("sourceId"), source.getIdentity());
     assertEquals(values.get("sourceType"), SourceType.HDFS.name());
@@ -95,43 +92,71 @@ public class HttpJsonMetadataWriterTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void testWriteMRelation() throws IOException {
+  public void testWriteRelation() throws IOException {
+    Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
+        "http://ns1", 0);
+    HdfsEntity inputData = new HdfsEntity(source.getIdentity(),
+        "/user/test/input", EntityType.DIRECTORY);
+    inputData.setTags(ImmutableList.of("foo", "bar"));
+
+    HdfsEntity outputData = new HdfsEntity(source.getIdentity(),
+        "/user/test/output", EntityType.DIRECTORY);
+    outputData.setTags(ImmutableList.of("foo", "bar"));
+
+    Relation rel = DataFlowRelation.builder()
+        .idGenerator(new RelationIdGenerator())
+        .source(inputData)
+        .target(outputData)
+        .namespace("test")
+        .userSpecified(true)
+        .build();
+
+    JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
+        mockConn);
+    mWriter.writeRelation(rel);
+
+    String value = new String(stream.toByteArray());
+    ObjectMapper mapper = new ObjectMapper();
+    Map<String, Object> values = ((List<Map<String, Object>>)mapper
+        .readValue(value, Map.class).get("relations")).get(0);
+    assertEquals(values.get("identity"), rel.getIdentity());
+    assertEquals(values.get("namespace"), "test");
+    assertEquals(values.get("type"), RelationType.DATA_FLOW.name());
+    assertEquals(values.get("ep1SourceId"), source.getIdentity());
+    assertEquals(values.get("ep2SourceId"), source.getIdentity());
+    assertEquals(values.get("ep1SourceType"), SourceType.HDFS.name());
+    assertEquals(values.get("ep2SourceType"), SourceType.HDFS.name());
+    assertEquals(values.get("ep1Type"), EntityType.DIRECTORY.name());
+    assertEquals(values.get("ep2Type"), EntityType.DIRECTORY.name());
+    assertTrue(Boolean.valueOf(values.get("userSpecified").toString()));
+    assertEquals(Iterables.getOnlyElement(
+            (Collection<String>) values.get("ep1Ids")),
+        inputData.getIdentity());
+    assertEquals(Iterables.getOnlyElement(
+            (Collection<String>) values.get("ep2Ids")),
+        outputData.getIdentity());
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void testWriteComposite() throws IOException {
     Source source = new Source("ExternalApp", SourceType.PLUGIN, "ExternalApp",
         "http://appHost:port", 0);
     CustomOperationExecution exec = prepExec(source);
-    HttpJsonMetadataWriter mWriter = new HttpJsonMetadataWriter(config,
-        mockWriter, mockConn);
+    JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
+        mockConn);
     mWriter.write(exec);
 
-    ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-    verify(mockWriter, times(9)).append(captor.capture());
     ObjectMapper mapper = new ObjectMapper();
-    List<Map<String, Object>> values = Lists.newArrayList();
-    Set<String> markers = Sets.newHashSet("[", "]", ",");
-    for (String value : captor.getAllValues()) {
-      if (!markers.contains(value)) {
-        values.add(mapper.readValue(value, Map.class));
-      }
-    }
+    String value = new String(stream.toByteArray());
+    Map data = mapper.readValue(value, Map.class);
+    Collection<?> entities = (Collection<?>) data.get("entities");
+    Collection<?> relations = (Collection<?>) data.get("relations");
 
-    int relationCount = 0;
-    int entityCount = 0;
-    String mtype;
-    for (Map<String, Object> value : values) {
-      mtype = value.get(MetadataWriter.MTYPE).toString();
-      if (mtype.equals(Entity.MTYPE)) {
-        entityCount++;
-      } else if (mtype.equals(Relation.MTYPE)) {
-        relationCount++;
-      } else {
-        throw new AssertionError("Unrecognized metadata type " +
-            String.valueOf(mtype));
-      }
-    }
     // custom op and exec
-    assertEquals(entityCount, 2);
+    assertEquals(entities.size(), 2);
     // custom op -> pig op, custom exec -> pig exec, custom op -> exec
-    assertEquals(relationCount, 3);
+    assertEquals(relations.size(), 3);
   }
 
   private CustomOperationExecution prepExec(Source source) {
@@ -145,7 +170,6 @@ public class HttpJsonMetadataWriterTest {
     op.setIdentity(op.generateId());
     CustomOperationExecution exec = new CustomOperationExecution();
     exec.setPigExecutionId("pigExecId");
-    exec.setCustomOperationId("instId");
     exec.setTemplate(op);
     exec.setNamespace(config.getNamespace());
     exec.setSourceId(source.getIdentity());

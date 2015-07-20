@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -32,8 +33,28 @@ import org.apache.commons.lang.StringUtils;
  */
 public class NavigatorPlugin {
 
+  /**
+   * Use the information contained in the given configuration file to
+   * create a new NavigatorPlugin
+   *
+   * @param configFilePath local file system path of plugin configurations
+   * @return a new NavigatorPlugin instance
+   */
+  public static NavigatorPlugin fromConfigFile(String configFilePath) {
+    PluginConfigurations config = (new PluginConfigurationFactory())
+        .readConfigurations(configFilePath);
+    return new NavigatorPlugin(config);
+  }
+
+  public static NavigatorPlugin fromConfigMap(Map<String, Object> configMap) {
+    PluginConfigurations config = (new PluginConfigurationFactory())
+        .fromConfigMap(configMap);
+    return new NavigatorPlugin(config);
+  }
+
   private final PluginConfigurations config;
   private final MetadataWriterFactory factory;
+  private final NavApiCient client;
 
   /**
    * The plugin must be configured with the URL for the Navigator API and the
@@ -49,6 +70,7 @@ public class NavigatorPlugin {
     Preconditions.checkNotNull(factory);
     this.config = config;
     this.factory = factory;
+    this.client = new NavApiCient(config);
   }
 
   /**
@@ -100,12 +122,25 @@ public class NavigatorPlugin {
   public void write(Collection<Entity> entities) {
     MetadataWriter writer = factory.newWriter(config);
     try {
-      writer.begin();
       writer.write(entities);
-      writer.end();
-    } finally {
       writer.flush();
+    } finally {
       writer.close();
     }
+  }
+
+  /**
+   * @return a client to communicate with the Navigator REST API
+   */
+  public NavApiCient getClient() {
+    return client;
+  }
+
+  public PluginConfigurations getConfig() {
+    return config;
+  }
+
+  public String getNamespace() {
+    return config.getNamespace();
   }
 }

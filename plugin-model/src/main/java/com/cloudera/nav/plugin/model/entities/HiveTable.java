@@ -15,39 +15,45 @@
  */
 package com.cloudera.nav.plugin.model.entities;
 
+import com.cloudera.nav.plugin.model.HiveIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 
-@MClass
+/**
+ * Represents a Hive table; uniquely identified by the source id, database name,
+ * and table name
+ */
+@MClass(model = "hv_table")
 public class HiveTable extends Entity {
 
+  @MProperty
   private String databaseName;
-  private String tableName;
+
+  public HiveTable() {
+    setSourceType(SourceType.HIVE);
+    setEntityType(EntityType.TABLE);
+  }
+
+  public HiveTable(String sourceId, String db, String table) {
+    this();
+    setSourceId(sourceId);
+    setDatabaseName(db);
+    setTableName(table);
+    setIdentity(generateId());
+  }
 
   /**
    * A Hive table is identified by the source id, database name, and table name
    *
-   * @return
+   * @return the entity id for this Hive table
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[]{getSourceId(), getDatabaseName(), getTableName()};
+  public String generateId() {
+    return HiveIdGenerator.generateTableId(getSourceId(), getDatabaseName(),
+        getTableName());
   }
 
-  @Override
-  @MProperty(required=true)
-  public EntityType getType() {
-    return EntityType.TABLE;
-  }
-
-  @Override
-  @MProperty(required=true)
-  public SourceType getSourceType() {
-    return SourceType.HIVE;
-  }
-
-  @MProperty
   public String getDatabaseName() {
     return databaseName;
   }
@@ -56,23 +62,18 @@ public class HiveTable extends Entity {
     this.databaseName = databaseName;
   }
 
-  @MProperty
+  /**
+   * @return the table name. This aliases getName
+   */
   public String getTableName() {
-    return tableName;
+    return getName();
   }
 
+  /**
+   * Change the table name. This aliases setName
+   * @param tableName
+   */
   public void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
-
-  @Override
-  @MProperty(attribute = "originalName")
-  public String getName() {
-    return getTableName();
-  }
-
-  @Override
-  public void setName(String name) {
-    setTableName(name);
+    setName(tableName);
   }
 }

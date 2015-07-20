@@ -14,40 +14,45 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.examples.stetson;
+package com.cloudera.nav.plugin.examples.lineage;
 
+import com.cloudera.nav.plugin.model.CustomIdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MClass;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
-import com.cloudera.nav.plugin.model.entities.CustomEntity;
+import com.cloudera.nav.plugin.model.entities.EndPointProxy;
+import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.relations.RelationRole;
+import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
 
 /**
  * Represents a specific execution of a hypothetical custom application
  * represented by a StetsonScript
  */
-@MClass
-public class StetsonExecution extends CustomEntity {
+@MClass(model = "stetson_exec")
+public class StetsonExecution extends Entity {
 
+  @MRelation(role = RelationRole.TEMPLATE)
   private StetsonScript template;
+  @MProperty
   private Instant started;
+  @MProperty
   private Instant ended;
-  // MD5(pig.script.id) from the job conf
-  private String pigExecutionId;
-  private String stetsonInstId;
+  @MRelation(role = RelationRole.PHYSICAL)
+  private Entity pigExecution; // MD5(pig.script.id) from the job conf
+  @MProperty
   private String link;
 
-  /**
-   * Stetson executions are defined to be operation execution entities
-   */
-  @Override
-  @MProperty
-  public EntityType getType() {
-    return EntityType.OPERATION_EXECUTION;
+  public StetsonExecution(String namespace) {
+    // Because the namespace is given to input/output we ensure it
+    // exists when it is used by adding it as a c'tor parameter
+    Preconditions.checkArgument(StringUtils.isNotEmpty(namespace));
+    setNamespace(namespace);
   }
 
   /**
@@ -55,12 +60,25 @@ public class StetsonExecution extends CustomEntity {
    * the external application's identifier
    */
   @Override
-  protected String[] getIdComponents() {
-    return new String[] { getTemplate().getIdentity(),
-        getStetsonInstId() };
+  public String generateId() {
+    return CustomIdGenerator.generateIdentity(getNamespace(),
+        getTemplate().getIdentity(),
+        getPigExecution().getIdentity());
   }
 
-  @MProperty
+  @Override
+  public SourceType getSourceType() {
+    return SourceType.PLUGIN;
+  }
+
+  /**
+   * Stetson executions are defined to be operation execution entities
+   */
+  @Override
+  public EntityType getEntityType() {
+    return EntityType.OPERATION_EXECUTION;
+  }
+
   public String getLink() {
     return link;
   }
@@ -68,7 +86,6 @@ public class StetsonExecution extends CustomEntity {
   /**
    * The custom DSL template
    */
-  @MRelation(role = RelationRole.TEMPLATE)
   public StetsonScript getTemplate() {
     return template;
   }
@@ -76,27 +93,13 @@ public class StetsonExecution extends CustomEntity {
   /**
    * The Pig execution id
    */
-  @MRelation(role = RelationRole.PHYSICAL, sourceType = SourceType.PIG)
-  public String getPigExecutionId() {
-    return pigExecutionId;
-  }
-
-  public void setTemplate(StetsonScript template) {
-    this.template = template;
-  }
-
-  /**
-   * The external application identifier for this execution
-   */
-  @MProperty
-  public String getStetsonInstId() {
-    return stetsonInstId;
+  public Entity getPigExecution() {
+    return pigExecution;
   }
 
   /**
    * Start time of execution in milliseconds since epoch
    */
-  @MProperty
   public Instant getStarted() {
     return started;
   }
@@ -104,17 +107,17 @@ public class StetsonExecution extends CustomEntity {
   /**
    * End time of execution in milliseconds since epoch
    */
-  @MProperty
   public Instant getEnded() {
     return ended;
   }
 
-  public void setPigExecutionId(String pigExecutionId) {
-    this.pigExecutionId = pigExecutionId;
+  public void setTemplate(StetsonScript template) {
+    this.template = template;
   }
 
-  public void setStetsonInstId(String stetsonInstId) {
-    this.stetsonInstId = stetsonInstId;
+  public void setPigExecution(String pigExecutionId) {
+    this.pigExecution = new EndPointProxy(pigExecutionId, SourceType.PIG,
+        EntityType.OPERATION_EXECUTION);
   }
 
   public void setStarted(Instant started) {

@@ -17,6 +17,7 @@ package com.cloudera.nav.plugin.client;
 
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -48,6 +49,7 @@ public class NavApiCient {
 
   private static final Logger LOG = LoggerFactory.getLogger(NavApiCient.class);
   private static final String SOURCE_QUERY = "type:SOURCE";
+  private static final String ALL_QUERY = "type:*";
 
   private final PluginConfigurations config;
   private final Cache<String, Source> sourceCacheByUrl;
@@ -74,7 +76,7 @@ public class NavApiCient {
    */
   public Collection<Source> getAllSources() {
     RestTemplate restTemplate = new RestTemplate();
-    String url = getSourceUrl();
+    String url = getUrl();
     HttpHeaders headers = getAuthHeaders();
     HttpEntity<String> request = new HttpEntity<String>(headers);
     ResponseEntity<SourceAttrs[]> response = restTemplate.exchange(url,
@@ -197,23 +199,15 @@ public class NavApiCient {
   }
 
   /**
-   * Get url for querying all sources
-   *
    * @return url for querying all sources
    */
-  private String getSourceUrl() {
+  private String getUrl() {
     // form the url string to request all entities with type equal to SOURCE
     String baseNavigatorUrl = config.getNavigatorUrl();
     String entitiesUrl = ClientUtils.joinUrlPath(baseNavigatorUrl, "entities");
     return String.format("%s?query=%s", entitiesUrl, SOURCE_QUERY);
   }
 
-  /**
-   * Get URL for incremental extraction
-   *
-   * @param type "entities", "relations"
-   * @return url for querying entities and relations
-   */
   private String getUrl(String type) {
     String baseNavigatorUrl = config.getNavigatorUrl();
     String typeUrl = ClientUtils.joinUrlPath(baseNavigatorUrl, type);

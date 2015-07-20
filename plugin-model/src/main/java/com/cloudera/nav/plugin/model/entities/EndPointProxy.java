@@ -13,34 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.cloudera.nav.plugin.model.entities;
 
 import com.cloudera.nav.plugin.model.SourceType;
-import com.cloudera.nav.plugin.model.annotations.MProperty;
+import com.cloudera.nav.plugin.model.annotations.MClass;
 
 /**
- * Abstract base classes for creating custom entities defined by non-Hadoop
- * applications
+ * A proxy for an Entity to be used as a Relation end-point.
+ * It only has an identity, source type, and entity type.
+ * The remainder of the information either already is on the server or
+ * will be populated by the server
  */
-public abstract class CustomEntity extends Entity {
+@MClass(model="proxy")
+public class EndPointProxy extends Entity {
 
-  private String namespace;
+  public EndPointProxy(String id, SourceType sourceType, EntityType type) {
+    setIdentity(id);
+    setSourceType(sourceType);
+    setEntityType(type);
+  }
 
   /**
-   * @return Navigator assigned namespace for the custom entity
+   * Throws UnsupportedOperationException.
+   * The entity id for a proxy must be set explicitly
    */
-  @MProperty(required=true)
-  public String getNamespace() {
-    return namespace;
-  }
-
   @Override
-  @MProperty(required=true)
-  public SourceType getSourceType() {
-    return SourceType.PLUGIN;
-  }
-
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
+  public String generateId() {
+    throw new UnsupportedOperationException();
   }
 }

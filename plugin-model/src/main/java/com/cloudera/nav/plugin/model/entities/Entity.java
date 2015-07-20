@@ -15,10 +15,8 @@
  */
 package com.cloudera.nav.plugin.model.entities;
 
-import com.cloudera.nav.plugin.model.MD5IdGenerator;
 import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -39,109 +37,49 @@ import org.joda.time.Instant;
  */
 public abstract class Entity {
 
-  public static final String MTYPE = "ENTITY"; // type of metadata object
-  public static final String USER_DEFINED_PROPERTIES = "properties";
-  public static final String TECHNICAL_PROPERTIES = "technicalProperties";
   public static final CharSequence ID_SEPARATOR = "##";
 
+  // required properties
+  @MProperty(required=true)
   private String identity;
+  @MProperty(required=true)
+  private SourceType sourceType;
+  @MProperty(required=true, attribute = "type")
+  private EntityType entityType;
+
+  @MProperty
+  private String namespace;
+  @MProperty
   private String sourceId;
+  @MProperty(attribute = "originalName")
   private String name;
+  @MProperty(attribute = "name")
+  private String alias;
+  @MProperty
   private boolean deleted;
+  @MProperty
   private Long deletionTime;
+  @MProperty
   private Collection<String> tags;
+  @MProperty
   private Map<String, String> properties;
+  @MProperty
   private Instant created;
+  @MProperty
   private String owner;
+  @MProperty
   private String description;
+  @MProperty
+  private String parentPath;
+
+
+  public abstract String generateId();
 
   /**
    * @return id for this custom entity
    */
-  @MProperty(required=true)
   public String getIdentity() {
     return identity;
-  }
-
-  /**
-   * @return id for the designated source
-   */
-  @MProperty
-  public String getSourceId() {
-    return sourceId;
-  }
-
-  /**
-   * @return the source type
-   */
-  @MProperty(required=true)
-  public abstract SourceType getSourceType();
-
-  /**
-   * @return name of the custom entity
-   */
-  @MProperty(attribute="originalName")
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * @return the type of the custom entity
-   */
-  @MProperty
-  public abstract EntityType getType();
-
-  /**
-   * @return true if the custom entity should be marked deleted
-   */
-  @MProperty
-  public boolean isDeleted() {
-    return deleted;
-  }
-
-  /**
-   * @return deletion time in milliseconds since epoch if the custom entity
-   *         has been deleted and null otherwise.
-   */
-  @MProperty
-  public Long getDeletionTime() {
-    return deletionTime;
-  }
-
-  @MProperty
-  public Instant getCreated() {
-    return created;
-  }
-
-  @MProperty
-  public String getOwner() {
-    return owner;
-  }
-
-  /**
-   * @return a collection of string tags associated with this entity
-   */
-  @MProperty
-  public Collection<String> getTags() {
-    return tags;
-  }
-
-  @MProperty
-  public Map<String, String> getProperties() {
-    return properties;
-  }
-
-  @MProperty
-  public String getDescription() {
-    return description;
-  }
-
-  /**
-   * Set the name of the custom entity
-   * @param name
-   */
-  public void setName(String name) {
-    this.name = name;
   }
 
   /**
@@ -153,11 +91,92 @@ public abstract class Entity {
   }
 
   /**
+   * @return id for the designated source
+   */
+  public String getSourceId() {
+    return sourceId;
+  }
+
+  /**
    * Set the source id for the custom entity
    * @param sourceId
    */
   public void setSourceId(String sourceId) {
     this.sourceId = sourceId;
+  }
+
+  /**
+   * @return the source type
+   */
+  public SourceType getSourceType() {
+    return sourceType;
+  }
+
+  public void setSourceType(SourceType sourceType) {
+    this.sourceType = sourceType;
+  }
+
+  /**
+   * @return the type of the custom entity
+   */
+  public EntityType getEntityType() {
+    return entityType;
+  }
+
+  public void setEntityType(EntityType entityType) {
+    this.entityType = entityType;
+  }
+
+  /**
+   * @return
+   */
+  public String getNamespace() {
+    return namespace;
+  }
+
+  /**
+   * Set the namespace of this custom entity
+   * @param namespace
+   */
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  /**
+   * @return name of the custom entity
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Set the name of the custom entity
+   * @param name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /**
+   * Get the path of the parent of this entity.
+   * The parent path means different things depending on the
+   * entity. For an HDFS entity, the parent path indicates
+   * the containing directory. For a Hive table, the parent path
+   * is the database.
+   */
+  public String getParentPath() {
+    return parentPath;
+  }
+
+  public void setParentPath(String parentPath) {
+    this.parentPath = parentPath;
+  }
+
+  /**
+   * @return true if the custom entity should be marked deleted
+   */
+  public boolean isDeleted() {
+    return deleted;
   }
 
   /**
@@ -169,11 +188,42 @@ public abstract class Entity {
   }
 
   /**
+   * @return deletion time in milliseconds since epoch if the custom entity
+   *         has been deleted and null otherwise.
+   */
+  public Long getDeletionTime() {
+    return deletionTime;
+  }
+
+  /**
    * Set deletion time for the custom entity
    * @param deletionTime
    */
   public void setDeletionTime(Long deletionTime) {
     this.deletionTime = deletionTime;
+  }
+
+  public Instant getCreated() {
+    return created;
+  }
+
+  public void setCreated(Instant creationTime) {
+    this.created = creationTime;
+  }
+
+  public String getOwner() {
+    return owner;
+  }
+
+  public void setOwner(String owner) {
+    this.owner = owner;
+  }
+
+  /**
+   * @return a collection of string tags associated with this entity
+   */
+  public Collection<String> getTags() {
+    return tags;
   }
 
   /**
@@ -184,28 +234,20 @@ public abstract class Entity {
     this.tags = ImmutableSet.copyOf(tags);
   }
 
-  public void setCreated(Instant creationTime) {
-    this.created = created;
-  }
-
-  public void setOwner(String owner) {
-    this.owner = owner;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
+  public Map<String, String> getProperties() {
+    return properties;
   }
 
   public void setProperties(Map<String, String> properties) {
     this.properties = Maps.newHashMap(properties);
   }
 
-  public String generateId() {
-    String[] components = getIdComponents();
-    for (String comp : components) {
-      Preconditions.checkNotNull(comp, "Entity Id components must not be null");
-    }
-    return MD5IdGenerator.generateIdentity(components);
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   @Override
@@ -226,10 +268,11 @@ public abstract class Entity {
     return identity.hashCode();
   }
 
-  /**
-   * Intended to be implemented by custom entity sub-classes to provide
-   * a unique id for the entity
-   * @return
-   */
-  protected abstract String[] getIdComponents();
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
 }

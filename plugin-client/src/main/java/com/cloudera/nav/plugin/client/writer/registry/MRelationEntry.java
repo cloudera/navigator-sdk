@@ -15,7 +15,6 @@
  */
 package com.cloudera.nav.plugin.client.writer.registry;
 
-import com.cloudera.nav.plugin.model.SourceType;
 import com.cloudera.nav.plugin.model.annotations.MRelation;
 import com.cloudera.nav.plugin.model.entities.Entity;
 import com.cloudera.nav.plugin.model.relations.Relation;
@@ -26,6 +25,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -39,19 +39,17 @@ import java.util.Map;
  */
 public class MRelationEntry {
 
-  private final Method method;
+  private final Field field;
+  private final Method getter;
   private final MRelation relationAnn;
   private final Map<RelationRole, RelationType> roleToTypeMap;
 
-  public MRelationEntry(Method method) {
-    validateReturnType(method);
-    this.method = method;
-    this.relationAnn = method.getAnnotation(MRelation.class);
-    SourceType sourceTypeOfOther = relationAnn.sourceType();
-    Preconditions.checkArgument(sourceTypeOfOther != null ||
-        isConnectedToEntity(), "Must supply source type if relation is " +
-            "connected to string entity id.");
+  public MRelationEntry(Field field, Method getter) {
+    this.field = field;
+    this.getter = getter;
+    this.relationAnn = field.getAnnotation(MRelation.class);
     roleToTypeMap = Maps.newHashMap();
+    validateReturnType(getter);
   }
 
   /**
@@ -65,11 +63,10 @@ public class MRelationEntry {
   public Relation buildRelation(Entity entity, String namespace) {
     RelationRole roleOfOther = relationAnn.role();
     RelationType type = getRelationTypeFromRole(roleOfOther);
-    SourceType sourceTypeOfOther = relationAnn.sourceType();
-    Object other = getValue(entity);
     RelationFactory factory = new RelationFactory();
-    return factory.createRelation(type, entity, other, roleOfOther,
-        sourceTypeOfOther, namespace);
+    Collection<? extends Entity> otherEndpoints = getConnectedEntities(entity);
+    return factory.createRelation(type, entity, otherEndpoints, roleOfOther,
+        namespace);
   }
 
   private RelationType getRelationTypeFromRole(RelationRole roleOfOther) {
@@ -83,24 +80,13 @@ public class MRelationEntry {
   }
 
   /**
-   * @return whether the MRelation is connected to just a string id or
-   * another Entity with MClass annotations
-   */
-  public boolean isConnectedToEntity() {
-    Class<?> aClass = method.getReturnType();
-    return Entity.class.isAssignableFrom(aClass) ||
-        (Collection.class.isAssignableFrom(aClass) &&
-            Entity.class.isAssignableFrom(getTypeParameterClass(method)));
-  }
-
-  /**
    * @return collection of entities connected to the given entity through the
    * relationship represented by this MRelationEntry
    */
   @SuppressWarnings("unchecked")
   public Collection<? extends Entity> getConnectedEntities(Entity entity) {
-    Preconditions.checkArgument(isConnectedToEntity());
-    if (Entity.class.isAssignableFrom(method.getReturnType())) {
+    // we've already validated the return type in the c'tor
+    if (Entity.class.isAssignableFrom(field.getType())) {
       return ImmutableList.of((Entity)getValue(entity));
     } else {
       return (Collection<Entity>)getValue(entity);
@@ -109,7 +95,7 @@ public class MRelationEntry {
 
   private Object getValue(Entity entity) {
     try {
-      return method.invoke(entity);
+      return getter.invoke(entity);
     } catch (IllegalAccessException e) {
       throw Throwables.propagate(e);
     } catch (InvocationTargetException e) {
@@ -120,23 +106,30 @@ public class MRelationEntry {
   private void validateReturnType(Method method) {
     // String, Entity, Collection<String>, Collection<Entity>
     Class<?> aClass = method.getReturnType();
-    if (!isStringOrEntity(aClass)) {
-      Preconditions.checkArgument(Collection.class.isAssignableFrom(aClass));
-      Class<?> typeClass = getTypeParameterClass(method);
-      Preconditions.checkArgument(isStringOrEntity(typeClass));
-    }
+    Preconditions.checkArgument(Entity.class.isAssignableFrom(aClass) ||
+          (Collection.class.isAssignableFrom(aClass) &&
+              Entity.class.isAssignableFrom(getTypeParameterClass())),
+        "@MRelation fields must be an Entity or a Collection of Entities");
   }
 
-  private Class<?> getTypeParameterClass(Method method) {
-    ParameterizedType type = (ParameterizedType) method.getGenericReturnType();
+  private Class<?> getTypeParameterClass() {
+    ParameterizedType type = (ParameterizedType) field.getGenericType();
     Type[] typeParams = type.getActualTypeArguments();
     Preconditions.checkArgument(typeParams.length == 1);
     return (Class<?>)typeParams[0];
   }
 
-  private boolean isStringOrEntity(Class<?> aClass) {
-    return aClass == String.class ||
-        Entity.class.isAssignableFrom(aClass);
+  /**
+   * @return whether this @MRelation field is required
+   */
+  public boolean required() {
+    return relationAnn.required();
   }
 
+  /**
+   * @return the name of the field associated with this @MRelation entry
+   */
+  public String getName() {
+    return field.getName();
+  }
 }
