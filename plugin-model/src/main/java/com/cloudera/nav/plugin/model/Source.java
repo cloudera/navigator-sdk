@@ -28,6 +28,8 @@ public class Source {
   private final String clusterName;
   private final String sourceUrl;
   private final String identity;
+  private final Integer sourceExtractIteration;
+
 
   /**
    * @param name
@@ -37,19 +39,20 @@ public class Source {
    */
   public Source(String name, SourceType sourceType,
                 String clusterName, String sourceUrl,
-                String identity) {
+                String identity, Integer sourceExtractIteration) {
     Preconditions.checkNotNull(identity);
     this.name = name;
     this.sourceType = sourceType;
     this.clusterName = clusterName;
     this.sourceUrl = sourceUrl;
     this.identity = identity;
+    this.sourceExtractIteration = sourceExtractIteration;
   }
 
   public Source(String name, SourceType sourceType,
-                String clusterName, String sourceUrl) {
+                String clusterName, String sourceUrl, Integer sourceExtractIteration) {
     this(name, sourceType, clusterName, sourceUrl,
-        SourceIdGenerator.generateSourceId(clusterName, name));
+        SourceIdGenerator.generateSourceId(clusterName, name), sourceExtractIteration);
   }
 
 
@@ -96,6 +99,8 @@ public class Source {
     return identity;
   }
 
+  public Integer getSourceExtractIteration(){ return sourceExtractIteration; }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -104,9 +109,7 @@ public class Source {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-
     Source source = (Source) o;
-
     return identity.equals(source.identity);
   }
 
@@ -114,4 +117,6 @@ public class Source {
   public int hashCode() {
     return identity.hashCode();
   }
+
+
 }

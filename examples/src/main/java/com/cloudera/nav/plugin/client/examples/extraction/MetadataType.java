@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.cloudera.nav.plugin.client.examples.extraction;
 
-package com.cloudera.nav.plugin.model;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-import org.junit.Test;
-
-public class MD5IdGeneratorTest {
-
-  @Test
-  public void testBasic() {
-    String hash = MD5IdGenerator.generateIdentity("foo");
-    assertEquals(MD5IdGenerator.generateIdentity("foo"), hash);
-    assertNotEquals(MD5IdGenerator.generateIdentity("bar"), hash);
-    assertEquals(hash.length(), 32);
-  }
+/** Label for which type of metadata is being retrieved from Navigator,
+ * can be Entities or Relations.
+ */
+public enum MetadataType {
+  ENTITIES, RELATIONS
 }

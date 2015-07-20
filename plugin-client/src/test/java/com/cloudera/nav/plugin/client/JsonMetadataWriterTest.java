@@ -16,7 +16,8 @@
 
 package com.cloudera.nav.plugin.client;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 import com.cloudera.nav.plugin.client.writer.JsonMetadataWriter;
@@ -40,7 +41,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 public class JsonMetadataWriterTest {
 
@@ -61,7 +63,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testWriteEntity() throws IOException {
     Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1");
+        "http://ns1", 0);
     HdfsEntity entity = new HdfsEntity();
     entity.setSourceId(source.getIdentity());
     entity.setFileSystemPath("/user/test");
@@ -92,7 +94,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testWriteRelation() throws IOException {
     Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1");
+        "http://ns1", 0);
     HdfsEntity inputData = new HdfsEntity(source.getIdentity(),
         "/user/test/input", EntityType.DIRECTORY);
     inputData.setTags(ImmutableList.of("foo", "bar"));
@@ -139,7 +141,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testWriteComposite() throws IOException {
     Source source = new Source("ExternalApp", SourceType.PLUGIN, "ExternalApp",
-        "http://appHost:port");
+        "http://appHost:port", 0);
     CustomOperationExecution exec = prepExec(source);
     JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
         mockConn);

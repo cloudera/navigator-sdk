@@ -13,21 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.cloudera.nav.plugin.client;
 
-package com.cloudera.nav.plugin.model;
+/**
+ * Wrapper class for query criteria to be sent in POST request to Navigator API.
+ */
+public class QueryCriteria {
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+  private final String query;
+  private final Integer limit;
+  private final String cursorMark;
 
-import org.junit.Test;
+  public QueryCriteria(String query, Integer limit, String cursorMark){
+    this.query = query;
+    this.limit = limit;
+    this.cursorMark = cursorMark;
+  }
 
-public class MD5IdGeneratorTest {
+  public String getQuery() {
+    return query;
+  }
 
-  @Test
-  public void testBasic() {
-    String hash = MD5IdGenerator.generateIdentity("foo");
-    assertEquals(MD5IdGenerator.generateIdentity("foo"), hash);
-    assertNotEquals(MD5IdGenerator.generateIdentity("bar"), hash);
-    assertEquals(hash.length(), 32);
+  public Integer getLimit() {
+    return limit;
+  }
+
+  public String getCursorMark() {
+    return cursorMark;
   }
 }
