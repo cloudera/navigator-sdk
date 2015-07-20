@@ -13,21 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.cloudera.nav.plugin.client;
 
-package com.cloudera.nav.plugin.model;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import java.util.List;
+import java.util.Map;
 
-import org.junit.Test;
+/**
+ * Wrapper class for deserialization for batch of Relation results.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class RelationResultsBatch extends ResultsBatch<Map<String, Object>> {
 
-public class MD5IdGeneratorTest {
+  public List<Map<String, Object>> getRelations() {
+    return getResults();
+  }
 
-  @Test
-  public void testBasic() {
-    String hash = MD5IdGenerator.generateIdentity("foo");
-    assertEquals(MD5IdGenerator.generateIdentity("foo"), hash);
-    assertNotEquals(MD5IdGenerator.generateIdentity("bar"), hash);
-    assertEquals(hash.length(), 32);
+  public void setRelations(List<Map<String, Object>> results) {
+    setResults(results);
   }
 }
+
