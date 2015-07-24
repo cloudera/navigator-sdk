@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.plugin.client.examples.extraction;
+package com.cloudera.nav.plugin.examples.extraction;
 
 import com.cloudera.nav.plugin.client.NavApiCient;
 import com.cloudera.nav.plugin.client.PluginConfigurationFactory;
