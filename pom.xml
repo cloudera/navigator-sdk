@@ -65,8 +65,8 @@
      - a build extension declaration on another module in the build
      - the order declared in the <modules> element (if no other rule applies) -->
   <modules>
-    <module>plugin-model</module>
-    <module>plugin-client</module>
+    <module>model</module>
+    <module>client</module>
     <module>examples</module>
   </modules>
 
@@ -361,6 +361,11 @@
       <dependency>
         <groupId>com.cloudera.navigator</groupId>
         <artifactId>plugin-client</artifactId>
+        <version>${navigator.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.cloudera.navigator</groupId>
+        <artifactId>plugin-examples</artifactId>
         <version>${navigator.version}</version>
       </dependency>
       <dependency>

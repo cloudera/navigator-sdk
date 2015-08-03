@@ -20,6 +20,7 @@ import com.cloudera.nav.plugin.client.NavApiCient;
 import com.cloudera.nav.plugin.client.NavigatorPlugin;
 import com.cloudera.nav.plugin.model.Source;
 import com.cloudera.nav.plugin.model.SourceType;
+import com.cloudera.nav.plugin.model.entities.EntityType;
 import com.cloudera.nav.plugin.model.entities.HdfsEntity;
 import com.google.common.collect.Sets;
 
@@ -37,16 +38,14 @@ public class SetHdfsFileTags {
 
     // setup the plugin and api client
     NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
+    NavApiCient client = plugin.getClient();
+    Source fs = client.getOnlySource(SourceType.HDFS);
 
     // send tags for multiple entities to Navigator
-    HdfsEntity dir = new HdfsEntity();
-    dir.setFileSystemPath("/user/hdfs");
+    HdfsEntity dir = new HdfsEntity("/user/hdfs", EntityType.DIRECTORY,
+        fs.getIdentity());
     dir.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
         "CONTAINS_SOME_SUPER_SECRET_STUFF"));
-
-    NavApiCient client = plugin.getClient();
-    Source hdfs = client.getOnlySource(SourceType.HDFS);
-    dir.setSourceId(hdfs.getIdentity());
 
     plugin.write(dir);
   }
