@@ -13,7 +13,7 @@ Sample Use Cases
 Certain applications need to extract metadata from Navigator for their own
  purposes or to integrate into an enterprise-wide metadata management system.
  For almost any production Hadoop cluster, it is not feasible to do a full
-  extraction of all available metadata every time. Instead, the Naviagtor SDK
+  extraction of all available metadata every time. Instead, the Navigator SDK
   provides [code examples](examples/src/main/java/com/cloudera/nav/plugin/examples/extraction/MetadataExtraction.java)
   to extract metadata in an incremental fashion.
 
@@ -194,7 +194,7 @@ API Client
 ----------
 
 This initial version of the Navigator SDK will not provide a feature-complete
-client for the Navigator API. Instead, we focus on the parts of the API needed
+client for the Navigator API. , we focus on the parts of the API needed
 to satisfy the use cases listed above.
 
 For metadata extraction, we use the /entities and /relations APIs in Navigator.
