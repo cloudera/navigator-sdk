@@ -1,6 +1,8 @@
 Navigator SDK Java Client
 =========================
 
+![Build Status](https://travis-ci.org/cloudera/navigator-sdk.svg)
+
 The Cloudera Navigator SDK is a client library that provides functionality to
 help users extract metadata from Navigator and to enrich the metadata in
 Navigator with custom metadata models, entities, and relationships.
