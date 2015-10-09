@@ -88,20 +88,20 @@ associated with a relation type. Navigator defines several relation types and
 for each one, Navigator defines a relation subtype to make the construction of
 these relationships easier. The relation types are:
 
-- [DataFlow](model/src/main/java/com/cloudera/nav/plugin/model/relations/DataFlowRelation.java) - 
+- [DataFlow](model/src/main/java/com/cloudera/nav/plugin/model/relations/DataFlowRelation.java) -
 the endpoints are sources and targets indicating movement of data
 (e.g., query input -> query output)
 
-- [ParentChild](model/src/main/java/com/cloudera/nav/plugin/model/relations/ParentChildRelation.java) - 
+- [ParentChild](model/src/main/java/com/cloudera/nav/plugin/model/relations/ParentChildRelation.java) -
 the endpoints are parent and child(ren) indicating containment
 (e.g., directory -> files)
 
-- [LogicalPhysical](model/src/main/java/com/cloudera/nav/plugin/model/relations/LogicalPhysicalRelation.java) - 
+- [LogicalPhysical](model/src/main/java/com/cloudera/nav/plugin/model/relations/LogicalPhysicalRelation.java) -
 the endpoints are logical and physical indicating the
 connection between an abstract entity and its concrete manifestation (e.g.,
 Hive table -> HDFS directory which has the data)
 
-- [InstanceOf](model/src/main/java/com/cloudera/nav/plugin/model/relations/InstanceOfRelation.java) - 
+- [InstanceOf](model/src/main/java/com/cloudera/nav/plugin/model/relations/InstanceOfRelation.java) -
 the endpoints are template and instance indicating the connection
 between an operation and its execution.
 
@@ -187,21 +187,3 @@ exec.setPigExecutionId(execId);
 // Write the metadata
 plugin.write(exec);
 ```
-
-
-
-API Client
-----------
-
-This initial version of the Navigator SDK will not provide a feature-complete
-client for the Navigator API. Instead, we focus on the parts of the API needed
-to satisfy the use cases listed above.
-
-For metadata extraction, we use the /entities and /relations APIs in Navigator.
-In this version the JSON results are exposed as simple Map objects. We plan to
-open source the default metadata models in Navigator and at that time we will
- use those models to wrap the results.
-
-For augmenting the metadata in Navigator, we use the /metadata/plugin API
-(private for now). The Navigator SDK will convert the metadata entities and
-relations into JSON and POST the data to the REST API endpoint.
