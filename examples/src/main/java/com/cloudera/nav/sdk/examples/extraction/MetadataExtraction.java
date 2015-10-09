@@ -56,11 +56,10 @@ public class MetadataExtraction {
     return marker;
   }
   public static void main(String[] args) {
-    // setup the plugin and api client
+    // setup the api client
     String configFilePath = args[0];
     PluginConfigurations config = (new PluginConfigurationFactory())
         .readConfigurations(configFilePath);
-    //NavigatorPlugin plugin = new NavigatorPlugin(config);
     NavApiCient client = new NavApiCient(config);
     String startMarker;
     try {

@@ -19,12 +19,10 @@ import com.cloudera.com.fasterxml.jackson.core.type.TypeReference;
 import com.cloudera.com.fasterxml.jackson.databind.ObjectMapper;
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.model.Source;
-import com.cloudera.nav.sdk.model.SourceType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 
 import java.io.IOException;
 import java.util.Collection;
@@ -135,12 +133,6 @@ public class MetadataExtractor {
     Collection<Source> sources = client.getAllSources();
     HashMap<String, Integer> newMarker = Maps. newHashMap();
     for (Source source : sources) {
-      //Source types without source IDs or extractorRunIds are unsupported
-      List<SourceType> unsupportedTypes = Lists.newArrayList(SourceType.PIG,
-          SourceType.IMPALA, SourceType.SPARK, SourceType.SQOOP);
-      if (unsupportedTypes.contains(source.getSourceType())) {
-        continue;
-      }
       String id = source.getIdentity();
       Integer sourceExtractIteration = (current) ? source.getSourceExtractIteration() : 0;
       newMarker.put(id, sourceExtractIteration);
@@ -202,8 +194,7 @@ public class MetadataExtractor {
   String getMarker(){
     Map<String, Integer> currentMarker = getNavMarker(true);
     try {
-      String rep = new ObjectMapper().writeValueAsString(currentMarker);
-      return rep;
+      return new ObjectMapper().writeValueAsString(currentMarker);
     } catch (IOException e){
       throw Throwables.propagate(e);
     }
