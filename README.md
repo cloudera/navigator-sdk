@@ -1,222 +1,189 @@
-Navigator Metadata Client
+Navigator SDK Java Client
 =========================
 
-A client library used by partner applications to enrich the metadata in
-Cloudera Navigator
+The Cloudera Navigator SDK is a client library that provides functionality to
+help users extract metadata from Navigator and to enrich the metadata in
+Navigator with custom metadata models, entities, and relationships.
 
-Partner application users often use high-level DSL to work with data. The DSL
-execution is often implemented as MapReduce or Pig jobs. Navigator can capture
-the low level operations but has no knowledge about the high-level DSL
-representation of the transformations. This document describes how partner
-applications can provide this metadata in an open format that’s extracted by
-Navigator to augment lineage information. Joint Navigator and partner
-application users will be able to see the correspondence between the existing
-Navigator lineage and the higher level DSL in the partner application.
+Sample Use Cases
+----------------
 
-As an example, let’s suppose there is a company T which makes a data preparation
-application. T allows its users to create a data preparation pipeline using a
-DSL called Stetson. The Stetson script is then implemented as a Pig job.
-Currently Navigator is only able to capture the underlying Pig job.
+*Incremental Metadata Extraction*
 
-However, the user did not specify the work in terms of Pig operations and would
-find it much easier to search and analyze provenance in terms of the
-Stetson script.
+Certain applications need to extract metadata from Navigator for their own
+ purposes or to integrate into an enterprise-wide metadata management system.
+ For almost any production Hadoop cluster, it is not feasible to do a full
+  extraction of all available metadata every time. Instead, the Navigator SDK
+  provides [code examples](examples/src/main/java/com/cloudera/nav/plugin/examples/extraction/MetadataExtraction.java)
+  to extract metadata in an incremental fashion.
+
+*Custom Metadata Entities and Lineage Augmentation*
+
+Many ETL and analytics applications built on top of Hadoop use a custom DSL to
+work with data. For their enterprise customers, Navigator can serve as the
+defacto governance solution. The Navigator SDK provides critical functionality
+that allows partner applications to create custom metadata models in Navigator
+and link the custom concepts in the external application to the underlying
+files, directories, and operations in Hadoop.
+
+As an example, let’s suppose there is a company Foo which makes a data
+preparation application. Foo allows its users to create a data preparation
+pipeline using a custom DSL. The custom DSL script is then implemented as Pig
+jobs. The Navigator SDK would allow Foo to create custom entities in Navigator
+to represent the custom DSL operations, executions, and input/output datasets.
+It would also allow Foo to then create relationships linking those custom
+entities to the underlying Pig jobs and executions. This makes it much easier
+for the end user to search and analyze provenance in terms of the custom DSL.
+
+See code examples [here](examples/src/main/java/com/cloudera/nav/plugin/examples/lineage)
+and [here](examples/src/main/java/com/cloudera/nav/plugin/examples/lineage2)
+ for details.
+
+*Custom Dataset Schema Definition*
+
+Data profiling applications often infer schema from CSV, Json, and other files
+that live in Hadoop. In order to help provide a data governance layer for those
+ applications, the Navigator SDK can be used to [augment](examples/src/main/java/com/cloudera/nav/plugin/examples/schema)
+ the file metadata with the inferred schema's. The schema information can then
+ be used to integrate with Navigator's policy engine to perform tasks like
+  tagging columns as private information and automatically encrypting sensitive
+  data.
+
+*Setting Custom Metadata*
+
+The Navigator API allows users to set tags and custom key-value pairs on
+metadata entities. The Navigator SDK provides an easy to use interface for users
+ to take advantage of those APIs. The [code examples](examples/src/main/java/com/cloudera/nav/plugin/examples/tags)
+ included in the SDK demonstrates setting tags for HDFS and Hive entities.
 
 
 Navigator Metadata
 ------------------
 
-The metadata managed by Navigator centers around three main concepts - Entity,
-Source, and Relation. Entities are objects defined by Hadoop components and
-services like HDFS, Hive, MapReduce, Pig, etc. Examples of Entities include
+The metadata managed by Navigator centers around three main concepts -
+[entity](model/src/main/java/com/cloudera/nav/plugin/model/entities/Entity.java),
+[source](model/src/main/java/com/cloudera/nav/plugin/model/Source.java),
+and [relation](model/src/main/java/com/cloudera/nav/plugin/model/relations/Relation.java).
+Entities are objects defined by Hadoop components and
+services like HDFS, Hive, MapReduce, Pig, etc. Examples of entities include
 HDFS files and directories, Hive databases, tables, columns, queries, MR jobs,
 job instances, and more. For each Hadoop object, Navigator defines a
-corresponding Entity subtype.
+corresponding entity subtype.
 
-Each Entity has a Source which is the Hadoop service or component that created
-the Entity. Source’s are the deployed service and it has a SourceType which is
-the type of service represented. Entities are also associated with an
-EntityType, which is the logical type of the object being represented by the
-Entity. This could be a file, directory, database, table, column, etc. It is
-important to note that the Entity is not associated with any particular Hadoop
-component.
+Each entity has a source which is the Hadoop service or component that created
+the entity. Each source has a source type which is the type of service
+represented. For example, Navigator may manage multiple HDFS services with names
+ from HDFS-1, HDFS-2, and so on. All of them will have the same source type which
+  is HDFS.
 
-For example, there could be an Entity which is of EntityType FILE defined by a
-Source of type HDFS reachable at the source url http://<host>:<port>/. Note that
-because an Entity is associated with a particular source, we cannot define an
-Entity subtype to capture objects from multiple services.
+Entities are also associated with an entity type, which is the logical type of
+the object being represented by the entity. This could be a file, directory,
+database, table, column, etc.
 
-The third major concept is that of a Relation. A Relation defines the
-connections between different Entities. A Relation by itself is defined by two
+The third major concept is that of a relation. A relation defines the
+connections between different entities. A relation is defined by two
 endpoints and is adirectional by itself. Each endpoint must have one or more
-Entities that have the same type and source. A Relation is also associated with
-a RelationType. Navigator defines several RelationType’s and for each
-RelationType, Navigator defines a Relation subclass to make the construction of
-these relationships easier. Example RelationType’s include:
+entities that have the same entity type and source. A relation is also
+associated with a relation type. Navigator defines several relation types and
+for each one, Navigator defines a relation subtype to make the construction of
+these relationships easier. The relation types are:
 
-DataFlow - the endpoints are sources and targets indicating movement of data
+- [DataFlow](model/src/main/java/com/cloudera/nav/plugin/model/relations/DataFlowRelation.java) -
+the endpoints are sources and targets indicating movement of data
 (e.g., query input -> query output)
 
-ParentChild - the endpoints are parent and child(ren) indicating containment
+- [ParentChild](model/src/main/java/com/cloudera/nav/plugin/model/relations/ParentChildRelation.java) -
+the endpoints are parent and child(ren) indicating containment
 (e.g., directory -> files)
 
-LogicalPhysical - the endpoints are logical and physical indicating the
+- [LogicalPhysical](model/src/main/java/com/cloudera/nav/plugin/model/relations/LogicalPhysicalRelation.java) -
+the endpoints are logical and physical indicating the
 connection between an abstract entity and its concrete manifestation (e.g.,
 Hive table -> HDFS directory which has the data)
 
-InstanceOf - the endpoints are template and instance indicating the connection
+- [InstanceOf](model/src/main/java/com/cloudera/nav/plugin/model/relations/InstanceOfRelation.java) -
+the endpoints are template and instance indicating the connection
 between an operation and its execution.
 
 
 
-Client Library
---------------
-
-Each time a partner application executes a unit of work, it needs to capture the
-set of instructions that was just executed (like the Stetson script) as well as
-information about the actual execution (Stetson instance). It will also need to
-match the template script and instance with the underlying Hadoop operation and
-operation execution (e.g., Pig job and job instance). It needs to provide all of
-that information to Navigator along with a commonly agreed upon way to identify
-the aforementioned entities.
-
-In order to make this process easier, Navigator will provide a Java client
-library to be used by the partner application developer. The library will
-provide a generic Entity class that can be extended for the partner applications
-templates and instances. Relationships between the templates, instances, and the
-underlying Hadoop operations and executions should be specified as part of the
-entity model using annotation tools provided by the Navigator client library.
-
-Each instance of Entity is uniquely identified by a string id which is created
-by a factory. Depending on the custom entity, the developer may need to create
-new entity id factories. Basic validation should be performed when a new Entity
-instance is created.
-
-Finally, the client library will provide a NavigatorPlugin class that writes the
-new lineage information to a place that Navigator can consume. The
-NavigatorPlugin also allows the user to define custom entity types in Navigator.
-The plugin interface is specified in Appendix A. Sample cases for the plugin are
-provided in the remaining sections of this document.
-
-
-Custom Entity Types
--------------------
-
-Before the partner application starts writing metadata information, it must
-register the metadata model with Navigator. Navigator should be configured to
-assign a unique namespace to a particular partner application. While this isn’t
-as flexible from the perspective of the partner application, it prevents
-namespace collisions if more than one application is providing metadata to
-Navigator. Within Navigator, all new custom entity attributes will automatically
-be prefixed by the namespace to prevent collisions across plugin users. This
-means that, at least for now, users of the Navigator search UI must search by
-the full prefixed attribute name.
+Custom Entities and Relations
+-----------------------------
 
 In order to create custom entities, the Navigator client library provides enums,
 annotations, and a plugin to help partner application define and register custom
-entities. A sample interface for a custom entity might look like the following:
+entities. A sample custom entity might look like the following:
 
-```
-package com.partner.app.lineage.model
-
-@MClass
+```java
+@MClass(model = "stetson_op")
 public class StetsonScript extends Entity {
 
-    @MProperty
-    public String getScript();
+  @MRelation(role = RelationRole.PHYSICAL)
+  private EndPointProxy pigOperation;
+  @MProperty
+  private String script;
 
-    @MProperty
-    public EntityType getType() {
-      return EntityTypes.OPERATION;
-    }
+  public String getScript() {
+    return script;
+  }
 
-    @MRelation(role=RelationRole.PHYSICAL, sourceType=SourceTypes.PIG)
-    public String getPigOperationId();
+  @Override
+  public EntityType getType() {
+    return EntityTypes.OPERATION;
+  }
+
+  public Entity getPigOperation() {
+    return pigOperation;
+  }
 }
 ```
 
-The client library provides enums used in the above example like EntityType,
-RelationType, and RelationRole. Annotations like @MClass, @MProperty, and
-@MRelation are also provided and are required for model registration. The client
-library also provides an id generator for Pig operations based on the job name
-(e.g., “PigLatin:workflow.pig”) and the logical plan hash in the job
-configuration.
-
-An instance definition might look like:
-
-```
-package com.partner.app.lineage.model
-
-@MClass
-public class StetsonInstance extends Entity {
-
-    @MProperty
-    public EntityType getType() {
-      return EntityTypes.OPERATION_EXECUTION;
-    }
-
-    @MProperty
-    public Long getStartTime();
-
-    @MRelation(role=RelationRole.TEMPLATE)
-    public StetsonScript getTemplate();
-
-    @MRelation(role=RelationRole.PHYSICAL, sourceType=SourceTypes.PIG)
-    public String getPigOperationExecutionId();
-}
-```
-
-The client library will provide an id generator for creating Pig operation
-execution id’s based on the operation and the job id given by JobTracker.
+The client library provides enums used in the above example like
+[EntityType](model/src/main/java/com/cloudera/nav/plugin/model/entities/EntityType.java),
+[RelationType](model/src/main/java/com/cloudera/nav/plugin/model/relations/RelationType.java),
+and [RelationRole](model/src/main/java/com/cloudera/nav/plugin/model/relations/RelationRole.java).
+The [@MClass](model/src/main/java/com/cloudera/nav/plugin/model/annotations/MClass.java)
+annotation indicates that the StetsonScript class is a custom metadata model.
+The [@MProperty](model/src/main/java/com/cloudera/nav/plugin/model/annotations/MProperty.java)
+annotation indicates that script is a model field. The
+[@MRelation](model/src/main/java/com/cloudera/nav/plugin/model/annotations/MRelation.java)
+annotation in the example indicates that StetsonScript entity should be
+connected to the given Pig operation entity with a logical-physical relation
+(where the Pig operation is the physical entity).
 
 
-Creating Lineage Metadata
--------------------------
 
-The lineage metadata will be written to Navigator. The URI for the location to
-which metadata will be written should be provided to the PluginConfigurations.
-Currently the plugin only supports a direct push to the Navigator API, so the
-URI should look like "http://<host>:<port>/api/v7/plugin". In the future we do
-plan to add support for offline writing to HDFS and the local file system.
+Writing to Navigator
+--------------------
 
-```
-config.setMetadataParentUri("http://<host>:<port>/api/v7/plugin");
-```
+Once the custom metadata models have been defined, we can use the
+[NavigatorPlugin](client/src/main/java/com/cloudera/nav/plugin/client/NavigatorPlugin.java)
+class to write custom metadata to Navigator. Creating a NavigatorPlugin requires
+a set of configurations that includes properties like the Navigator API URL. See
+the provided [sample configuration](examples/src/main/resources/sample.conf)
+for details.
 
-The steps for creating custom lineage metadata involve creating instances of the
-custom entities and using the client library to associate the custom entities
-with the underlying Hadoop entities. Let’s use the StetsonScript from above, and
-further assume we’ve also defined a StetsonInstance class that corresponds to a
-particular execution of a StetsonScript. An example would look like the
-following:
+An example workflow might look like the following:
 
-```
-    // Create the template
-    StetsonScript script = new StetsonScript();
-    script.setNamespace(config.getNamespace());
-    script.setIdentity(script.generateId());
-    script.setScript("LOAD\nGROUPBY\nAGGREGATE");
-    script.setName("myScript");
-    script.setOwner("Chang");
-    script.setPigOperationId(operationId);
-    script.setDescription("I am a custom operation template");
+```java
+// Create the plugin
+NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(
+  "/home/chang/.navigator/navigator_sdk.conf");
 
-    // Create the instance
-    StetsonExecution exec = new StetsonExecution();
-    exec.setNamespace(config.getNamespace());
-    exec.setName("myExecution");
-    exec.setTemplate(script);
-    Date started = new Date();
-    exec.setStartTime(started.getTime());
-    exec.setEndTime((started.getTime() + 10000));
-    exec.setStetsonInstId("foobarbaz");
-    exec.setPigExecutionId(execId);
-    exec.setDescription("I am a custom operation instance");
-```
+// Create the template
+StetsonScript script = new StetsonScript();
+script.setNamespace(config.getNamespace());
+script.setIdentity(script.generateId());
+script.setName("myScript");
+script.setPigOperationId(operationId);
 
-This completes the lineage augmentation creation process, and the information
-can be written for Navigator consumption by simply calling the NavigatorPlugin:
+// Create the instance
+StetsonExecution exec = new StetsonExecution();
+exec.setNamespace(config.getNamespace());
+exec.setName("myExecution");
+exec.setTemplate(script);
+exec.setPigExecutionId(execId);
 
-```
+// Write the metadata
 plugin.write(exec);
 ```

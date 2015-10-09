@@ -18,11 +18,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.cloudera.navigator</groupId>
-  <artifactId>plugin</artifactId>
+  <artifactId>navigator-sdk</artifactId>
   <packaging>pom</packaging>
-  <version>2.4.0-SNAPSHOT</version>
-  <name>Cloudera Navigator Metadata Plugin Client</name>
-  <url>https://github.com/cloudera/navigator-plugin</url>
+  <version>1.0-SNAPSHOT</version>
+  <name>Cloudera Navigator SDK Java Client</name>
+  <url>https://github.com/cloudera/navigator-sdk</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,7 +30,6 @@
     <eclipse.output.directory>eclipse-classes</eclipse.output.directory>
     <joda.version>2.1</joda.version>
     <jetty.version>8.1.14.v20131031</jetty.version>
-    <navigator.version>${project.version}</navigator.version>
 
     <spring.version>4.0.7.RELEASE</spring.version>
     <topdir>${project.parent.basedir}</topdir>
@@ -72,18 +71,18 @@
 
   <issueManagement>
     <system>GITHUB</system>
-    <url>https://github.com/cloudera/navigator-plugin/issues</url>
+    <url>https://github.com/cloudera/navigator-sdk/issues</url>
   </issueManagement>
 
   <ciManagement>
     <system>travis-ci</system>
-    <url></url>
+    <url>https://travis-ci.org/cloudera/navigator-sdk</url>
   </ciManagement>
 
   <scm>
-    <url>http://github.com/cloudera/navigator-plugin</url>
-    <connection>scm:git:git://github.com/cloudera/navigator.git</connection>
-    <developerConnection>scm:git:git@github.com:cloudera/navigator.git</developerConnection>
+    <url>http://github.com/cloudera/navigator-sdk</url>
+    <connection>scm:git:git://github.com/cloudera/navigator-sdk.git</connection>
+    <developerConnection>scm:git:git@github.com:cloudera/navigator-sdk.git</developerConnection>
   </scm>
 
   <reporting>
@@ -355,18 +354,18 @@
     <dependencies>
       <dependency>
         <groupId>com.cloudera.navigator</groupId>
-        <artifactId>plugin-model</artifactId>
-        <version>${navigator.version}</version>
+        <artifactId>navigator-sdk-model</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.cloudera.navigator</groupId>
-        <artifactId>plugin-client</artifactId>
-        <version>${navigator.version}</version>
+        <artifactId>navigator-sdk-client</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>com.cloudera.navigator</groupId>
-        <artifactId>plugin-examples</artifactId>
-        <version>${navigator.version}</version>
+        <artifactId>navigator-sdk-examples</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>log4j</groupId>
