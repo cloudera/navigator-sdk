@@ -37,6 +37,7 @@ public class PluginConfigurations {
   private Configuration hadoopConf;
   private Format format;
   private Map<String, Object> props;
+  private boolean autocommit;
 
   public PluginConfigurations() {
     props = Maps.newHashMap();
@@ -176,5 +177,13 @@ public class PluginConfigurations {
 
   public Object getProperty(String key) {
     return props.get(key);
+  }
+
+  public boolean isAutocommit() {
+    return autocommit;
+  }
+
+  public void setAutocommit(boolean autocommit) {
+    this.autocommit = autocommit;
   }
 }

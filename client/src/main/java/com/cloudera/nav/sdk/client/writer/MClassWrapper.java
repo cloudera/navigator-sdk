@@ -32,6 +32,7 @@ public class MClassWrapper {
 
   private final Map<String, Entity> entities;
   private final Map<String, Relation> relations;
+  private boolean autocommit;
 
   public MClassWrapper() {
     this.entities = Maps.newHashMap();
@@ -54,10 +55,6 @@ public class MClassWrapper {
     return relations.values();
   }
 
-  public boolean hasRelation(Relation r) {
-    return relations.containsKey(r.getIdentity());
-  }
-
   public void addRelation(Relation r) {
     relations.put(r.getIdentity(), r);
   }
@@ -66,5 +63,13 @@ public class MClassWrapper {
     for (Relation r : relations) {
       addRelation(r);
     }
+  }
+
+  public boolean isAutocommit() {
+    return autocommit;
+  }
+
+  public void setAutocommit(boolean autocommit) {
+    this.autocommit = autocommit;
   }
 }

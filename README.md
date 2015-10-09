@@ -189,3 +189,19 @@ exec.setPigExecutionId(execId);
 // Write the metadata
 plugin.write(exec);
 ```
+
+
+
+Usage Notes
+-----------
+
+- If you have configuration variables already setup elsewhere, instead of using
+`NavigatorPlugin.fromConfigFile` you can use `NavigatorPlugin.fromConfigMap` and
+ pass in a `Map` of configurations.
+
+- By default, Navigator throttles its own internal committing process so that
+  new metadata won't be available immediately. For testing and development,
+  you can add a configuration variable "autocommit=true". However, it is very
+  strongly recommended that you do not use this in production in order to avoid
+  performance degradation and memory usage issues when running at scale.
+

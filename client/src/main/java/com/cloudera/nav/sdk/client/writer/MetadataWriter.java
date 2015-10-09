@@ -58,6 +58,7 @@ public abstract class MetadataWriter {
 
   public void write(Collection<Entity> entities) {
     MClassWrapper mclassWrapper = new MClassWrapper();
+    mclassWrapper.setAutocommit(config.isAutocommit());
     for (Entity entity : entities) {
       Preconditions.checkNotNull(entity);
       getAllMClasses(entity, mclassWrapper);
@@ -71,6 +72,7 @@ public abstract class MetadataWriter {
 
   public void writeRelations(Collection<Relation> relations) {
     MClassWrapper mClassWrapper = new MClassWrapper();
+    mClassWrapper.setAutocommit(config.isAutocommit());
     mClassWrapper.addRelations(relations);
     persistMetadataValues(mClassWrapper);
   }
