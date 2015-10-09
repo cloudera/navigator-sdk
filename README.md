@@ -16,7 +16,7 @@ Certain applications need to extract metadata from Navigator for their own
  purposes or to integrate into an enterprise-wide metadata management system.
  For almost any production Hadoop cluster, it is not feasible to do a full
   extraction of all available metadata every time. Instead, the Navigator SDK
-  provides [code examples](examples/src/main/java/com/cloudera/nav/navigator-sdk/examples/extraction/MetadataExtraction.java)
+  provides [code examples](examples/src/main/java/com/cloudera/nav/sdk/examples/extraction/MetadataExtraction.java)
   to extract metadata in an incremental fashion.
 
 *Custom Metadata Entities and Lineage Augmentation*
@@ -37,15 +37,15 @@ It also allows Foo to then create relationships linking those custom
 entities to the underlying Pig jobs and executions. This makes it much easier
 for the end user to search and analyze provenance in terms of the custom DSL.
 
-See code examples [here](examples/src/main/java/com/cloudera/nav/navigator-sdk/examples/lineage)
-and [here](examples/src/main/java/com/cloudera/nav/navigator-sdk/examples/lineage2)
+See code examples [here](examples/src/main/java/com/cloudera/nav/sdk/examples/lineage)
+and [here](examples/src/main/java/com/cloudera/nav/sdk/examples/lineage2)
  for details.
 
 *Custom Dataset Schema Definition*
 
 Data profiling applications often infer schema from CSV, JSON, and other files 
 in Hadoop. In order to help provide a data governance layer for those
- applications, the Navigator SDK can be used to [augment](examples/src/main/java/com/cloudera/nav/navigator-sdk/examples/schema)
+ applications, the Navigator SDK can be used to [augment](examples/src/main/java/com/cloudera/nav/sdk/examples/schema)
  the file metadata with the inferred schemas. The schema information can then
  be used to integrate with Navigator's policy engine to perform tasks such as
   tagging columns as private information.
@@ -54,7 +54,7 @@ in Hadoop. In order to help provide a data governance layer for those
 
 The Navigator API allows users to set tags and custom key-value pairs on
 metadata entities. The Navigator SDK provides an easy-to-use interface for users
- to take advantage of those APIs. The [code examples](examples/src/main/java/com/cloudera/nav/navigator-sdk/examples/tags)
+ to take advantage of those APIs. The [code examples](examples/src/main/java/com/cloudera/nav/sdk/examples/tags)
  included in the SDK demonstrates setting tags for HDFS and Hive entities.
 
 
@@ -62,9 +62,9 @@ Navigator Metadata
 ------------------
 
 The metadata managed by Navigator centers around three main concepts -
-[entity](model/src/main/java/com/cloudera/nav/navigator-sdk/model/entities/Entity.java),
-[source](model/src/main/java/com/cloudera/nav/navigator-sdk/model/Source.java),
-and [relation](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/Relation.java).
+[entity](model/src/main/java/com/cloudera/nav/sdk/model/entities/Entity.java),
+[source](model/src/main/java/com/cloudera/nav/sdk/model/Source.java),
+and [relation](model/src/main/java/com/cloudera/nav/sdk/model/relations/Relation.java).
 Entities are objects defined by Hadoop components and
 services like HDFS, Hive, MapReduce, Pig, etc. Examples of entities include
 HDFS files and directories, Hive databases, tables, columns, queries, MR jobs,
@@ -89,20 +89,20 @@ associated with a relation type. Navigator defines several relation types and
 for each one, Navigator defines a relation subtype to make the construction of
 these relationships easier. The relation types are:
 
-- [DataFlow](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/DataFlowRelation.java) -
+- [DataFlow](model/src/main/java/com/cloudera/nav/sdk/model/relations/DataFlowRelation.java) -
 the endpoints are sources and targets indicating movement of data
 (e.g., query input -> query output)
 
-- [ParentChild](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/ParentChildRelation.java) -
+- [ParentChild](model/src/main/java/com/cloudera/nav/sdk/model/relations/ParentChildRelation.java) -
 the endpoints are parent and child(ren) indicating containment
 (e.g., directory -> files)
 
-- [LogicalPhysical](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/LogicalPhysicalRelation.java) -
+- [LogicalPhysical](model/src/main/java/com/cloudera/nav/sdk/model/relations/LogicalPhysicalRelation.java) -
 the endpoints are logical and physical indicating the
 connection between an abstract entity and its concrete manifestation (e.g.,
 Hive table -> HDFS directory which has the data)
 
-- [InstanceOf](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/InstanceOfRelation.java) -
+- [InstanceOf](model/src/main/java/com/cloudera/nav/sdk/model/relations/InstanceOfRelation.java) -
 the endpoints are template and instance indicating the connection
 between an operation and its execution.
 
@@ -140,14 +140,14 @@ public class StetsonScript extends Entity {
 ```
 
 The client library provides enums like
-[EntityType](model/src/main/java/com/cloudera/nav/navigator-sdk/model/entities/EntityType.java),
-[RelationType](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/RelationType.java),
-and [RelationRole](model/src/main/java/com/cloudera/nav/navigator-sdk/model/relations/RelationRole.java) used in the above example.
-The [@MClass](model/src/main/java/com/cloudera/nav/navigator-sdk/model/annotations/MClass.java)
+[EntityType](model/src/main/java/com/cloudera/nav/sdk/model/entities/EntityType.java),
+[RelationType](model/src/main/java/com/cloudera/nav/sdk/model/relations/RelationType.java),
+and [RelationRole](model/src/main/java/com/cloudera/nav/sdk/model/relations/RelationRole.java) used in the above example.
+The [@MClass](model/src/main/java/com/cloudera/nav/sdk/model/annotations/MClass.java)
 annotation indicates that the StetsonScript class is a custom metadata model.
-The [@MProperty](model/src/main/java/com/cloudera/nav/navigator-sdk/model/annotations/MProperty.java)
+The [@MProperty](model/src/main/java/com/cloudera/nav/sdk/model/annotations/MProperty.java)
 annotation indicates that script is a model field. The
-[@MRelation](model/src/main/java/com/cloudera/nav/navigator-sdk/model/annotations/MRelation.java)
+[@MRelation](model/src/main/java/com/cloudera/nav/sdk/model/annotations/MRelation.java)
 annotation in the example indicates that StetsonScript entity should be
 connected to the given Pig operation entity with a logical-physical relation
 (where the Pig operation is the physical entity).
@@ -158,7 +158,7 @@ Writing to Navigator
 --------------------
 
 Once the custom metadata models have been defined, users can use the
-[NavigatorPlugin](client/src/main/java/com/cloudera/nav/navigator-sdk/client/NavigatorPlugin.java)
+[NavigatorPlugin](client/src/main/java/com/cloudera/nav/sdk/client/NavigatorPlugin.java)
 class to write custom metadata to Navigator. Creating a NavigatorPlugin requires
 a set of configurations that includes properties like the Navigator API URL. See
 the provided [sample configuration](examples/src/main/resources/sample.conf)
