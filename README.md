@@ -204,4 +204,3 @@ Usage Notes
   you can add a configuration variable "autocommit=true". However, it is very
   strongly recommended that you do not use this in production in order to avoid
   performance degradation and memory usage issues when running at scale.
-
