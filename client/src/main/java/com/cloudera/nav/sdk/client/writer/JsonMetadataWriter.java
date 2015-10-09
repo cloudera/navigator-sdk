@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.plugin.client.writer;
+package com.cloudera.nav.sdk.client.writer;
 
-import com.cloudera.nav.plugin.client.PluginConfigurations;
-import com.cloudera.nav.plugin.client.writer.serde.EntitySerializer;
-import com.cloudera.nav.plugin.client.writer.serde.RelationSerializer;
+import com.cloudera.nav.sdk.client.PluginConfigurations;
+import com.cloudera.nav.sdk.client.writer.serde.EntitySerializer;
+import com.cloudera.nav.sdk.client.writer.serde.RelationSerializer;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Throwables;
 
 import java.io.IOException;
@@ -59,6 +62,9 @@ public class JsonMetadataWriter extends MetadataWriter {
     module.addSerializer(new EntitySerializer(registry));
     module.addSerializer(new RelationSerializer(registry));
     mapper.registerModule(module);
+    mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    mapper.configure(DeserializationFeature.WRAP_EXCEPTIONS, false);
+    mapper.registerModule(new JodaModule());
     return mapper;
   }
 
