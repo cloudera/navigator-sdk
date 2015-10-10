@@ -18,6 +18,7 @@ package com.cloudera.nav.sdk.examples.tags;
 
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
+import com.cloudera.nav.sdk.client.writer.ResultSet;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.entities.HiveColumn;
@@ -50,6 +51,11 @@ public class SetHiveTags {
     Source hive = client.getOnlySource(SourceType.HIVE);
     column.setSourceId(hive.getIdentity());
 
-    plugin.write(column);
+    // Write metadata
+    ResultSet results = plugin.write(column);
+
+    if (results.hasErrors()) {
+      throw new RuntimeException(results.toString());
+    }
   }
 }

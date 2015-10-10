@@ -17,6 +17,7 @@
 package com.cloudera.nav.sdk.examples.lineage;
 
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
+import com.cloudera.nav.sdk.client.writer.ResultSet;
 
 import org.joda.time.Instant;
 
@@ -73,7 +74,11 @@ public class CustomLineageCreator {
     script.setIdentity(script.generateId());
     exec.setTemplate(script);
     // Write metadata
-    plugin.write(exec);
+    ResultSet results = plugin.write(exec);
+
+    if (results.hasErrors()) {
+      throw new RuntimeException(results.toString());
+    }
   }
 
   public String getPigOperationId() {
@@ -97,7 +102,6 @@ public class CustomLineageCreator {
     script.setPigOperation(getPigOperationId());
     script.setName("Stetson Script");
     script.setOwner("Chang");
-    script.setScript("LOAD GROUPBY AGGREGATE");
     script.setDescription("I am a custom operation template");
     return script;
   }

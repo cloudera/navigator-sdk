@@ -17,6 +17,7 @@ package com.cloudera.nav.sdk.client;
 
 import com.cloudera.nav.sdk.client.writer.MetadataWriter;
 import com.cloudera.nav.sdk.client.writer.MetadataWriterFactory;
+import com.cloudera.nav.sdk.client.writer.ResultSet;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -111,15 +112,15 @@ public class NavigatorPlugin {
    * Write the custom entity
    * @param entity
    */
-  public void write(Entity entity) {
-    write(ImmutableList.of(entity));
+  public ResultSet write(Entity entity) {
+    return write(ImmutableList.of(entity));
   }
 
   /**
    * Write a collection of custom entities
    * @param entities
    */
-  public void write(Collection<Entity> entities) {
+  public ResultSet write(Collection<Entity> entities) {
     MetadataWriter writer = factory.newWriter(config);
     try {
       writer.write(entities);
@@ -127,6 +128,7 @@ public class NavigatorPlugin {
     } finally {
       writer.close();
     }
+    return writer.getLastResultSet();
   }
 
   /**
