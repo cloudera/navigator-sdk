@@ -18,6 +18,7 @@ package com.cloudera.nav.sdk.examples.tags;
 
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
+import com.cloudera.nav.sdk.client.writer.ResultSet;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.entities.EntityType;
@@ -47,6 +48,11 @@ public class SetHdfsFileTags {
     dir.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
         "CONTAINS_SOME_SUPER_SECRET_STUFF"));
 
-    plugin.write(dir);
+    // Write metadata
+    ResultSet results = plugin.write(dir);
+
+    if (results.hasErrors()) {
+      throw new RuntimeException(results.toString());
+    }
   }
 }

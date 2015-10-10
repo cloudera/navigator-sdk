@@ -17,6 +17,7 @@
 package com.cloudera.nav.sdk.examples.schema;
 
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
+import com.cloudera.nav.sdk.client.writer.ResultSet;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.entities.EntityType;
@@ -63,6 +64,11 @@ public class FireCircleSchemaCreator {
         new FireCircleField("col5", "date"),
         new FireCircleField("col6", "string")
     ));
-    plugin.write(dataset);
+    // Write metadata
+    ResultSet results = plugin.write(dataset);
+
+    if (results.hasErrors()) {
+      throw new RuntimeException(results.toString());
+    }
   }
 }

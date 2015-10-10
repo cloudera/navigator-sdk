@@ -19,7 +19,6 @@ package com.cloudera.nav.sdk.examples.lineage;
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
-import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
@@ -37,8 +36,6 @@ public class StetsonScript extends Entity {
 
   @MRelation(role = RelationRole.PHYSICAL)
   private EndPointProxy pigOperation;
-  @MProperty
-  private String script;
 
   public StetsonScript(String namespace) {
     // Because the namespace is given to input/output we ensure it
@@ -71,13 +68,6 @@ public class StetsonScript extends Entity {
   }
 
   /**
-   * The script contents in the custom DSL
-   */
-  public String getScript() {
-    return script;
-  }
-
-  /**
    * The StetsonScript is linked to a PIG operation via a Logical-Physical
    * relationship where the Pig operation is the PHYSICAL node
    */
@@ -88,9 +78,5 @@ public class StetsonScript extends Entity {
   public void setPigOperation(String pigOperationId) {
     this.pigOperation = new EndPointProxy(pigOperationId, SourceType.PIG,
         EntityType.OPERATION);
-  }
-
-  public void setScript(String script) {
-    this.script = script;
   }
 }

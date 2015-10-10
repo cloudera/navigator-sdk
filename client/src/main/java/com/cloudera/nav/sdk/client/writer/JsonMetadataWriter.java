@@ -38,18 +38,20 @@ import org.apache.commons.httpclient.HttpStatus;
 public class JsonMetadataWriter extends MetadataWriter {
 
   private final HttpURLConnection conn;
+  private final ObjectMapper mapper;
+  private ResultSet lastResult;
 
   public JsonMetadataWriter(PluginConfigurations config,
                             OutputStream stream,
                             HttpURLConnection conn) {
     super(config, stream);
     this.conn = conn;
+    this.mapper = newMapper();
   }
 
   @Override
   protected void persistMetadataValues(MClassWrapper mclassWrapper) {
     try {
-      ObjectMapper mapper = newMapper();
       mapper.writeValue(stream, mclassWrapper);
     } catch (IOException e) {
       Throwables.propagate(e);
@@ -78,8 +80,14 @@ public class JsonMetadataWriter extends MetadataWriter {
             "Error writing metadata (code %s): %s", conn.getResponseCode(),
             conn.getResponseMessage()));
       }
+      lastResult = mapper.readValue(conn.getInputStream(), ResultSet.class);
     } catch (IOException e) {
       Throwables.propagate(e);
     }
+  }
+
+  @Override
+  public ResultSet getLastResultSet() {
+    return lastResult;
   }
 }

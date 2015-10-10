@@ -102,6 +102,11 @@ public abstract class MetadataWriter {
     registry.reset();
   }
 
+  /**
+   * @return latest ResultSet from the most recent write operation
+   */
+  public abstract ResultSet getLastResultSet();
+
   private void getAllMClasses(Entity entity, MClassWrapper graph) {
     if (StringUtils.isEmpty(entity.getIdentity())) {
       entity.setIdentity(entity.generateId());
