@@ -43,7 +43,7 @@ public class CustomOperationExecution extends Entity {
   private Long endTime;
 
   public CustomOperationExecution() {
-    setSourceType(SourceType.PLUGIN);
+    setSourceType(SourceType.SDK);
     setEntityType(EntityType.OPERATION_EXECUTION);
   }
 

@@ -40,7 +40,7 @@ public class FireCircleDataset extends Dataset {
 
   public FireCircleDataset() {
     super();
-    setSourceType(SourceType.PLUGIN);
+    setSourceType(SourceType.SDK);
     setNamespace("FireCircle");
   }
 
