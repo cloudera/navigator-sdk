@@ -36,23 +36,23 @@ public class RelationIdGeneratorTest {
   @Test
   public void testGenerateRelationIdentity() {
     String id = idGenerator.generateRelationIdentity(
-        ImmutableList.of("ep1", "ep11"), SourceType.PLUGIN,
+        ImmutableList.of("ep1", "ep11"), SourceType.SDK,
         ImmutableList.of("ep2", "ep21"), SourceType.PIG,
         RelationType.DATA_FLOW, "test");
     Assert.assertEquals(MD5IdGenerator.generateIdentity("test",
         RelationType.DATA_FLOW.name(),
-        "ep1,ep11", SourceType.PLUGIN.name(),
+        "ep1,ep11", SourceType.SDK.name(),
         "ep2,ep21", SourceType.PIG.name()), id);
   }
 
   @Test
   public void testSorted() {
     String result = idGenerator.generateRelationIdentity(
-        ImmutableList.of("ep11", "ep1"), SourceType.PLUGIN,
+        ImmutableList.of("ep11", "ep1"), SourceType.SDK,
         ImmutableList.of("ep21", "ep2"), SourceType.PIG,
         RelationType.DATA_FLOW, "test");
     String expected = idGenerator.generateRelationIdentity(
-        ImmutableList.of("ep1", "ep11"), SourceType.PLUGIN,
+        ImmutableList.of("ep1", "ep11"), SourceType.SDK,
         ImmutableList.of("ep2", "ep21"), SourceType.PIG,
         RelationType.DATA_FLOW, "test");
     assertEquals(expected, result);

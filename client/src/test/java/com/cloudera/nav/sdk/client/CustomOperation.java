@@ -39,7 +39,7 @@ public class CustomOperation extends Entity {
 
   public CustomOperation() {
     setEntityType(EntityType.OPERATION);
-    setSourceType(SourceType.PLUGIN);
+    setSourceType(SourceType.SDK);
   }
 
   /**

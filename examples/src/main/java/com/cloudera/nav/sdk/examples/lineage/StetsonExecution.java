@@ -68,7 +68,7 @@ public class StetsonExecution extends Entity {
 
   @Override
   public SourceType getSourceType() {
-    return SourceType.PLUGIN;
+    return SourceType.SDK;
   }
 
   /**

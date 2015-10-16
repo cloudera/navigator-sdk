@@ -205,7 +205,7 @@ public class JsonMetadataWriterTest {
   @SuppressWarnings("unchecked")
   @Test
   public void testWriteComposite() throws IOException {
-    Source source = new Source("ExternalApp", SourceType.PLUGIN, "ExternalApp",
+    Source source = new Source("ExternalApp", SourceType.SDK, "ExternalApp",
         "http://appHost:port", 0);
     CustomOperationExecution exec = prepExec(source);
     JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,

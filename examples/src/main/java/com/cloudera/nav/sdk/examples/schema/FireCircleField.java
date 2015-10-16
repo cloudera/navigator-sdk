@@ -25,7 +25,7 @@ public class FireCircleField extends DatasetField {
 
   public FireCircleField() {
     super();
-    setSourceType(SourceType.PLUGIN);
+    setSourceType(SourceType.SDK);
     setNamespace("FireCircle");
   }
 
