@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.client;
 
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
-import com.cloudera.nav.sdk.client.EntityResultsBatch;
-import com.cloudera.nav.sdk.client.NavApiCient;
-import com.cloudera.nav.sdk.client.QueryCriteria;
-import com.cloudera.nav.sdk.client.RelationResultsBatch;
+import com.cloudera.nav.sdk.model.MetadataType;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -32,18 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.*;
+import org.junit.runner.*;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.runners.*;
 
 /**
  * Unit tests for IncrementalExtractIterator
  */
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
-public class IncrementalExtractIteratorTest {
+public class MetadataResultIteratorTest {
   private NavApiCient client;
   private EntityResultsBatch entityBatch;
   private RelationResultsBatch relationBatch;
@@ -58,24 +52,24 @@ public class IncrementalExtractIteratorTest {
     relationBatch = new RelationResultsBatch();
     relationBatch.setCursorMark("nextCursor");
     relationBatch.setResults(result);
-    when(client.getEntityBatch((QueryCriteria) argThat(new QueryArgumentsMatcher())))
+    when(client.getEntityBatch((MetadataQuery) argThat(new QueryArgumentsMatcher())))
         .thenReturn(entityBatch);
-    when(client.getRelationBatch((QueryCriteria) argThat(new QueryArgumentsMatcher())))
+    when(client.getRelationBatch((MetadataQuery) argThat(new QueryArgumentsMatcher())))
         .thenReturn(relationBatch);
   }
 
   protected static class QueryArgumentsMatcher extends ArgumentMatcher{
     public boolean matches(Object o){
-      return (o instanceof QueryCriteria);
+      return (o instanceof MetadataQuery);
     }
   }
 
   @Test(expected = NoSuchElementException.class)
   public void testNextNone(){
     List<String> extractorRunIds = Lists.newArrayList("x##0", "x##1", "x##2");
-    IncrementalExtractIterator incrementalExtractIterator = new IncrementalExtractIterator(client,
+    MetadataResultIterator metadataResultIterator = new MetadataResultIterator(client,
         MetadataType.ENTITIES,"identity:*", 100, extractorRunIds);
-    Map<String, Object> next = incrementalExtractIterator.next();
+    Map<String, Object> next = metadataResultIterator.next();
   }
 
   @Test
@@ -84,9 +78,9 @@ public class IncrementalExtractIteratorTest {
     Map<String, Object> singleResult = Maps.newHashMap();
     singleResult.put("field", "value");
     entityBatch.setResults(Lists.newArrayList(singleResult));
-    IncrementalExtractIterator incrementalExtractIterator = new IncrementalExtractIterator(client,
+    MetadataResultIterator metadataResultIterator = new MetadataResultIterator(client,
         MetadataType.ENTITIES,"identity:*", 100, extractorRunIds);
-    assertEquals(entityBatch.getResults().get(0), incrementalExtractIterator.next());
+    assertEquals(entityBatch.getResults().get(0), metadataResultIterator.next());
   }
 
   @Test
@@ -95,9 +89,9 @@ public class IncrementalExtractIteratorTest {
     Map<String, Object> singleResult = Maps.newHashMap();
     singleResult.put("field", "value");
     relationBatch.setResults(Lists.newArrayList(singleResult));
-    IncrementalExtractIterator incrementalExtractIterator = new IncrementalExtractIterator(client,
+    MetadataResultIterator metadataResultIterator = new MetadataResultIterator(client,
         MetadataType.RELATIONS, "identity:*", 100, extractorRunIds);
-    assertEquals(relationBatch.getResults().get(0), incrementalExtractIterator.next());
+    assertEquals(relationBatch.getResults().get(0), metadataResultIterator.next());
   }
 
   @Test
@@ -106,10 +100,10 @@ public class IncrementalExtractIteratorTest {
     Map<String, Object> singleResult = Maps.newHashMap();
     singleResult.put("field", "value");
     entityBatch.setResults(Lists.newArrayList(singleResult));
-    IncrementalExtractIterator incrementalExtractIterator = new IncrementalExtractIterator(client,
+    MetadataResultIterator metadataResultIterator = new MetadataResultIterator(client,
         MetadataType.ENTITIES, "identity:*", 100, extractorRunIds);
-    incrementalExtractIterator.getNextBatch();
-    assertTrue(incrementalExtractIterator.hasNext());
+    metadataResultIterator.getNextBatch();
+    assertTrue(metadataResultIterator.hasNext());
   }
 }
 

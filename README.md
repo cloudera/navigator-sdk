@@ -16,7 +16,7 @@ Certain applications need to extract metadata from Navigator for their own
  purposes or to integrate into an enterprise-wide metadata management system.
  For almost any production Hadoop cluster, it is not feasible to do a full
   extraction of all available metadata every time. Instead, the Navigator SDK
-  provides [code examples](examples/src/main/java/com/cloudera/nav/sdk/examples/extraction/MetadataExtraction.java)
+  provides [code examples](examples/src/main/java/com/cloudera/nav/sdk/examples/extraction/IncrementalExtraction.java)
   to extract metadata in an incremental fashion.
 
 *Custom Metadata Entities and Lineage Augmentation*
@@ -43,7 +43,7 @@ and [here](examples/src/main/java/com/cloudera/nav/sdk/examples/lineage2)
 
 *Custom Dataset Schema Definition*
 
-Data profiling applications often infer schema from CSV, JSON, and other files 
+Data profiling applications often infer schema from CSV, JSON, and other files
 in Hadoop. In order to help provide a data governance layer for those
  applications, the Navigator SDK can be used to [augment](examples/src/main/java/com/cloudera/nav/sdk/examples/schema)
  the file metadata with the inferred schemas. The schema information can then

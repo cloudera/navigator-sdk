@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.client;
 
 /**
  * Class for clients to get all updated Entities and Relations and a marker of
@@ -21,13 +21,14 @@ package com.cloudera.nav.sdk.examples.extraction;
  * determining future incremental updates.
  */
 public class MetadataResultSet {
+
   private final String marker;
-  private final IncrementalExtractIterable entities;
-  private final IncrementalExtractIterable relations;
+  private final MetadataIterable entities;
+  private final MetadataIterable relations;
 
   public MetadataResultSet(String marker,
-                           IncrementalExtractIterable entities,
-                           IncrementalExtractIterable relations){
+                           MetadataIterable entities,
+                           MetadataIterable relations){
       this.marker = marker;
       this.entities = entities;
       this.relations = relations;
@@ -37,11 +38,11 @@ public class MetadataResultSet {
     return marker;
   }
 
-  public IncrementalExtractIterable getEntities() {
+  public MetadataIterable getEntities() {
     return entities;
   }
 
-  public IncrementalExtractIterable getRelations() {
+  public MetadataIterable getRelations() {
       return relations;
   }
 }

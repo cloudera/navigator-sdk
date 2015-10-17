@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.client;
 
 import com.cloudera.com.fasterxml.jackson.core.type.TypeReference;
 import com.cloudera.com.fasterxml.jackson.databind.ObjectMapper;
-import com.cloudera.nav.sdk.client.NavApiCient;
+import com.cloudera.nav.sdk.model.MetadataType;
 import com.cloudera.nav.sdk.model.Source;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -33,13 +32,17 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Sample for showing incremental extraction using the plugin client library. The
- * extractMetadata() method has signatures for calling with and without a marker,
- * and with specifying a filter query string for entities and relations to be
- * returned.
+ * A simple example class to extract entities and relations via the overloaded
+ * extractMetadata method. Calling extractMetadata with no arguments is a bulk
+ * extraction of all metadata in Navigator at request time. The returned
+ * MetadataResultSet contains a string marker than can be used to mark the
+ * starting point for the next time extractMetadata is called. When given a
+ * single marker, metadata since that marker is extracted. When given 2 markers
+ * metadata extracted between the 2 markers are returned.
  *
- * Marker is determined from a file path in system arguments. If none is specified,
- * all metadata will be extracted and the current marker written to testMarker.txt
+ * The marker isn't designed to be used public API. Under the hood it is
+ * composed of extractorRunId's that is incremented by the server every time
+ * it reads additional metadata from Hadoop services.
  */
 public class MetadataExtractor {
 
@@ -54,30 +57,35 @@ public class MetadataExtractor {
   }
 
   /**
-   * Returns all of the entities and relations in the database,
+   * Returns all of the entities and relations in Navigator,
    * plus a marker to denote when this search took place
-   *
-   * @return MetadataResultSet wrapper with iterables for all entities and relations
-   * and string of next marker
    */
-  public MetadataResultSet extractMetadata(){
+  public MetadataResultSet extractMetadata() {
     return extractMetadata(null, null, DEFAULT_QUERY, DEFAULT_QUERY);
   }
 
   /**
-   * Perform incremental extraction for the entities and relations in the
-   * database that have been updated or added since the extraction indicated by the marker.
+   * Perform incremental extraction for the entities and relations in
+   * Navigator that have been updated or added since the extraction indicated
+   * by the marker.
    *
-   * @param markerRep String from previous extractMetadata call
-   * @return MetadataResultSet wrapper with iterables for updated entities and relations
-   * and string of the next marker
+   * @param markerRep marker from previous extractMetadata call
    */
-  public MetadataResultSet extractMetadata(String markerRep){
+  public MetadataResultSet extractMetadata(String markerRep) {
     return extractMetadata(markerRep, null, DEFAULT_QUERY, DEFAULT_QUERY);
   }
 
-  public MetadataResultSet extractMetadata(String startMarker, String endMarker){
-    return extractMetadata(startMarker, endMarker, DEFAULT_QUERY, DEFAULT_QUERY);
+  /**
+   * Perform incremental extraction for the entities and relations in
+   * Navigator that have been updated or added between the start and end markers
+   *
+   * @param startMarker
+   * @param endMarker
+   */
+  public MetadataResultSet extractMetadata(String startMarker,
+                                           String endMarker) {
+    return extractMetadata(startMarker, endMarker, DEFAULT_QUERY,
+        DEFAULT_QUERY);
   }
 
   /**
@@ -94,7 +102,7 @@ public class MetadataExtractor {
   public MetadataResultSet extractMetadata(String startMarkerRep,
                                            String endMarkerRep,
                                            String entitiesQuery,
-                                           String relationsQuery){
+                                           String relationsQuery) {
     try {
       TypeReference<Map<String, Integer>> typeRef =
           new TypeReference<Map<String, Integer>>(){};
@@ -129,12 +137,13 @@ public class MetadataExtractor {
    *
    * @return Map of sourceId to its to extractIteration
    */
-  private Map<String, Integer> getNavMarker(boolean current){
+  private Map<String, Integer> getNavMarker(boolean current) {
     Collection<Source> sources = client.getAllSources();
     HashMap<String, Integer> newMarker = Maps. newHashMap();
     for (Source source : sources) {
       String id = source.getIdentity();
-      Integer sourceExtractIteration = (current) ? source.getSourceExtractIteration() : 0;
+      Integer sourceExtractIteration = (current) ?
+          source.getSourceExtractIteration() : 0;
       newMarker.put(id, sourceExtractIteration);
     }
     return newMarker;
@@ -149,9 +158,9 @@ public class MetadataExtractor {
    * @return Iterable of possible extractorRunIds to be used in queries
    */
   private Iterable<String> getExtractorQueryList(Map<String, Integer> m1,
-                                         Map<String, Integer> m2){
+                                         Map<String, Integer> m2) {
     List<String> runIdList= Lists.newArrayList();
-    for (String key: m1.keySet()){
+    for (String key: m1.keySet()) {
       for (int i=m1.get(key); i<(m2.get(key)+1); i++){
         String possible = key + "##" + Integer.toString(i);
         runIdList.add(possible);
@@ -173,14 +182,12 @@ public class MetadataExtractor {
   private MetadataResultSet aggUpdatedResults(String markerRep,
                                           Iterable<String> extractorRunIds,
                                           String entitiesQuery,
-                                          String relationsQuery){
+                                          String relationsQuery) {
     MetadataResultSet metadataResultSet;
-    IncrementalExtractIterable entities =
-        new IncrementalExtractIterable(client, MetadataType.ENTITIES,
-                                       entitiesQuery, limit, extractorRunIds);
-    IncrementalExtractIterable relations =
-        new IncrementalExtractIterable(client, MetadataType.RELATIONS,
-                                       relationsQuery, limit, extractorRunIds);
+    MetadataIterable entities = new MetadataIterable(client,
+        MetadataType.ENTITIES, entitiesQuery, limit, extractorRunIds);
+    MetadataIterable relations = new MetadataIterable(client,
+        MetadataType.RELATIONS, relationsQuery, limit, extractorRunIds);
     metadataResultSet = new MetadataResultSet(markerRep, entities, relations);
     return metadataResultSet;
   }
@@ -190,8 +197,7 @@ public class MetadataExtractor {
    *
    * @return String representation of a marker
    */
-  @VisibleForTesting
-  String getMarker(){
+  public String getMarker() {
     Map<String, Integer> currentMarker = getNavMarker(true);
     try {
       return new ObjectMapper().writeValueAsString(currentMarker);
