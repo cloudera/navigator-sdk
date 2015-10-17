@@ -13,29 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.junit.*;
+import org.junit.runner.*;
+import org.mockito.runners.*;
 
 /**
  * Unit tests for MetadataExtractor
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ExtractMetadataTest {
+public class MetadataExtractorTest {
 
   private MetadataExtractor extractor;
   private String marker1Rep;

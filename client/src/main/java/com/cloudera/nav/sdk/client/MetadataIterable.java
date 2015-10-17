@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.client;
 
-import com.cloudera.nav.sdk.client.NavApiCient;
+import com.cloudera.nav.sdk.model.MetadataType;
 
 import java.util.Map;
 
 /**
- * Iterable used for entities and relations in MetadataResultSet object returned
- * by extractMetadata() calls.
+ * Iterable over metadata (entities or relations determined by given
+ * MetadataType) that satisfies the given String query and the given
+ * extractorRunIds. Thin wrapper around MetadataResultIterator
  */
-public class IncrementalExtractIterable implements Iterable<Map<String, Object>> {
+public class MetadataIterable implements Iterable<Map<String, Object>> {
 
   private final NavApiCient client;
   private final MetadataType type;
@@ -31,9 +32,9 @@ public class IncrementalExtractIterable implements Iterable<Map<String, Object>>
   private final Integer limit;
   private final Iterable<String> extractorRunIds;
 
-  public IncrementalExtractIterable(NavApiCient client, MetadataType type,
-                                    String query, Integer limit,
-                                    Iterable<String> extractorRunIds){
+  public MetadataIterable(NavApiCient client, MetadataType type,
+                          String query, Integer limit,
+                          Iterable<String> extractorRunIds){
     this.query = query;
     this.type = type;
     this.client = client;
@@ -42,7 +43,8 @@ public class IncrementalExtractIterable implements Iterable<Map<String, Object>>
   }
 
   @Override
-  public IncrementalExtractIterator iterator() {
-    return new IncrementalExtractIterator(client, type, query, limit, extractorRunIds);
+  public MetadataResultIterator iterator() {
+    return new MetadataResultIterator(client, type, query, limit,
+        extractorRunIds);
   }
 }

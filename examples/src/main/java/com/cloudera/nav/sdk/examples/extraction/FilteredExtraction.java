@@ -16,41 +16,65 @@
 package com.cloudera.nav.sdk.examples.extraction;
 
 import com.cloudera.nav.sdk.client.ClientUtils;
+import com.cloudera.nav.sdk.client.MetadataExtractor;
+import com.cloudera.nav.sdk.client.MetadataResultSet;
 import com.cloudera.nav.sdk.client.NavApiCient;
-import com.cloudera.nav.sdk.client.PluginConfigurationFactory;
-import com.cloudera.nav.sdk.client.PluginConfigurations;
+import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
-import com.google.common.base.Throwables;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * Example calls using the MetadataExtractor class to perform
- * incremental extraction. Examples shown utilize the
- * {@link MetadataExtractor#extractMetadata(String, String, String)}
- * method with a marker and with query strings for specifying Entities and
- * Relations to be retrieved.
+ * Built on top of IncrementalExtraction, this is a sample program that runs
+ * incremental extraction with filters on fields like sourceType and
+ * type (entityType) to show extraction for just HDFS or Hive entities
+ *
+ * Program arguments:
+ * 1. path to config file: see examples/src/main/resources/sample.conf
+ * 2. output path: where to write the extracted marker for next run
+ * 3. marker (optional): path to saved marker
+ *
+ * The marker is a string cursor return by the server when extraction occurs.
+ * By giving a start/end marker, only metadata between the start/end markers
+ * are retrieved
  */
-public class FilteredMetadataExtraction {
+public class FilteredExtraction {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(FilteredMetadataExtraction.class);
+  public static void main(String[] args) throws IOException {
+    // handle arguments
+    Preconditions.checkArgument(args.length >= 2);
+    String configFilePath = args[0];
+    String markerPath = args[1];
+    String marker = args.length > 2 ?
+        IncrementalExtraction.readFileArg(args[2]) : null;
+
+    NavApiCient client = NavigatorPlugin.fromConfigFile(configFilePath)
+        .getClient();
+
+    MetadataExtractor extractor = new MetadataExtractor(client, null);
+
+    // Run filtered examples
+    getHDFSEntities(client, extractor, marker);
+    getHive(extractor, marker, "city_id");
+    getHiveOperations(extractor, marker);
+    String nextMarker = getMRandYarn(extractor, marker);
+
+    // Save the last marker
+    try (PrintWriter writer = new PrintWriter(markerPath, "UTF-8")) {
+      writer.println(nextMarker);
+    }
+  }
 
   public static void getHDFSEntities(NavApiCient client,
                                      MetadataExtractor extractor,
-                                     String marker){
+                                     String marker) {
     Iterable<Map<String, Object>> HdfsAll =
         extractor.extractMetadata(marker, null, "sourceType:HDFS", null)
             .getEntities();
@@ -64,8 +88,7 @@ public class FilteredMetadataExtraction {
   }
 
   public static void getHive(MetadataExtractor extractor,
-                             String marker,
-                             String colName){
+                             String marker, String colName) {
     Iterable<Map<String, Object>> hiveDb = extractor.extractMetadata(marker,
         null, "sourceType:HIVE AND type:DATABASE", null).getEntities();
     getFirstResult(hiveDb);
@@ -93,7 +116,8 @@ public class FilteredMetadataExtraction {
     //Further data processing with iterable.iterator()
   }
 
-  public static void getHiveOperations(MetadataExtractor extractor, String marker){
+  public static void getHiveOperations(MetadataExtractor extractor,
+                                       String marker) {
     Iterable<Map<String, Object>> hiveOpEntities = extractor.extractMetadata(
         marker, null, "sourceType:HIVE AND type:OPERATION_EXECUTION", null)
         .getEntities();
@@ -108,7 +132,8 @@ public class FilteredMetadataExtraction {
     //Further data processing with iterable.iterator()
   }
 
-  public static String getMRandYarn(MetadataExtractor extractor, String marker){
+  public static String getMRandYarn(MetadataExtractor extractor,
+                                    String marker) {
     Iterable<Map<String, Object>> yarnOpEntities = extractor.extractMetadata(
         marker, null, "sourceType:(MAPREDUCE OR YARN) AND type:OPERATION_EXECUTION",
         null).getEntities();
@@ -132,50 +157,15 @@ public class FilteredMetadataExtraction {
     return yarnOp.getMarker();
   }
 
-  private static void getFirstResult(Iterable<Map<String, Object>> iterable){
+  private static void getFirstResult(Iterable<Map<String, Object>> iterable) {
+    // In real usage, iterate through results and process each metadata object
     Iterator<Map<String, Object>> iterator = iterable.iterator();
     if(iterator.hasNext()) {
       Map<String, Object> result = iterator.next();
-      LOG.info("source: " + result.get("sourceType") +
-               "  type: " + result.get("type"));
+      System.out.println("source: " + result.get("sourceType") +
+          "  type: " + result.get("type"));
     } else {
-      LOG.info("no elements found");
-    }
-  }
-
-  public static  void main(String[] args){
-    String configFilePath = args[0];
-    PluginConfigurations config = (new PluginConfigurationFactory())
-        .readConfigurations(configFilePath);
-    NavApiCient client = new NavApiCient(config);
-    MetadataExtractor extractor = new MetadataExtractor(client, null);
-    String marker;
-    try {
-      String markerReadPath = args[1];
-      File markerFile = new File(markerReadPath);
-      FileReader fr = new FileReader(markerFile);
-      BufferedReader markerReader = new BufferedReader(fr);
-      marker = markerReader.readLine();
-      markerReader.close();
-      fr.close();
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    } catch (ArrayIndexOutOfBoundsException e){
-      marker=null;
-    }
-    getHDFSEntities(client, extractor, marker);
-    getHive(extractor, marker, "city_id");
-    getHiveOperations(extractor, marker);
-    String nextMarker = getMRandYarn(extractor, marker);
-    try {
-      String markerWritePath = args[2];
-      PrintWriter markerWriter = new PrintWriter(markerWritePath, "UTF-8");
-      markerWriter.println(nextMarker);
-      markerWriter.close();
-    } catch(IOException e) {
-      throw Throwables.propagate(e);
-    } catch (ArrayIndexOutOfBoundsException e){
-      LOG.error("Please specify a file to save next marker");
+      System.out.println("no elements found");
     }
   }
 }

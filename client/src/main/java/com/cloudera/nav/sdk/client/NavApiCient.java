@@ -93,20 +93,22 @@ public class NavApiCient {
    * results that satisfy the query, starting from the cursorMark.
    * Called in next() of IncrementalExtractIterator()
    *
-   * @param queryCriteria Solr query string, cursormark and limit
+   * @param metadataQuery Solr query string, cursormark and limit
    * @return ResultsBatch set of results that satisfy query and next cursor
    */
-  public ResultsBatch<Map<String, Object>> getRelationBatch(QueryCriteria queryCriteria){
+  public ResultsBatch<Map<String, Object>> getRelationBatch(
+      MetadataQuery metadataQuery){
     String fullUrlPost = getUrl("relations");
-    return queryNav(fullUrlPost, queryCriteria, RelationResultsBatch.class);
+    return queryNav(fullUrlPost, metadataQuery, RelationResultsBatch.class);
   }
 
   /**
-   * {@link #getRelationBatch(QueryCriteria) getRelationBatch} with entities
+   * {@link #getRelationBatch(MetadataQuery) getRelationBatch} with entities
    */
-  public ResultsBatch<Map<String, Object>> getEntityBatch(QueryCriteria queryCriteria){
+  public ResultsBatch<Map<String, Object>> getEntityBatch(
+      MetadataQuery metadataQuery){
     String fullUrlPost = getUrl("entities");
-    return queryNav(fullUrlPost, queryCriteria, EntityResultsBatch.class);
+    return queryNav(fullUrlPost, metadataQuery, EntityResultsBatch.class);
   }
 
   /**
@@ -114,19 +116,19 @@ public class NavApiCient {
    * response body contains a batch of results.
    *
    * @param url URl being posted to
-   * @param queryCriteria query criteria for metadata being retrieved to satisfy
+   * @param metadataQuery query criteria for metadata being retrieved to satisfy
    *@param resultClass type of ResultsBatch to be returned
    * @return ResultsBatch of entities or relations that specify the
    * query parameters in the URL and request body
    */
   @VisibleForTesting
   public ResultsBatch<Map<String, Object>> queryNav(String url,
-         QueryCriteria queryCriteria,
+         MetadataQuery metadataQuery,
          Class<? extends ResultsBatch<Map<String, Object>>> resultClass){
     RestTemplate restTemplate = new RestTemplate();
     HttpHeaders headers = getAuthHeaders();
-    HttpEntity<QueryCriteria> request =
-        new HttpEntity<QueryCriteria>(queryCriteria, headers);
+    HttpEntity<MetadataQuery> request =
+        new HttpEntity<MetadataQuery>(metadataQuery, headers);
     return restTemplate.exchange(url, HttpMethod.POST, request,
         resultClass).getBody();
   }

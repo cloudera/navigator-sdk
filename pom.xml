@@ -40,7 +40,7 @@
     <surefire.version>2.16</surefire.version>
     <minJavaVersion>1.7</minJavaVersion>
     <maxJavaVersion>1.8</maxJavaVersion>
-    <minSupportedJvmVersion>1.6</minSupportedJvmVersion>
+    <minSupportedJvmVersion>1.7</minSupportedJvmVersion>
     <log4j.version>1.2.16</log4j.version>
     <avro.version>1.7.4</avro.version>
     <cdh5.version>cdh5.4.0</cdh5.version>

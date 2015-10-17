@@ -18,13 +18,13 @@ package com.cloudera.nav.sdk.client;
 /**
  * Wrapper class for query criteria to be sent in POST request to Navigator API.
  */
-public class QueryCriteria {
+public class MetadataQuery {
 
   private final String query;
   private final Integer limit;
   private final String cursorMark;
 
-  public QueryCriteria(String query, Integer limit, String cursorMark){
+  public MetadataQuery(String query, Integer limit, String cursorMark){
     this.query = query;
     this.limit = limit;
     this.cursorMark = cursorMark;

@@ -13,53 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.client;
 
-import com.cloudera.nav.sdk.client.ClientUtils;
-import com.cloudera.nav.sdk.client.NavApiCient;
-import com.cloudera.nav.sdk.client.QueryCriteria;
-import com.cloudera.nav.sdk.client.ResultsBatch;
+import com.cloudera.nav.sdk.model.MetadataType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.List;
 
 /**
- *  Custom iterator class used to retrieve entities and relations results from
- * incremental extraction in extractMetadata(). Handles iterating through batches
- * of results with a cursor per query, and iterates through a set of queries.
+ * Lazy iterator over metadata (entities or relations determined by given
+ * MetadataType) that satisfies the given String query and the given
+ * extractorRunIds.
+ *
+ * Under the hood, the iterator combines the query and the extractorRunIds and
+ * sends a request via the given NavApiClient. The results are fetched in
+ * batches.
  */
-public class IncrementalExtractIterator implements Iterator<Map<String, Object>> {
+public class MetadataResultIterator implements Iterator<Map<String, Object>> {
+
+  public static final Integer MAX_QUERY_PARTITION_SIZE = 800;
 
   private final NavApiCient client;
   private final Integer limit;
-  private final Integer MAX_QUERY_PARTITION_SIZE = 800;
   private final MetadataType type;
   private final String userQuery;
   private boolean hasNext;
-  private Iterator<List<String>> partitionIterator;
+  private Iterator<List<String>> partitionRunIdIterator;
   private List<Map<String, Object>> resultsBatch;
   private Iterator<Map<String, Object>> resultsBatchIterator;
-  private String cursorMark="*";
-  private String fullQuery;
+  private String cursorMark = "*";
+  private String nextQuery;
 
-  public IncrementalExtractIterator(NavApiCient client,
-                                    MetadataType type, String query, Integer limit,
-                                    Iterable<String> extractorRunIds){
+  public MetadataResultIterator(NavApiCient client, MetadataType type,
+                                String query, Integer limit,
+                                Iterable<String> extractorRunIds) {
     this.client = client;
     this.type = type;
     this.userQuery = query;
     this.limit = limit;
-    this.partitionIterator =
-        Iterables.partition(extractorRunIds,MAX_QUERY_PARTITION_SIZE).iterator();
-    if(!Iterables.isEmpty(extractorRunIds)) {
-      getNextQuery();
+    this.partitionRunIdIterator = Iterables.partition(extractorRunIds,
+        MAX_QUERY_PARTITION_SIZE).iterator();
+    if(Iterables.isEmpty(extractorRunIds)) {
+      nextQuery = userQuery;
     } else {
-      fullQuery = userQuery;
+      getNextQuery();
     }
     getNextBatch();
   }
@@ -71,7 +73,7 @@ public class IncrementalExtractIterator implements Iterator<Map<String, Object>>
 
   @Override
   public Map<String, Object> next() {
-    if(!hasNext()){
+    if(!hasNext()) {
       throw new NoSuchElementException();
     }
     Map<String, Object> nextResult = resultsBatchIterator.next();
@@ -80,7 +82,7 @@ public class IncrementalExtractIterator implements Iterator<Map<String, Object>>
       //if on last batch
       if(resultsBatch.size()<limit) {
         //if on last query, leave loop
-        if (!partitionIterator.hasNext()) {
+        if (!partitionRunIdIterator.hasNext()) {
           hasNext = false;
         //Update query and get next batch
         } else {
@@ -96,14 +98,15 @@ public class IncrementalExtractIterator implements Iterator<Map<String, Object>>
   }
 
   @VisibleForTesting
-  public void getNextBatch(){
+  void getNextBatch() {
+    // Retrieve the next batch of metadata results
     try {
       ResultsBatch<Map<String, Object>> response = getResultsBatch();
       resultsBatch = response.getResults();
       resultsBatchIterator = resultsBatch.iterator();
       hasNext = resultsBatchIterator.hasNext();
       cursorMark = response.getCursorMark();
-      if (!hasNext && partitionIterator.hasNext()) {
+      if (!hasNext && partitionRunIdIterator.hasNext()) {
         getNextQuery();
         getNextBatch();
       }
@@ -112,26 +115,33 @@ public class IncrementalExtractIterator implements Iterator<Map<String, Object>>
     }
   }
 
-  private ResultsBatch<Map<String, Object>> getResultsBatch() throws EnumConstantNotPresentException{
-    QueryCriteria queryCriteria = new QueryCriteria(fullQuery, limit, cursorMark);
+  private ResultsBatch<Map<String, Object>> getResultsBatch() {
+    // Send the next request to the server to get a batch of results
+    MetadataQuery query = new MetadataQuery(nextQuery, limit, cursorMark);
       switch(type) {
         case ENTITIES:
-          return client.getEntityBatch(queryCriteria);
+          return client.getEntityBatch(query);
         case RELATIONS:
-          return client.getRelationBatch(queryCriteria);
+          return client.getRelationBatch(query);
         default:
-          throw new EnumConstantNotPresentException(MetadataType.class, type.name());
+          throw new UnsupportedOperationException("Invalid MetadataType " +
+          type.name());
       }
   }
 
-  private void getNextQuery(){
+  private void getNextQuery() {
+    // create the next query by combining the given userQuery with the next
+    // partition of extractorRunIds
     cursorMark="*";
-    List<String> extractorRunIdNext = partitionIterator.next();
-    String extractorString = ClientUtils.buildConjunctiveClause("extractorRunId",
-                                                            extractorRunIdNext);
-    fullQuery = ClientUtils.conjoinSolrQueries(userQuery, extractorString);
+    List<String> extractorRunIdBatch = partitionRunIdIterator.next();
+    String extractorString = ClientUtils.buildConjunctiveClause(
+        "extractorRunId", extractorRunIdBatch);
+    nextQuery = ClientUtils.conjoinSolrQueries(userQuery, extractorString);
   }
 
+  /**
+   * Unsupported
+   */
   @Override
   public void remove() {
     throw new UnsupportedOperationException();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cloudera.nav.sdk.examples.extraction;
+package com.cloudera.nav.sdk.model;
 
 /** Label for which type of metadata is being retrieved from Navigator,
  * can be Entities or Relations.
