@@ -15,18 +15,18 @@
  */
 package com.cloudera.nav.sdk.client;
 
-import com.google.common.collect.Maps;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.TrustManager;
 
 import org.apache.hadoop.conf.Configuration;
 
 /**
  * A set of configuration options needed by the Navigator plugin
  */
-public class PluginConfigurations {
+public class ClientConfig {
 
   private String navigatorUrl;
   private URI metadataParentUri;
@@ -36,12 +36,13 @@ public class PluginConfigurations {
   private String password;
   private Configuration hadoopConf;
   private Format format;
-  private Map<String, Object> props;
   private boolean autocommit;
-
-  public PluginConfigurations() {
-    props = Maps.newHashMap();
-  }
+  private boolean disableSSLValidation;
+  private TrustManager overrideTrustManager;
+  private HostnameVerifier overrideHostnameVerifier;
+  private String sslTrustStoreType;
+  private String sslTrustStoreLocation;
+  private String sslTrustStorePassword;
 
   /**
    * @return Location of the Navigator API server
@@ -167,23 +168,62 @@ public class PluginConfigurations {
     this.format = format;
   }
 
-  public void setProperty(String key, Object value) {
-    props.put(key, value);
-  }
-
-  public Map<String, Object> getProperties() {
-    return props;
-  }
-
-  public Object getProperty(String key) {
-    return props.get(key);
-  }
-
   public boolean isAutocommit() {
     return autocommit;
   }
 
   public void setAutocommit(boolean autocommit) {
     this.autocommit = autocommit;
+  }
+
+  public void setDisableSSLValidation(boolean disableSSLValidation) {
+    this.disableSSLValidation = disableSSLValidation;
+  }
+
+  /**
+   * Whether to skip SSL certificate Validation altogether
+   */
+  public boolean isDisableSSLValidation() {
+    return disableSSLValidation;
+  }
+
+  public TrustManager getOverrideTrustManager() {
+    return overrideTrustManager;
+  }
+
+  public void setOverrideTrustManager(TrustManager overrideTrustManager) {
+    this.overrideTrustManager = overrideTrustManager;
+  }
+
+  public HostnameVerifier getOverrideHostnameVerifier() {
+    return overrideHostnameVerifier;
+  }
+
+  public void setOverrideHostnameVerifier(HostnameVerifier overrideHostnameVerifier) {
+    this.overrideHostnameVerifier = overrideHostnameVerifier;
+  }
+
+  public String getSSLTrustStoreLocation() {
+    return sslTrustStoreLocation;
+  }
+
+  public void setSSLTrustStoreLocation(String sslTrustStoreLocation) {
+    this.sslTrustStoreLocation = sslTrustStoreLocation;
+  }
+
+  public String getSSLTrustStorePassword() {
+    return sslTrustStorePassword;
+  }
+
+  public void setSSLTrustStorePassword(String sslTrustStorePassword) {
+    this.sslTrustStorePassword = sslTrustStorePassword;
+  }
+
+  public String getSslTrustStoreType() {
+    return sslTrustStoreType;
+  }
+
+  public void setSslTrustStoreType(String sslTrustStoreType) {
+    this.sslTrustStoreType = sslTrustStoreType;
   }
 }

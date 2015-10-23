@@ -23,20 +23,9 @@ import java.util.Collection;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * A set of functions for forming and handling URLs and  Solr queries.
+ * A set of functions for forming Solr queries.
  */
-public class ClientUtils {
-
-  /**
-   * Joining two URL components properly by handling slashes
-   *
-   * @param base First part of the URL
-   * @param component Second part of the URL
-   * @return String url of base/component
-   */
-  public static String joinUrlPath(String base, String component) {
-    return base + (base.endsWith("/") ? "" : "/") + component;
-  }
+public class QueryUtils {
 
   /**
    * Makes a conjunctive "AND" Solr query with two clauses.

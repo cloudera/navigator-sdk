@@ -15,8 +15,8 @@
  */
 package com.cloudera.nav.sdk.client.writer;
 
-import com.cloudera.nav.sdk.client.PluginConfigurations;
-import com.google.common.annotations.VisibleForTesting;
+import com.cloudera.nav.sdk.client.ClientConfig;
+import com.cloudera.nav.sdk.client.SSLUtils;
 import com.google.common.base.Throwables;
 
 import java.io.BufferedOutputStream;
@@ -28,6 +28,10 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 
 import org.apache.commons.net.util.Base64;
 import org.apache.hadoop.fs.FileSystem;
@@ -43,37 +47,30 @@ public class MetadataWriterFactory {
   public static final String LOCAL = "file";
   public static final String HTTP = "http";
 
-  /**
-   * Return lower cased metadata parent uri scheme. If null then empty
-   * string is returned (for easier string comparisons).
-   *
-   * @param config
-   * @return
-   */
-  @VisibleForTesting
-  static String getScheme(PluginConfigurations config) {
-    URI uri = config.getMetadataParentUri();
-    String scheme = uri.getScheme();
-    return scheme == null ? "" : scheme.toLowerCase();
+  private final ClientConfig config;
+  private final boolean isSSL;
+  private final SSLContext sslContext;
+  private final HostnameVerifier hostnameVerifier;
+
+  public MetadataWriterFactory(ClientConfig config) {
+    this.config = config;
+    this.isSSL = SSLUtils.isSSL(config.getMetadataParentUriString());
+    this.sslContext = isSSL ? SSLUtils.getSSLContext(config) : null;
+    this.hostnameVerifier = isSSL ? SSLUtils.getHostnameVerifier(config) : null;
   }
 
   /**
-   * Create a new metadata writer based on the given configurations.
-   * The configurations should determine the file format and the underlying
-   * storage mechanism.
-   *
-   * @param config
-   * @return
+   * Create a new metadata writer
    */
-  public MetadataWriter newWriter(PluginConfigurations config) {
-    String scheme = getScheme(config);
+  public MetadataWriter newWriter() {
+    String scheme = getScheme();
     if (scheme.equals(HDFS) ) {
       throw new UnsupportedOperationException();
     } else if (scheme.equals(LOCAL)) {
       throw new UnsupportedOperationException();
     } else {
       try {
-        HttpURLConnection conn = createHttpStream(config);
+        HttpURLConnection conn = createHttpStream();
         OutputStream stream = new BufferedOutputStream(conn.getOutputStream());
         return new JsonMetadataWriter(config, stream, conn);
       } catch (IOException e) {
@@ -82,10 +79,20 @@ public class MetadataWriterFactory {
     }
   }
 
-  private HttpURLConnection createHttpStream(PluginConfigurations config)
+  /**
+   * Return lower cased metadata parent uri scheme. If null then empty
+   * string is returned (for easier string comparisons).
+   */
+  private String getScheme() {
+    URI uri = config.getMetadataParentUri();
+    String scheme = uri.getScheme();
+    return scheme == null ? "" : scheme.toLowerCase();
+  }
+
+  private HttpURLConnection createHttpStream()
       throws IOException {
     URL url = new URL(config.getMetadataParentUri().toASCIIString());
-    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    HttpURLConnection conn = openConnection(url);
     conn.setRequestMethod("POST");
     String userpass = config.getUsername() + ":" + config.getPassword();
     String basicAuth = "Basic " + new String(Base64.encodeBase64(
@@ -93,11 +100,22 @@ public class MetadataWriterFactory {
     conn.addRequestProperty("Authorization", basicAuth);
     conn.addRequestProperty("Content-Type", "application/json");
     conn.setDoOutput(true);
-    config.setProperty("conn", conn);
     return conn;
   }
 
-  private OutputStream createLocalFileStream(PluginConfigurations config) {
+  private HttpURLConnection openConnection(URL url)
+      throws IOException {
+    if (isSSL) {
+      HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+      conn.setHostnameVerifier(hostnameVerifier);
+      conn.setSSLSocketFactory(sslContext.getSocketFactory());
+      return conn;
+    } else {
+      return (HttpURLConnection) url.openConnection();
+    }
+  }
+
+  private OutputStream createLocalFileStream() {
     String fileName = getFilePath(config.getMetadataParentUri().getPath());
     File file = new File(fileName);
     try {
@@ -112,7 +130,7 @@ public class MetadataWriterFactory {
     }
   }
 
-  private OutputStream createHdfsStream(PluginConfigurations config) {
+  private OutputStream createHdfsStream() {
     try {
       FileSystem fs = FileSystem.get(config.getHadoopConfigurations());
       Path path = new Path(getFilePath(config.getMetadataParentUriString()));
