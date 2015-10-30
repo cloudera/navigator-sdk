@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.sdk.examples.lineage;
+package com.cloudera.nav.sdk.examples.managed;
 
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
@@ -22,26 +22,12 @@ import com.cloudera.nav.sdk.client.writer.ResultSet;
 import org.joda.time.Instant;
 
 /**
- * In this example we show how to create custom entity types and
- * how to link them to hadoop entities. We define a custom operation entity
- * from a hypothetical application called Stetson. The Stetson application
- * defines a custom operations called StetsonScript and a custom operation
- * execution entity called StetsonExecution. A StetsonScript is the template
- * for a StetsonExecution and so we use the @MRelation annotation to specify an
- * InstanceOf relationship between the StetsonExecution and StetsonScript.
+ * In this example we extend the lineage example to show how to create managed
+ * metadata properties. For more details on the base example, please see
+ * {@link com.cloudera.nav.sdk.examples.lineage.CustomLineageCreator}.
  *
- * In Hadoop, Stetson operations are carried out using Pig. In order to
- * establish the relationship between the Stetson custom entities and the
- * hadoop entities, we again use the @MRelation annotation to form
- * LogicalPhysical relationships.
- *
- * Relations created:
- *
- * StetsonScript ---(LogicalPhysical)---> Pig Operation
- * StetsonExecution ---(LogicalPhysical)---> Pig Execution
- *
- * The relationships between Pig operation and execution are created
- * automatically by Navigator
+ * In this example, we've created several managed properties in the
+ * `StetsonExecution` classes using the `register` attribute in `@MProperty`
  */
 public class CustomLineageCreator {
 
@@ -75,6 +61,21 @@ public class CustomLineageCreator {
     // Connect the template and instance
     script.setIdentity(script.generateId());
     exec.setTemplate(script);
+
+    // Bad steward field, does not match regex
+    exec.setSteward("foo");
+    assert plugin.write(exec).hasErrors();
+
+    // correct steward
+    exec.setSteward("chang@company.com");
+
+    // Bad group
+    exec.setGroup("Random Group");
+    assert plugin.write(exec).hasErrors();
+
+    // correct group
+    exec.setGroup(StetsonExecution.INFRA);
+
     // Write metadata
     ResultSet results = plugin.write(exec);
 
@@ -115,7 +116,6 @@ public class CustomLineageCreator {
     exec.setDescription("I am a custom operation instance");
     exec.setLink("http://hasthelargehadroncolliderdestroyedtheworldyet.com/");
     exec.setIndex(10);
-    exec.setSteward("chang");
     exec.setStarted(Instant.now());
     exec.setEnded((new Instant(Instant.now().toDate().getTime() + 10000)));
     return exec;

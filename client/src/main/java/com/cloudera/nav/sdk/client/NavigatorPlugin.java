@@ -18,14 +18,23 @@ package com.cloudera.nav.sdk.client;
 import com.cloudera.nav.sdk.client.writer.MetadataWriter;
 import com.cloudera.nav.sdk.client.writer.MetadataWriterFactory;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
+import com.cloudera.nav.sdk.model.MetadataModel;
+import com.cloudera.nav.sdk.model.MetadataModelFactory;
+import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Communicates with Navigator to register custom entity models and
@@ -33,6 +42,9 @@ import org.apache.commons.lang.StringUtils;
  * information
  */
 public class NavigatorPlugin {
+
+  private static final Logger LOG = LoggerFactory.getLogger(NavigatorPlugin
+      .class);
 
   /**
    * Use the information contained in the given configuration file to
@@ -66,8 +78,10 @@ public class NavigatorPlugin {
    */
   public NavigatorPlugin(ClientConfig config,
                          MetadataWriterFactory factory) {
-    Preconditions.checkArgument(!StringUtils.isEmpty(config.getNavigatorUrl()));
-    Preconditions.checkArgument(config.getMetadataParentUri() != null);
+    Preconditions.checkArgument(!StringUtils.isEmpty(config.getNavigatorUrl()),
+        "No Navigator URL configured");
+    Preconditions.checkArgument(config.getApiVersion() >= 7,
+        "Minimum API version supported is v7 for writing to Navigator");
     Preconditions.checkNotNull(factory);
     this.config = config;
     this.factory = factory;
@@ -92,8 +106,23 @@ public class NavigatorPlugin {
    * in the given package. Registers all found classes with Navigator
    * @param packageName
    */
-  public void registerModels(String packageName) {
-    throw new UnsupportedOperationException();
+  @SuppressWarnings("unchecked")
+  public MetadataModel registerModels(String packageName) {
+    Reflections ref = new Reflections(packageName + ".");
+    Set<Class<?>> types = ref.getTypesAnnotatedWith(MClass.class);
+    Collection<Class<Entity>> modelClasses = Lists.newArrayListWithExpectedSize(
+        types.size() + 1);
+    for (Class<?> aClass : types) {
+      Preconditions.checkArgument(Entity.class.isAssignableFrom(aClass));
+      modelClasses.add((Class<Entity>)aClass);
+    }
+    if (modelClasses.size() > 0) {
+      LOG.info("Registering models: {}", modelClasses);
+      return registerModels(modelClasses);
+    } else {
+      LOG.info("No models to be registered in package {}", packageName);
+      return null;
+    }
   }
 
   /**
@@ -104,8 +133,17 @@ public class NavigatorPlugin {
    * annotation
    * @param entityClass
    */
-  public void registerModel(Class<? extends Entity> entityClass) {
-    throw new UnsupportedOperationException();
+  public MetadataModel registerModel(Class<? extends Entity> entityClass) {
+    return registerModels(Collections.singleton(entityClass));
+  }
+
+  public MetadataModel registerModels(
+      Collection<? extends Class<? extends Entity>> classes) {
+    Preconditions.checkArgument(config.getApiVersion() >= 9,
+        "Model registration not supported by API earlier than v9");
+    MetadataModelFactory factory = new MetadataModelFactory();
+    MetadataModel model = factory.newModel(classes, getConfig().getNamespace());
+    return getClient().registerModels(model);
   }
 
   /**

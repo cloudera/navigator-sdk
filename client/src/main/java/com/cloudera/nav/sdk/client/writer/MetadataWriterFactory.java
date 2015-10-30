@@ -20,13 +20,9 @@ import com.cloudera.nav.sdk.client.SSLUtils;
 import com.google.common.base.Throwables;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 
 import javax.net.ssl.HostnameVerifier;
@@ -34,18 +30,12 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
 import org.apache.commons.net.util.Base64;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 /**
  * A factory that returns the appropriate MetadataWriter given a set of
  * configurations
  */
 public class MetadataWriterFactory {
-
-  public static final String HDFS = "hdfs";
-  public static final String LOCAL = "file";
-  public static final String HTTP = "http";
 
   private final ClientConfig config;
   private final boolean isSSL;
@@ -54,7 +44,7 @@ public class MetadataWriterFactory {
 
   public MetadataWriterFactory(ClientConfig config) {
     this.config = config;
-    this.isSSL = SSLUtils.isSSL(config.getMetadataParentUriString());
+    this.isSSL = SSLUtils.isSSL(config.getNavigatorUrl());
     this.sslContext = isSSL ? SSLUtils.getSSLContext(config) : null;
     this.hostnameVerifier = isSSL ? SSLUtils.getHostnameVerifier(config) : null;
   }
@@ -63,36 +53,22 @@ public class MetadataWriterFactory {
    * Create a new metadata writer
    */
   public MetadataWriter newWriter() {
-    String scheme = getScheme();
-    if (scheme.equals(HDFS) ) {
-      throw new UnsupportedOperationException();
-    } else if (scheme.equals(LOCAL)) {
-      throw new UnsupportedOperationException();
-    } else {
-      try {
-        HttpURLConnection conn = createHttpStream();
-        OutputStream stream = new BufferedOutputStream(conn.getOutputStream());
-        return new JsonMetadataWriter(config, stream, conn);
-      } catch (IOException e) {
-        throw Throwables.propagate(e);
-      }
+    try {
+      HttpURLConnection conn = createHttpStream();
+      OutputStream stream = new BufferedOutputStream(conn.getOutputStream());
+      return new JsonMetadataWriter(config, stream, conn);
+    } catch (IOException e) {
+      throw Throwables.propagate(e);
     }
-  }
-
-  /**
-   * Return lower cased metadata parent uri scheme. If null then empty
-   * string is returned (for easier string comparisons).
-   */
-  private String getScheme() {
-    URI uri = config.getMetadataParentUri();
-    String scheme = uri.getScheme();
-    return scheme == null ? "" : scheme.toLowerCase();
   }
 
   private HttpURLConnection createHttpStream()
       throws IOException {
-    URL url = new URL(config.getMetadataParentUri().toASCIIString());
-    HttpURLConnection conn = openConnection(url);
+    String apiUrl = joinUrlPath(
+        joinUrlPath(config.getNavigatorUrl(),
+            "api/v" + String.valueOf(config.getApiVersion())),
+            "metadata/plugin");
+    HttpURLConnection conn = openConnection(new URL(apiUrl));
     conn.setRequestMethod("POST");
     String userpass = config.getUsername() + ":" + config.getPassword();
     String basicAuth = "Basic " + new String(Base64.encodeBase64(
@@ -115,41 +91,7 @@ public class MetadataWriterFactory {
     }
   }
 
-  private OutputStream createLocalFileStream() {
-    String fileName = getFilePath(config.getMetadataParentUri().getPath());
-    File file = new File(fileName);
-    try {
-      file.createNewFile();
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
-    try {
-      return new FileOutputStream(file);
-    } catch (FileNotFoundException e) {
-      throw Throwables.propagate(e);
-    }
+  private static String joinUrlPath(String base, String component) {
+    return base + (base.endsWith("/") ? "" : "/") + component;
   }
-
-  private OutputStream createHdfsStream() {
-    try {
-      FileSystem fs = FileSystem.get(config.getHadoopConfigurations());
-      Path path = new Path(getFilePath(config.getMetadataParentUriString()));
-      if (fs.exists(path)) {
-        return fs.append(path);
-      }
-      // TODO block sizes, replication counts etc
-      return fs.create(path);
-    } catch (IOException e) {
-      throw Throwables.propagate(e);
-    }
-  }
-
-  private String getFilePath(String path) {
-    // TODO file rotation
-    if (!path.endsWith("/")) {
-      path += "/";
-    }
-    return path + ".metadata";
-  }
-
 }

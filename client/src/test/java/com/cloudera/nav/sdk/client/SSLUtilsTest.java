@@ -50,11 +50,11 @@ public class SSLUtilsTest {
   public void setUp() throws Exception {
     Map<String, Object> confMap = Maps.newHashMap();
     confMap.put(ClientConfigFactory.APP_URL, "localhost");
-    confMap.put(ClientConfigFactory.METADATA_URI, "localhost");
     confMap.put(ClientConfigFactory.NAV_URL, "localhost");
     confMap.put(ClientConfigFactory.NAMESPACE, "test");
     confMap.put(ClientConfigFactory.USERNAME, "user");
     confMap.put(ClientConfigFactory.PASSWORD, "pass");
+    confMap.put(ClientConfigFactory.API_VERSION, 9);
     config = (new ClientConfigFactory()).fromConfigMap(confMap);
 
     KeyStore keyStore = KeyStore.getInstance("jks");

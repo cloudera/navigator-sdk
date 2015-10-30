@@ -14,26 +14,14 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.sdk.model;
+package com.cloudera.nav.sdk.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
-import org.junit.Test;
-
-public class MD5IdGeneratorTest {
-
-  @Test
-  public void testBasic() {
-    String hash = MD5IdGenerator.generateIdentity("foo");
-    assertEquals(MD5IdGenerator.generateIdentity("foo"), hash);
-    assertNotEquals(MD5IdGenerator.generateIdentity("bar"), hash);
-    assertEquals(hash.length(), 32);
-  }
-
-  @Test
-  public void testPig() {
-    String hash = MD5IdGenerator.generateIdentity(
-        "PigLatin:", "");
-  }
+/**
+ * Indicates how the metadata is written.
+ * FILE means writing to the local file system
+ * HDFS means writing to an HDFS file
+ * HTTP means writing to Navigator server (includes HTTPS)
+ */
+public enum ConnectionType {
+  FILE,HDFS,HTTP
 }

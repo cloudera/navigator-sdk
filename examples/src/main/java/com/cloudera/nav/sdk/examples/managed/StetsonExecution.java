@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.cloudera.nav.sdk.examples.lineage;
+package com.cloudera.nav.sdk.examples.managed;
 
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
+import com.cloudera.nav.sdk.model.custom.CustomPropertyType;
 import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
@@ -37,6 +38,10 @@ import org.joda.time.Instant;
 @MClass(model = "stetson_exec")
 public class StetsonExecution extends Entity {
 
+  public static final String INFRA = "INFRA";
+  public static final String DATA_ENG = "DATA_ENG";
+  public static final String DATA_SCI = "DATA_SCI";
+
   @MRelation(role = RelationRole.TEMPLATE)
   private StetsonScript template;
   @MProperty
@@ -47,10 +52,17 @@ public class StetsonExecution extends Entity {
   private Entity pigExecution; // MD5(pig.script.id) from the job conf
   @MProperty
   private String link;
-  @MProperty
+
+  // Managed properties (register = true)
+  @MProperty(register = true, fieldType = CustomPropertyType.INTEGER)
   private int index;
-  @MProperty
+  // Must be an email address
+  @MProperty(register = true, pattern = "[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}")
   private String steward;
+  // Must be one of the specified values
+  @MProperty(register = true, fieldType = CustomPropertyType.ENUM,
+      values = {INFRA, DATA_ENG, DATA_SCI})
+  private String group;
 
   public StetsonExecution(String namespace) {
     // Because the namespace is given to input/output we ensure it
@@ -150,5 +162,13 @@ public class StetsonExecution extends Entity {
 
   public void setSteward(String steward) {
     this.steward = steward;
+  }
+
+  public String getGroup() {
+    return group;
+  }
+
+  public void setGroup(String group) {
+    this.group = group;
   }
 }

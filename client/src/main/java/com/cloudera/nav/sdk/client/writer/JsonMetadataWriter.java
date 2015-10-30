@@ -18,6 +18,7 @@ package com.cloudera.nav.sdk.client.writer;
 
 import com.cloudera.nav.sdk.client.ClientConfig;
 import com.cloudera.nav.sdk.client.writer.serde.EntitySerializer;
+import com.cloudera.nav.sdk.client.writer.serde.EntityV9Serializer;
 import com.cloudera.nav.sdk.client.writer.serde.RelationSerializer;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,7 +64,11 @@ public class JsonMetadataWriter extends MetadataWriter {
   private ObjectMapper newMapper() {
     ObjectMapper mapper = new ObjectMapper();
     SimpleModule module = new SimpleModule("MetadataSerializer");
-    module.addSerializer(new EntitySerializer(registry));
+    if (config.getApiVersion() < 9) {
+      module.addSerializer(new EntitySerializer(registry));
+    } else {
+      module.addSerializer(new EntityV9Serializer(registry));
+    }
     module.addSerializer(new RelationSerializer(registry));
     mapper.registerModule(module);
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);

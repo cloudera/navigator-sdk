@@ -44,7 +44,7 @@ public abstract class MetadataWriter {
   public MetadataWriter(ClientConfig config, OutputStream stream) {
     this.config = config;
     this.stream = stream;
-    registry = new MClassRegistry();
+    registry = new MClassRegistry(config.getNamespace());
   }
 
   /**

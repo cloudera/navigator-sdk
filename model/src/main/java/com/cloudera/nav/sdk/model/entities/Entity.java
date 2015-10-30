@@ -57,7 +57,7 @@ public abstract class Entity {
   @MProperty
   private boolean deleted;
   @MProperty
-  private Long deletionTime;
+  private Long deleteTime;
   @MProperty
   private TagChangeSet tags;
   @MProperty
@@ -199,16 +199,16 @@ public abstract class Entity {
    * @return deletion time in milliseconds since epoch if the custom entity
    *         has been deleted and null otherwise.
    */
-  public Long getDeletionTime() {
-    return deletionTime;
+  public Long getDeleteTime() {
+    return deleteTime;
   }
 
   /**
    * Set deletion time for the custom entity
-   * @param deletionTime
+   * @param deleteTime
    */
-  public void setDeletionTime(Long deletionTime) {
-    this.deletionTime = deletionTime;
+  public void setDeleteTime(Long deleteTime) {
+    this.deleteTime = deleteTime;
   }
 
   public Instant getCreated() {

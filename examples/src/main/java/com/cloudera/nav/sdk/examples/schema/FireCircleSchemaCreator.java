@@ -43,8 +43,12 @@ public class FireCircleSchemaCreator {
     // initialize the plugin
     NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
 
+    // register models in package
+    plugin.registerModels("com.cloudera.nav.sdk.examples.schema");
+
     // get the HDFS source
-    Source fs = plugin.getClient().getOnlySource(SourceType.HDFS);
+    Source fs = plugin.getClient().getSourcesForType(SourceType.HDFS)
+        .iterator().next();
 
     // specify the HDFS directory that contains the data
     String path = args[1];

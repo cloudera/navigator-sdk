@@ -15,6 +15,7 @@
  */
 package com.cloudera.nav.sdk.client;
 
+import com.cloudera.nav.sdk.model.MetadataModel;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.google.common.annotations.VisibleForTesting;
@@ -74,10 +75,29 @@ public class NavApiCient {
   /**
    * Registers a given set of metadata models
    *
-   * @param models
+   * @param model
    */
-  public void registerModels(Collection<Object> models) {
-    throw new UnsupportedOperationException("not yet implemented");
+  public MetadataModel registerModels(MetadataModel model) {
+    String url = joinUrlPath(getApiUrl(), "models");
+    return sendRequest(url, HttpMethod.POST, MetadataModel.class, model);
+  }
+
+  private <T> T sendRequest(String url, HttpMethod method,
+                            Class<? extends T> resultClass) {
+    return sendRequest(url, method, resultClass, null);
+  }
+
+  private <R, T> T sendRequest(String url, HttpMethod method,
+                               Class<? extends T> resultClass,
+                               R requestPayload) {
+    RestTemplate restTemplate = newRestTemplate();
+        HttpHeaders headers = getAuthHeaders();
+    HttpEntity<?> request = requestPayload == null ?
+        new HttpEntity<String>(headers) :
+        new HttpEntity<>(requestPayload, headers);
+    ResponseEntity<? extends T> response = restTemplate.exchange(url, method,
+        request, resultClass);
+    return response.getBody();
   }
 
   /**
@@ -85,15 +105,13 @@ public class NavApiCient {
    *
    * @return a collection of available sources
    */
-  public Collection<Source> getAllSources() {
-    RestTemplate restTemplate = newRestTemplate();
-    String url = getUrl();
-    HttpHeaders headers = getAuthHeaders();
-    HttpEntity<String> request = new HttpEntity<String>(headers);
-    ResponseEntity<SourceAttrs[]> response = restTemplate.exchange(url,
-        HttpMethod.GET, request, SourceAttrs[].class);
-    Collection<Source> sources = Lists.newArrayList();
-    for (SourceAttrs info : response.getBody()) {
+  public Collection<Source> getAllSources () {
+        String url = entitiesQueryUrl();
+    SourceAttrs[] sourceAttrs = sendRequest(url, HttpMethod.GET,
+        SourceAttrs[].class);
+    Collection<Source> sources = Lists.newArrayListWithExpectedSize(sourceAttrs
+        .length + 1);
+    for (SourceAttrs info : sourceAttrs) {
       sources.add(info.createSource());
     }
     return sources;
@@ -109,8 +127,9 @@ public class NavApiCient {
    */
   public ResultsBatch<Map<String, Object>> getRelationBatch(
       MetadataQuery metadataQuery) {
-    String fullUrlPost = getUrl("relations");
-    return queryNav(fullUrlPost, metadataQuery, RelationResultsBatch.class);
+    String fullUrlPost = pagingUrl("relations");
+    return sendRequest(fullUrlPost, HttpMethod.POST, RelationResultsBatch.class,
+        metadataQuery);
   }
 
   /**
@@ -118,33 +137,13 @@ public class NavApiCient {
    */
   public ResultsBatch<Map<String, Object>> getEntityBatch(
       MetadataQuery metadataQuery) {
-    String fullUrlPost = getUrl("entities");
-    return queryNav(fullUrlPost, metadataQuery, EntityResultsBatch.class);
+    String fullUrlPost = pagingUrl("entities");
+    return sendRequest(fullUrlPost, HttpMethod.POST, EntityResultsBatch.class,
+        metadataQuery);
   }
 
-  /**
-   * Constructs a POST Request from the given URL and body and returns the
-   * response body contains a batch of results.
-   *
-   * @param url           URl being posted to
-   * @param metadataQuery query criteria for metadata being retrieved to satisfy
-   * @param resultClass   type of ResultsBatch to be returned
-   * @return ResultsBatch of entities or relations that specify the
-   * query parameters in the URL and request body
-   */
   @VisibleForTesting
-  public ResultsBatch<Map<String, Object>> queryNav(String url,
-                                                    MetadataQuery metadataQuery,
-                                                    Class<? extends ResultsBatch<Map<String, Object>>> resultClass) {
-    RestTemplate restTemplate = newRestTemplate();
-    HttpHeaders headers = getAuthHeaders();
-    HttpEntity<MetadataQuery> request =
-        new HttpEntity<MetadataQuery>(metadataQuery, headers);
-    return restTemplate.exchange(url, HttpMethod.POST, request,
-        resultClass).getBody();
-  }
-
-  private RestTemplate newRestTemplate() {
+  RestTemplate newRestTemplate() {
     if (isSSL) {
       CloseableHttpClient httpClient = HttpClients.custom()
           .setSSLContext(sslContext)
@@ -229,15 +228,20 @@ public class NavApiCient {
   /**
    * @return url for querying all sources
    */
-  private String getUrl() {
+  private String entitiesQueryUrl() {
     // form the url string to request all entities with type equal to SOURCE
-    String baseNavigatorUrl = config.getNavigatorUrl();
+    String baseNavigatorUrl = getApiUrl();
     String entitiesUrl = joinUrlPath(baseNavigatorUrl, "entities");
     return String.format("%s?query=%s", entitiesUrl, SOURCE_QUERY);
   }
 
-  private String getUrl(String type) {
-    String baseNavigatorUrl = config.getNavigatorUrl();
+  String getApiUrl() {
+    return joinUrlPath(config.getNavigatorUrl(),
+        "/api/v" + String.valueOf(config.getApiVersion()));
+  }
+
+  private String pagingUrl(String type) {
+    String baseNavigatorUrl = getApiUrl();
     String typeUrl = joinUrlPath(baseNavigatorUrl, type);
     return typeUrl + "/paging";
   }
@@ -269,6 +273,14 @@ public class NavApiCient {
   }
 
   private static String joinUrlPath(String base, String component) {
-    return base + (base.endsWith("/") ? "" : "/") + component;
+    boolean baseSlash = base.endsWith("/");
+    boolean componentSlash = component.startsWith("/");
+    if (baseSlash && componentSlash) {
+      return base + component.substring(1);
+    } else if (baseSlash || componentSlash) {
+      return base + component;
+    } else {
+      return base + "/" + component;
+    }
   }
 }
