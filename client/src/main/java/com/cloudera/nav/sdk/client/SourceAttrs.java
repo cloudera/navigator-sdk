@@ -31,7 +31,7 @@ class SourceAttrs {
   private SourceType sourceType;
   private String sourceUrl;
   private String identity;
-  private Integer sourceExtractIteration;
+  private Long sourceExtractIteration;
 
   public String getClusterName() {
     return clusterName;
@@ -73,11 +73,11 @@ class SourceAttrs {
     this.sourceType = sourceType;
   }
 
-  public Integer getSourceExtractIteration() {
+  public Long getSourceExtractIteration() {
     return sourceExtractIteration;
   }
 
-  public void setSourceExtractIteration(Integer sourceExtractIteration) {
+  public void setSourceExtractIteration(Long sourceExtractIteration) {
     this.sourceExtractIteration = sourceExtractIteration;
   }
 

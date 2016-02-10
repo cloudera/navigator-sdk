@@ -44,7 +44,7 @@ public class MetadataExtractorTest {
     extractor = new MetadataExtractor(client, null);
     marker1Rep = "{\"identityString\":100}";
     Source source1 = new Source("source1", SourceType.HDFS, "cluster1",
-        "foo/bar", "identityString", 100);
+        "foo/bar", "identityString", 100L);
     when(client.getAllSources()).thenReturn(Lists.newArrayList(source1));
   }
 

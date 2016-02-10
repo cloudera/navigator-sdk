@@ -29,7 +29,7 @@ public class EntityTest {
   @Test
   public void testHdfsEntity() {
     Source hdfs1 = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1",1);
+        "http://ns1", 1L);
 
     HdfsEntity entity = new HdfsEntity();
     entity.setEntityType(EntityType.DIRECTORY);
@@ -43,7 +43,7 @@ public class EntityTest {
   @Test
   public void testHiveTable() {
     Source hive1 = new Source("HIVE-1", SourceType.HIVE, "Cluster",
-        "http://hive-server:port", 1);
+        "http://hive-server:port", 1L);
     HiveTable entity = new HiveTable();
     entity.setDatabaseName("db");
     entity.setTableName("table");
@@ -57,7 +57,7 @@ public class EntityTest {
   @Test
   public void testHiveColumn() {
     Source hive1 = new Source("HIVE-1", SourceType.HIVE, "Cluster",
-        "http://hive-server:port",1);
+        "http://hive-server:port", 1L);
     HiveColumn entity = new HiveColumn();
     entity.setDatabaseName("db");
     entity.setTableName("table");

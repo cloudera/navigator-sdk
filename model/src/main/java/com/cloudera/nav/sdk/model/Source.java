@@ -28,7 +28,7 @@ public class Source {
   private final String clusterName;
   private final String sourceUrl;
   private final String identity;
-  private final Integer sourceExtractIteration;
+  private final Long sourceExtractIteration;
 
 
   /**
@@ -39,7 +39,7 @@ public class Source {
    */
   public Source(String name, SourceType sourceType,
                 String clusterName, String sourceUrl,
-                String identity, Integer sourceExtractIteration) {
+                String identity, Long sourceExtractIteration) {
     Preconditions.checkNotNull(identity);
     this.name = name;
     this.sourceType = sourceType;
@@ -50,7 +50,7 @@ public class Source {
   }
 
   public Source(String name, SourceType sourceType,
-                String clusterName, String sourceUrl, Integer sourceExtractIteration) {
+                String clusterName, String sourceUrl, Long sourceExtractIteration) {
     this(name, sourceType, clusterName, sourceUrl,
         SourceIdGenerator.generateSourceId(clusterName, name), sourceExtractIteration);
   }
@@ -99,7 +99,7 @@ public class Source {
     return identity;
   }
 
-  public Integer getSourceExtractIteration(){ return sourceExtractIteration; }
+  public Long getSourceExtractIteration(){ return sourceExtractIteration; }
 
   @Override
   public boolean equals(Object o) {

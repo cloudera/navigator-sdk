@@ -67,7 +67,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testWriteEntity() throws IOException {
     Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1", 0);
+        "http://ns1", 0L);
     HdfsEntity entity = new HdfsEntity();
     entity.setSourceId(source.getIdentity());
     entity.setFileSystemPath("/user/test");
@@ -110,7 +110,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testChangeSets() throws IOException {
     Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1", 1);
+        "http://ns1", 1L);
     HdfsEntity entity = new HdfsEntity("/user/test",
         EntityType.DIRECTORY, source.getIdentity());
     entity.setTags("foo", "bar");
@@ -159,7 +159,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testWriteRelation() throws IOException {
     Source source = new Source("HDFS-1", SourceType.HDFS, "Cluster",
-        "http://ns1", 1);
+        "http://ns1", 1L);
     HdfsEntity inputData = new HdfsEntity("/user/test/input",
         EntityType.DIRECTORY, source.getIdentity());
     inputData.setTags(ImmutableList.of("foo", "bar"));
@@ -206,7 +206,7 @@ public class JsonMetadataWriterTest {
   @Test
   public void testWriteComposite() throws IOException {
     Source source = new Source("ExternalApp", SourceType.SDK, "ExternalApp",
-        "http://appHost:port", 0);
+        "http://appHost:port", 0L);
     CustomOperationExecution exec = prepExec(source);
     JsonMetadataWriter mWriter = new JsonMetadataWriter(config, stream,
         mockConn);

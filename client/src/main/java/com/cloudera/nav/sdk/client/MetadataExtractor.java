@@ -104,14 +104,14 @@ public class MetadataExtractor {
                                            String entitiesQuery,
                                            String relationsQuery) {
     try {
-      TypeReference<Map<String, Integer>> typeRef =
-          new TypeReference<Map<String, Integer>>(){};
+      TypeReference<Map<String, Long>> typeRef =
+          new TypeReference<Map<String, Long>>(){};
       Iterable<String> extractorQuery;
-      Map<String, Integer> endMarker;
+      Map<String, Long> endMarker;
       if(StringUtils.isEmpty(startMarkerRep) && StringUtils.isEmpty(endMarkerRep)){
         extractorQuery = Lists.newArrayList("*");
       } else {
-        Map<String, Integer> startMarker;
+        Map<String, Long> startMarker;
         if(StringUtils.isEmpty(startMarkerRep)) {
           startMarker = getNavMarker(false);
         } else {
@@ -137,12 +137,12 @@ public class MetadataExtractor {
    *
    * @return Map of sourceId to its to extractIteration
    */
-  private Map<String, Integer> getNavMarker(boolean current) {
+  private Map<String, Long> getNavMarker(boolean current) {
     Collection<Source> sources = client.getAllSources();
-    HashMap<String, Integer> newMarker = Maps. newHashMap();
+    HashMap<String, Long> newMarker = Maps. newHashMap();
     for (Source source : sources) {
       String id = source.getIdentity();
-      Integer sourceExtractIteration = (current) ?
+      Long sourceExtractIteration = (current) ?
           source.getSourceExtractIteration() : 0;
       newMarker.put(id, sourceExtractIteration);
     }
@@ -157,12 +157,12 @@ public class MetadataExtractor {
    * @param m2 Marker for later(current) extraction state
    * @return Iterable of possible extractorRunIds to be used in queries
    */
-  private Iterable<String> getExtractorQueryList(Map<String, Integer> m1,
-                                         Map<String, Integer> m2) {
+  private Iterable<String> getExtractorQueryList(Map<String, Long> m1,
+                                                 Map<String, Long> m2) {
     List<String> runIdList= Lists.newArrayList();
     for (String key: m1.keySet()) {
-      for (int i=m1.get(key); i<(m2.get(key)+1); i++){
-        String possible = key + "##" + Integer.toString(i);
+      for (long i=m1.get(key); i<(m2.get(key)+1); i++) {
+        String possible = key + "##" + Long.toString(i);
         runIdList.add(possible);
       }
     }
@@ -198,7 +198,7 @@ public class MetadataExtractor {
    * @return String representation of a marker
    */
   public String getMarker() {
-    Map<String, Integer> currentMarker = getNavMarker(true);
+    Map<String, Long> currentMarker = getNavMarker(true);
     try {
       return new ObjectMapper().writeValueAsString(currentMarker);
     } catch (IOException e){
