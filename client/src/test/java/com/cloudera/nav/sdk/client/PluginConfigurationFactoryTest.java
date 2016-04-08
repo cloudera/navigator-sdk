@@ -32,11 +32,9 @@ public class PluginConfigurationFactoryTest {
 
     assertEquals(config.getApplicationUrl(), "http://external-app.com");
     assertEquals(config.getFormat(), Format.JSON);
-    assertEquals(config.getMetadataParentUri().toString(),
-        "http://nav.cloudera.com:7187/api/v7/plugin");
     assertEquals(config.getNamespace(), "tf");
     assertEquals(config.getNavigatorUrl(),
-        "http://nav.cloudera.com:7187/api/v7/");
+        "http://nav.cloudera.com:7187");
     assertEquals(config.getUsername(), "username");
     assertEquals(config.getPassword(), "password");
   }

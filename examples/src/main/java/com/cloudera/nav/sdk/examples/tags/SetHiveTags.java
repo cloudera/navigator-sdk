@@ -48,7 +48,10 @@ public class SetHiveTags {
         "CONTAINS_SOME_SUPER_SECRET_STUFF"));
 
     NavApiCient client = plugin.getClient();
-    Source hive = client.getOnlySource(SourceType.HIVE);
+
+    // For the example we just take the first one without checking
+    Source hive = client.getSourcesForType(SourceType.HIVE).iterator().next();
+
     column.setSourceId(hive.getIdentity());
 
     // Write metadata

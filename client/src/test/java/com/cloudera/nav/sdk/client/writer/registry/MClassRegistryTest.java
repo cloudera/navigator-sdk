@@ -32,7 +32,7 @@ public class MClassRegistryTest {
 
   @Before
   public void setUp() {
-    registry = new MClassRegistry();
+    registry = new MClassRegistry("namespace");
     mclassObj = new MetadataClass();
     mclassObj.setIdentity("id");
     mclassObj.setSourceType(SourceType.HDFS);

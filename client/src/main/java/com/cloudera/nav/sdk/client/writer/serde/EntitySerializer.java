@@ -23,6 +23,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 import java.io.IOException;
 
+/**
+ * JSON serializer for Entity instances for API < v9.
+ * MProperty's are written as key-value pairs and we also automatically add
+ * internalType needed by the server
+ */
 public class EntitySerializer extends MClassSerializer<Entity> {
 
   public EntitySerializer(MClassRegistry registry) {

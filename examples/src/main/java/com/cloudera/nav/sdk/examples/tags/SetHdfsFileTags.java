@@ -40,7 +40,9 @@ public class SetHdfsFileTags {
     // setup the plugin and api client
     NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
     NavApiCient client = plugin.getClient();
-    Source fs = client.getOnlySource(SourceType.HDFS);
+
+    // For the example we just take the first one without checking
+    Source fs = client.getSourcesForType(SourceType.HDFS).iterator().next();
 
     // send tags for multiple entities to Navigator
     HdfsEntity dir = new HdfsEntity("/user/hdfs", EntityType.DIRECTORY,

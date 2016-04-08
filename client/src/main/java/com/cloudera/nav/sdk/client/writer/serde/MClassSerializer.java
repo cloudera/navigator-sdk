@@ -24,9 +24,13 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
+/**
+ * JSON serializer for MClass objects, which writes out an object
+ * containing the MProperty entries as key-value pairs
+ */
 public class MClassSerializer<T> extends StdSerializer<T> {
 
-  private final MClassRegistry registry;
+  protected final MClassRegistry registry;
 
   public MClassSerializer(Class<T> aClass, MClassRegistry registry) {
     super(aClass);

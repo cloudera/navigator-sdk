@@ -191,6 +191,30 @@ plugin.write(exec);
 
 
 
+Creating Managed Metadata Models
+--------------------------------
+
+Cloudera Navigator 2.6.0 added the ability to create manage metadata fields.
+Managed metadata is a more organized way to extend metadata properties collected
+by Navigator. Managed metadata properties must be declared with a type
+constraint on the value(s), must belong to a namespace, and can be associated
+with 0 or more metadata classes.
+
+The SDK client is configured with a namespace that's used for all declared
+managed metadata properties. It is also the package name for all custom metadata
+classes. Just as a reminder, a custom metadata class can be created by
+subclassing Entity with an @MClass annotation.
+
+New metadata properties for custom metadata classes are created using the
+@MProperty annotation. In this new version of the SDK, we've added new
+attributes to the annotation to make it easier to register managed metadata
+properties. In order to create a managed property, set the `register` attribute
+to `true`. You can then set `fieldType` (default `TEXT`), `pattern` for regex
+matching, `maxLength` for `TEXT` fields, or an array of `values` for `ENUM`
+properties. The examples have been updated to demonstrate this new capability.
+
+
+
 Usage Notes
 -----------
 

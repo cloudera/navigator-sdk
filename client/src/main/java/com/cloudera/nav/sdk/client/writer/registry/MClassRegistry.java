@@ -38,10 +38,14 @@ public class MClassRegistry {
       propertyRegistry;
   private final LoadingCache<Class<?>, Collection<MRelationEntry>>
       relationRegistry;
+  private final String namespace;
 
-  public MClassRegistry() {
+  public MClassRegistry(String namespace) {
+    Preconditions.checkArgument(StringUtils.isNotEmpty(namespace),
+        "Must supply non-empty namespace identifying client application");
     propertyRegistry = (new MPropertyEntryFactory()).newRegistry();
     relationRegistry = (new MRelationEntryFactory()).newRegistry();
+    this.namespace = namespace;
   }
 
   /**
@@ -103,5 +107,9 @@ public class MClassRegistry {
                 prop.getName()));
       }
     }
+  }
+
+  public String getNamespace() {
+    return namespace;
   }
 }

@@ -8,3 +8,5 @@ along side the compatible Navigator versions.
 | SDK Version | Minimum Navigator Version | Maximum Navigator Version |
 |-------------|---------------------------|---------------------------|
 | 1.0         | 2.4.0                     |                           |
+|-------------|---------------------------|---------------------------|
+| 2.0         | 2.6.0                     |                           |

@@ -15,13 +15,8 @@
  */
 package com.cloudera.nav.sdk.client;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.TrustManager;
-
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * A set of configuration options needed by the Navigator plugin
@@ -29,12 +24,11 @@ import org.apache.hadoop.conf.Configuration;
 public class ClientConfig {
 
   private String navigatorUrl;
-  private URI metadataParentUri;
+  private int apiVersion;
   private String applicationUrl;
   private String namespace;
   private String username;
   private String password;
-  private Configuration hadoopConf;
   private Format format;
   private boolean autocommit;
   private boolean disableSSLValidation;
@@ -45,54 +39,35 @@ public class ClientConfig {
   private String sslTrustStorePassword;
 
   /**
-   * @return Location of the Navigator API server
+   * @return Location of Navigator
    */
   public String getNavigatorUrl() {
     return navigatorUrl;
   }
 
   /**
-   * Sets the URL for the Navigator API server
-   * @param navigatorUrl new URL for Navigator API server
+   * Sets the URL for Navigator
+   * @param navigatorUrl new URL for Navigator
    */
   public void setNavigatorUrl(String navigatorUrl) {
     this.navigatorUrl = navigatorUrl;
   }
 
   /**
-   * @return URI for the parent under which metadata will be written
+   * Return the Navigator API version number. For publishing metadata to
+   * Navigator 7 is the minimum required. For creating managed custom properties
+   * 9 is the minimum required.
    */
-  public URI getMetadataParentUri() {
-    return metadataParentUri;
+  public int getApiVersion() {
+    return apiVersion;
   }
 
   /**
-   * @return String representation of the metadata parent URI
+   * Set the Navigator API version number
+   * @param apiVersion
    */
-  public String getMetadataParentUriString() {
-    return metadataParentUri.toString();
-  }
-
-  /**
-   * Change the metadata parent location. An URISyntaxException is
-   * thrown if the given String is an invalid URI.
-   * @param metadataParent
-   */
-  public void setMetadataParentUri(String metadataParent)
-      throws URISyntaxException {
-    // for local file paths
-    if (metadataParent.startsWith("/")) {
-      metadataParent = "file://" + metadataParent;
-    }
-    setMetadataParentUri(new URI(metadataParent));
-  }
-
-  /**
-   * Change the metadata parent location
-   * @param metadataParent
-   */
-  public void setMetadataParentUri(URI metadataParent) {
-    this.metadataParentUri = metadataParent;
+  public void setApiVersion(int apiVersion) {
+    this.apiVersion = apiVersion;
   }
 
   /**
@@ -144,17 +119,6 @@ public class ClientConfig {
 
   public void setApplicationUrl(String applicationUrl) {
     this.applicationUrl = applicationUrl;
-  }
-
-  /**
-   * @return the hadoop configurations used to create a connection to HDFS
-   */
-  public Configuration getHadoopConfigurations() {
-    return hadoopConf;
-  }
-
-  public void setHadoopConfigurations(Configuration conf) {
-    this.hadoopConf = conf;
   }
 
   /**

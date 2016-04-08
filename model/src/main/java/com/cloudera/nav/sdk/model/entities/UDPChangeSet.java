@@ -132,4 +132,12 @@ public class UDPChangeSet {
     }
     this.removeProperties = removeProperties;
   }
+
+  public static UDPChangeSet copyOf(UDPChangeSet properties) {
+    UDPChangeSet rs = new UDPChangeSet();
+    rs.overrideProperties = Maps.newHashMap(properties.getOverrideProperties());
+    rs.newProperties = Maps.newHashMap(properties.getNewProperties());
+    rs.removeProperties = Sets.newHashSet(properties.getRemoveProperties());
+    return rs;
+  }
 }
