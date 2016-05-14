@@ -7,8 +7,8 @@ import com.cloudera.nav.sdk.client.MetadataResultIterator;
 import com.cloudera.nav.sdk.client.MetadataResultSet;
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.opencsv.CSVWriter;
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Level;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 public class QueryExtraction {
   private static final Logger LOG =
       LoggerFactory.getLogger(QueryExtraction.class);
-  private static final Set SOURCE_TYPES = Sets.newHashSet();
 
   private static Integer limit = 500000;
 
@@ -40,6 +38,8 @@ public class QueryExtraction {
     String principal;
     private Instant minStartTime;
     private Instant maxEndTime;
+    private List<String> mrStartTimes = Lists.newArrayList();
+    private List<String> mrEndTimes = Lists.newArrayList();
 
     public OperationExecution(MetadataExtractor extractor, Map<String, Object> obj) {
       identity = (String) obj.get("identity");
@@ -86,6 +86,8 @@ public class QueryExtraction {
     public void addMrJob(Map<String, Object> mrJobExec) {
       minStartTime = getMinTime(minStartTime, mrJobExec.get("started"));
       maxEndTime = getMaxTime(maxEndTime, mrJobExec.get("ended"));
+      this.mrStartTimes.add((String) mrJobExec.get("started"));
+      this.mrEndTimes.add((String) mrJobExec.get("ended"));
     }
 
     public void computeDuration() {
@@ -109,6 +111,7 @@ public class QueryExtraction {
     long maxDuration;
     long averageDuration;
     long medianDuration;
+    List<OperationExecution> executions = Lists.newArrayList();
 
     public Operation(String opId) {
       this.identity = opId;
@@ -128,6 +131,7 @@ public class QueryExtraction {
         }
         durations.add(operationExecution.duration);
         averageDuration += operationExecution.duration;
+        executions.add(operationExecution);
       }
       minDuration = durations.first();
       maxDuration = durations.last();
@@ -136,18 +140,29 @@ public class QueryExtraction {
     }
 
     public void write(int index, CSVWriter csvWriter) {
-      String queryType = getQueryType(escapeQueryText(queryText));
+      //String queryType = getQueryType(escapeQueryText(queryText));
 
-      csvWriter.writeNext(new String[] {Integer.toString(index++),
-          identity,
-          Integer.toString(totalExecutions),
-          Long.toString(minDuration),Long.toString(maxDuration),
-          Long.toString(averageDuration),Long.toString(medianDuration),
-          lastPrincipal, lastStarted != null ? lastStarted.toString() : "", queryType, queryText});
+      for (OperationExecution oe : executions) {
+        for (int i = 0; i < oe.mrEndTimes.size(); i++) {
+          csvWriter.writeNext(new String[] {
+              oe.identity,
+              escapeQueryText(queryText),
+              Long.toString(Instant.parse(oe.mrStartTimes.get(i)).getMillis()),
+              Long.toString(Instant.parse(oe.mrEndTimes.get(i)).getMillis())
+          });
+        }
+      }
+//      csvWriter.writeNext(new String[] {Integer.toString(index++),
+//          identity,
+//          Integer.toString(totalExecutions),
+//          Long.toString(minDuration),Long.toString(maxDuration),
+//          Long.toString(averageDuration),Long.toString(medianDuration),
+//          lastPrincipal, lastStarted != null ? lastStarted.toString() : "", queryType, queryText});
 
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static  void main(String[] args) throws IOException {
     LogManager.getRootLogger().setLevel(Level.INFO);
 
@@ -182,7 +197,7 @@ public class QueryExtraction {
 
 
     // Collect all the operation executions.
-    String entityQuery = "sourceType:IMPALA AND (type:operation_execution)";
+    String entityQuery = "sourceType:HIVE AND (type:operation_execution)";
 
     // GEt all the op execs and their time, user
     MetadataResultSet resultSet = null;
@@ -205,7 +220,7 @@ public class QueryExtraction {
     LOG.info("Obtained {} operation executions", opExecs.size());
 
     // Collect MR operations so that we can collect the elapsed time.
-    //collectElapsedTimes(extractor, opExecs);
+    collectElapsedTimes(extractor, opExecs);
 
     // Collect operation Ids.
     Map<String, Operation> operations = Maps.newHashMap();
@@ -241,7 +256,7 @@ public class QueryExtraction {
 
     // Collect operation details like queryText, etc and write it out.
     CSVWriter csvWriter =
-        new CSVWriter(outputWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, "@@@@@");
+        new CSVWriter(outputWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, "\n");
 
 
     index = 0;
@@ -274,18 +289,19 @@ public class QueryExtraction {
     csvWriter.close();
 
     // Save the last marker so that it can be used for the next harvest.
-    try {
-      String markerWritePath = args[3];
-      PrintWriter markerWriter = new PrintWriter(markerWritePath, "UTF-8");
-      markerWriter.println(nextMarker);
-      markerWriter.close();
-    } catch(IOException e) {
-      throw Throwables.propagate(e);
-    } catch (ArrayIndexOutOfBoundsException e){
-      LOG.error("Please specify a file to save next marker");
-    }
+//    try {
+//      String markerWritePath = args[3];
+//      PrintWriter markerWriter = new PrintWriter(markerWritePath, "UTF-8");
+//      markerWriter.println(nextMarker);
+//      markerWriter.close();
+//    } catch(IOException e) {
+//      throw Throwables.propagate(e);
+//    } catch (ArrayIndexOutOfBoundsException e){
+//      LOG.error("Please specify a file to save next marker");
+//    }
   }
 
+  @SuppressWarnings({ "unused", "unchecked" })
   private static void collectElapsedTimes(MetadataExtractor extractor,
                                           Map<String, OperationExecution> opExecs) {
     LOG.info("Processing elapsed times");
@@ -376,7 +392,7 @@ public class QueryExtraction {
 
   private static String escapeQueryText(String queryText) {
     queryText = queryText.replaceAll("\"", "\\\"");
-    return queryText.replaceAll("\r\n", "    ");
+    return queryText.replaceAll("\n", " ");
   }
 
   private static String getQueryType(String queryText) {
