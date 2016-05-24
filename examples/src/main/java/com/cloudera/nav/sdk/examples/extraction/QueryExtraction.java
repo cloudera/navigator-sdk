@@ -6,19 +6,32 @@ import com.cloudera.nav.sdk.client.MetadataExtractor;
 import com.cloudera.nav.sdk.client.MetadataResultIterator;
 import com.cloudera.nav.sdk.client.MetadataResultSet;
 import com.cloudera.nav.sdk.client.NavApiCient;
+import com.cloudera.nav.sdk.examples.extraction.HadoopConfiguration.ConfigProperty;
+import com.cloudera.nav.sdk.examples.extraction.JobFinished.JobFinishedEvent;
+import com.cloudera.nav.sdk.examples.extraction.JobQueueChange.JobQueueChangeEvent;
+import com.cloudera.nav.sdk.examples.extraction.JobSubmitted.JobSubmitEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.TreeMultimap;
 import com.opencsv.CSVWriter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.joda.time.Instant;
@@ -30,7 +43,18 @@ public class QueryExtraction {
       LoggerFactory.getLogger(QueryExtraction.class);
 
   private static Integer limit = 500000;
-
+  private static int jobCounter = 0;
+  private static Marshaller marshaller;
+  private static ObjectMapper mapper = new ObjectMapper();
+  static {
+      try {
+        marshaller =
+            JAXBContext.newInstance(HadoopConfiguration.class).createMarshaller();
+      } catch (JAXBException e) {
+        e.printStackTrace();
+        System.exit(-1);
+      }
+  }
   static class OperationExecution {
     String identity;
     long duration;
@@ -38,8 +62,9 @@ public class QueryExtraction {
     String principal;
     private Instant minStartTime;
     private Instant maxEndTime;
-    private List<String> mrStartTimes = Lists.newArrayList();
-    private List<String> mrEndTimes = Lists.newArrayList();
+    private Multimap<Long, Long> start2end = TreeMultimap.create();
+    //private List<String> mrStartTimes = Lists.newArrayList();
+    //private List<String> mrEndTimes = Lists.newArrayList();
 
     public OperationExecution(MetadataExtractor extractor, Map<String, Object> obj) {
       identity = (String) obj.get("identity");
@@ -84,10 +109,20 @@ public class QueryExtraction {
     }
 
     public void addMrJob(Map<String, Object> mrJobExec) {
+      String start = (String) mrJobExec.get("started");
+      String end = (String) mrJobExec.get("ended");
       minStartTime = getMinTime(minStartTime, mrJobExec.get("started"));
       maxEndTime = getMaxTime(maxEndTime, mrJobExec.get("ended"));
-      this.mrStartTimes.add((String) mrJobExec.get("started"));
-      this.mrEndTimes.add((String) mrJobExec.get("ended"));
+      if (start != null && end != null) {
+        long startMs = Instant.parse(start).getMillis();
+        long endMs = Instant.parse(end).getMillis();
+        if (start2end.containsKey(startMs)) {
+          LOG.warn("Duplicate start time");
+        }
+        start2end.put(startMs, endMs);
+      }
+      //this.mrStartTimes.add((String) mrJobExec.get("started"));
+      //this.mrEndTimes.add((String) mrJobExec.get("ended"));
     }
 
     public void computeDuration() {
@@ -139,16 +174,95 @@ public class QueryExtraction {
       averageDuration = averageDuration/execIds.size();
     }
 
+    private ConfigProperty makeProp(String name, String value) {
+      ConfigProperty ret = new ConfigProperty();
+      ret.name = name;
+      ret.value = value;
+      ret.source = "foo";
+      return ret;
+    }
+
     public void write(int index, CSVWriter csvWriter) {
       //String queryType = getQueryType(escapeQueryText(queryText));
 
       for (OperationExecution oe : executions) {
-        for (int i = 0; i < oe.mrEndTimes.size(); i++) {
+        int i = -1;
+        for (Map.Entry<Long, Long> kv : oe.start2end.entries()) {
+          i++;
+          // Write conf file
+          HadoopConfiguration cfg = new HadoopConfiguration();
+          cfg.property = Lists.newArrayList();
+          String jobId = "job_" + jobCounter;
+          String dir = "/tmp/nav/" + Integer.toString(jobCounter/1000);
+          File dirFile = new File(dir);
+          if (!dirFile.exists()) dirFile.mkdirs();
+          String jobName = "Stage" + Integer.toString(i + 1);
+          cfg.property.add(makeProp("mapreduce.job.name", jobName));
+          cfg.property.add(makeProp("hive.query.id", oe.identity));
+          cfg.property.add(makeProp("hive.query.string", escapeQueryText(queryText)));
+          File outfile = new File(dir, jobId + "_conf.xml");
+          try {
+            marshaller.marshal(cfg, outfile);
+          } catch (JAXBException e) {
+            e.printStackTrace();
+            System.exit(-1);
+          }
+          long startMs = kv.getKey();
+          long endMs = kv.getValue();
+
+          // Write jhist file
+          String jhistFileName = String.format(
+              "%s-%d-%s-%s-%d-100-1-SUCCEEDED-root.hdfs-1462993272598.jhist",
+              jobId, startMs, "user", jobName, endMs);
+          JobSubmitted js = new JobSubmitted();
+          js.type = "JOB_SUBMITTED";
+          JobSubmitted.Event ev1 = new JobSubmitted.Event();
+          ev1.JobSubmitted = new JobSubmitEvent();
+          ev1.JobSubmitted.userName = "user";
+          ev1.JobSubmitted.submitTime = startMs;
+          ev1.JobSubmitted.jobid = jobId;
+          js.event = ev1;
+
+          JobQueueChange jq = new JobQueueChange();
+          jq.type = "JOB_QUEUE_CHANGED";
+          JobQueueChange.Event ev2 = new JobQueueChange.Event();
+          ev2.JobQueueChange = new JobQueueChangeEvent();
+          ev2.JobQueueChange.jobQueueName = "root.hdfs";
+          jq.event = ev2;
+
+          JobFinished jf = new JobFinished();
+          jf.type = "JOB_FINISHED";
+          JobFinished.Event ev3 = new JobFinished.Event();
+          ev3.JobFinished = new JobFinishedEvent();
+          ev3.JobFinished.finishTime = endMs;
+          jf.event = ev3;
+
+          try {
+            String submitStr = mapper.writeValueAsString(js);
+            submitStr = submitStr.replace("JobSubmitted", "org.apache.hadoop.mapreduce.jobhistory.JobSubmitted");
+            //System.out.println(submitStr);
+
+            String queueStr = mapper.writeValueAsString(jq);
+            queueStr = queueStr.replace("JobQueueChange", "org.apache.hadoop.mapreduce.jobhistory.JobQueueChange");
+            //System.out.println(queueStr);
+
+            String finishStr = mapper.writeValueAsString(jf);
+            finishStr = finishStr.replace("JobFinished", "org.apache.hadoop.mapreduce.jobhistory.JobFinished");
+            //System.out.println(finishStr);
+
+            FileUtils.writeStringToFile(new File(dir, jhistFileName),
+                Joiner.on('\n').join(submitStr, queueStr, finishStr));
+          } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+          }
+
+          jobCounter++;
           csvWriter.writeNext(new String[] {
               oe.identity,
               escapeQueryText(queryText),
-              Long.toString(Instant.parse(oe.mrStartTimes.get(i)).getMillis()),
-              Long.toString(Instant.parse(oe.mrEndTimes.get(i)).getMillis())
+              Long.toString(kv.getKey()),
+              Long.toString(kv.getValue())
           });
         }
       }
@@ -197,7 +311,7 @@ public class QueryExtraction {
 
 
     // Collect all the operation executions.
-    String entityQuery = "sourceType:HIVE AND (type:operation_execution)";
+    String entityQuery = "sourceType:HIVE AND (type:operation_execution) and started:[2016-04-06T06:59:00.000Z TO 2016-05-06T06:59:00.000Z]";
 
     // GEt all the op execs and their time, user
     MetadataResultSet resultSet = null;
