@@ -184,6 +184,10 @@ public class QueryExtraction {
 
     public void write(int index, CSVWriter csvWriter) {
       //String queryType = getQueryType(escapeQueryText(queryText));
+      if (queryText.length() > 32000) {
+        LOG.info("Skipping extra long query");
+        return;
+      }
 
       for (OperationExecution oe : executions) {
         int i = -1;
@@ -213,12 +217,12 @@ public class QueryExtraction {
           // Write jhist file
           String jhistFileName = String.format(
               "%s-%d-%s-%s-%d-100-1-SUCCEEDED-root.hdfs-1462993272598.jhist",
-              jobId, startMs, "user", jobName, endMs);
+              jobId, startMs, oe.principal, jobName, endMs);
           JobSubmitted js = new JobSubmitted();
           js.type = "JOB_SUBMITTED";
           JobSubmitted.Event ev1 = new JobSubmitted.Event();
           ev1.JobSubmitted = new JobSubmitEvent();
-          ev1.JobSubmitted.userName = "user";
+          ev1.JobSubmitted.userName = oe.principal;
           ev1.JobSubmitted.submitTime = startMs;
           ev1.JobSubmitted.jobid = jobId;
           js.event = ev1;
@@ -506,7 +510,8 @@ public class QueryExtraction {
 
   private static String escapeQueryText(String queryText) {
     queryText = queryText.replaceAll("\"", "\\\"");
-    return queryText.replaceAll("\n", " ");
+    return queryText;
+    //return queryText.replaceAll("\n", " ");
   }
 
   private static String getQueryType(String queryText) {
