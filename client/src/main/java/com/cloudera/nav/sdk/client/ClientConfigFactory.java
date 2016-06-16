@@ -40,8 +40,7 @@ public class ClientConfigFactory {
   public static final String DISABLE_SSL_VALIDATION = "disable_ssl_validation";
   public static final String SSL_KEYSTORE_LOCATION = "ssl_truststore_location";
   public static final String SSL_KEYSTORE_PASSWORD = "ssl_truststore_password";
-
-  /**
+    /**
    * Create a PluginConfiguration from the properties contained in the
    * given filePath
    *

@@ -6,6 +6,7 @@ import com.cloudera.nav.sdk.client.MetadataExtractor;
 import com.cloudera.nav.sdk.client.MetadataResultIterator;
 import com.cloudera.nav.sdk.client.MetadataResultSet;
 import com.cloudera.nav.sdk.client.NavApiCient;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -13,23 +14,35 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.opencsv.CSVWriter;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.joda.time.Days;
+import org.joda.time.Duration;
 import org.joda.time.Instant;
+import org.joda.time.Months;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The program extracts hive and impala queries based on conditions set in the
+ * configuration file, and outputs into Optimizer, Sigma, Google Fusion CSV data formats.
+ * The CSV files are generated according to the OperationExecution startTime range
+ * and duration, which can be defined in the configuration file.
+ * Secondly, the program extracts Data Definition Language data into CSV format.
+ * The main program takes config file path as argument.
+ */
 public class QueryExtraction {
   private static final Logger LOG =
       LoggerFactory.getLogger(QueryExtraction.class);
 
   private static Integer limit = 500000;
+  private static final ObjectMapper mapper= new ObjectMapper();
 
   static class OperationExecution {
     String identity;
@@ -57,13 +70,23 @@ public class QueryExtraction {
       this.mrStartTimes.add((String) mrJobExec.get("started"));
       this.mrEndTimes.add((String) mrJobExec.get("ended"));
       numStages++;
+      if (!"hive".equals((String) mrJobExec.get("principal"))) {
+        principal = (String) mrJobExec.get("principal");
+      }
     }
 
     public void computeDuration() {
+      if (startTime == null) {
+        startTime = minStartTime;
+      }
       if (minStartTime != null && maxEndTime != null) {
         duration = maxEndTime.minus(minStartTime.getMillis()).getMillis();
       }
 
+    }
+    @Override
+    public String toString() {
+      return identity;
     }
   }
 
@@ -140,16 +163,64 @@ public class QueryExtraction {
       userString = Joiner.on(",").skipNulls().join(users);
     }
 
-    public void writeOptimizerFormat(int index, CSVWriter csvWriter) {
+    public static void writeHeaders(CSVWriter sigmaCSVWriter,
+                                    CSVWriter optimizerCsvWriter,
+                                    CSVWriter googleFusionCsvWriter) {
+      sigmaCSVWriter.writeNext(new String[] {
+          "QueryExecIdentity", "mrStartTime", "mrEndTime", "query"});
+      googleFusionCsvWriter.writeNext(new String[] {
+          "index", "QueryIdentity", "queryExecutionIdentity", "duration", "startTime", "endTime",
+          "numStages",
+          "user", "queryType"});
+      optimizerCsvWriter.writeNext(new String[] {
+          "index", "QueryIdentity", "totalExecutions", "averageDuration",
+          "minStartTime", "maxStartTime", "users", "query"});
+    }
+
+    public static void writeHeadersOperations(CSVWriter sigmaCSVWriter,
+                                              CSVWriter optimizerCsvWriter,
+                                              CSVWriter googleFusionCsvWriter) {
+      sigmaCSVWriter.writeNext(new String[] {
+          "QueryExecIdentity", "mrStartTime", "mrEndTime", "query"});
+      googleFusionCsvWriter.writeNext(new String[] {
+          "index", "QueryIdentity", "totalExecutions", "minDuration", "maxDuration",
+          "averageDuration", "medianDuration",
+          "minStartTime", "maxStartTime", "maxStages",
+          "users", "queryType"});
+      optimizerCsvWriter.writeNext(new String[] {
+          "index", "QueryIdentity", "totalExecutions", "averageDuration",
+          "minStartTime", "maxStartTime", "users", "query"});
+    }
+
+    public void writeGoogleFusionFormat(int index, CSVWriter csvWriter) {
       String queryType = getQueryType(escapeQueryText(queryText));
 
-      csvWriter.writeNext(new String[] {Integer.toString(index++),
+      for(int i = 0; i < executions.size(); i++) {
+        OperationExecution opExec = executions.get(i);
+
+        csvWriter.writeNext(new String[]{
+            Integer.toString(index),
+            identity,
+            opExec.identity,
+            Long.toString(opExec.duration),
+            opExec.startTime != null ? opExec.startTime.toString() : "",
+            opExec.maxEndTime != null ? opExec.maxEndTime.toString() : "",
+            Integer.toString(opExec.numStages),
+            opExec.principal,
+            queryType});
+      }
+    }
+
+    public void writeOptimizerFormat(int index, CSVWriter csvWriter) {
+      String escapedQuery = escapeQueryText(queryText);
+
+      csvWriter.writeNext(new String[] {
+          Integer.toString(index++),
           identity,
           Integer.toString(executions.size()),
-          Long.toString(minDuration),Long.toString(maxDuration),
-          Long.toString(averageDuration),Long.toString(medianDuration),
-          minStartTime, maxStartTime, Integer.toString(maxStages),
-          userString, queryType, queryText});
+          Long.toString(averageDuration),
+          minStartTime, maxStartTime,
+          userString, escapedQuery});
     }
 
     public void writeSigmaFormat(int index, CSVWriter csvWriter) {
@@ -171,38 +242,178 @@ public class QueryExtraction {
     }
 
     public void write(int i, CSVWriter sigmaCSVWriter, CSVWriter
-        optimizerCsvWriter) {
-      writeSigmaFormat(i, sigmaCSVWriter);
+        optimizerCsvWriter, CSVWriter googleFusionWriter) {
+      if (queryText == null) {
+        Joiner joiner = Joiner.on( "," ).skipNulls();
+        LOG.warn("Skipping {} as query text is null. Operation Execution Ids: {}",
+            identity, joiner.join(executions));
+        return;
+      }
+      //writeSigmaFormat(i, sigmaCSVWriter);
       writeOptimizerFormat(i, optimizerCsvWriter);
-    }
-
-    public static void writeHeaders(CSVWriter sigmaCSVWriter,
-                                    CSVWriter optimizerCsvWriter) {
-      sigmaCSVWriter.writeNext(new String[] {
-          "QueryExecIdentity, mrStartTime, mrEndTime, query"});
-      optimizerCsvWriter.writeNext(new String[] {
-          "index, QueryIdentity, totalExecutions, minDuration, maxDuration, averageDuration, medianDuration," +
-              "users, minStartTime, maxStartTime, queryType"});
+      writeGoogleFusionFormat(i, googleFusionWriter);
     }
   }
 
   @SuppressWarnings("unchecked")
-  public static  void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException {
     LogManager.getRootLogger().setLevel(Level.INFO);
 
     String configFilePath = args[0];
     ClientConfig config = (new ClientConfigFactory())
         .readConfigurations(configFilePath);
+    QueryExtractionConfig queryExtractionConfig = (new QueryExtractionConfigFactory())
+        .readConfigurations(configFilePath);
 
+    extractQueries(config, queryExtractionConfig, "hive");
+    extractQueries(config, queryExtractionConfig, "impala");
+    extractDDL(config, queryExtractionConfig);
+  }
+
+  private static void extractDDL(ClientConfig config, QueryExtractionConfig queryExtractionConfig) throws
+      IOException {
     // Initialize the API.
     NavApiCient client = new NavApiCient(config);
     MetadataExtractor extractor = new MetadataExtractor(client, limit);
 
-    // Collect all the operation executions.
-    String entityQuery = "sourceType:HIVE AND (type:operation_execution)";
+    Set<String> allPartitionColumns = Sets.newHashSet();
 
-//    String entityQuery =
-//        "+(sourceType:HIVE AND (type:operation_execution)) +(+sourceType:hive +started:[NOW/DAY-5DAYS TO NOW/DAY+1DAY])";
+    Map<String, String> tablePathToIdentity = Maps.newHashMap();
+
+    // Collect all the partition columns
+    String entityQuery = "-deleted:true +sourceType:hive +type:table";
+    MetadataResultSet resultSet = extractor.extractMetadata(null, null,
+        entityQuery, null);
+    MetadataResultIterator iterator = resultSet.getEntities().iterator();
+
+    int index = 0;
+    while(iterator.hasNext()) {
+      Map<String, Object> obj = iterator.next();
+
+      index++;
+      if (index % 1000 == 0) {
+        LOG.info("Processed {} tables", index);
+      }
+
+      String parentPath = (String) obj.get("parentPath");
+      String tableName = (String) obj.get("originalName");
+
+      String tablePath = parentPath + "/" + tableName;
+      tablePathToIdentity.put(tablePath, (String) obj.get("identity"));
+
+      Object partColNames = obj.get("partColNames");
+      if (partColNames != null) {
+        @SuppressWarnings("unchecked")
+        List<String> partitionColumns = (List<String>) partColNames;
+        for(String column : partitionColumns) {
+          allPartitionColumns.add(tablePath + "/" + column);
+        }
+      }
+    }
+    LOG.info("Total processed {} tables", index);
+
+    CSVWriter ddlWriter = null;
+    try {
+      ddlWriter = createCsvWriter(queryExtractionConfig.getOutputDirectory() + "/ddl.csv", "\n");
+      ddlWriter.writeNext(new String[]{"ColumnId", "databaseName", "tableId", "tableName", "columnName", "type", "isPartitionColumn"});
+
+      // Collect all the operation executions.
+      entityQuery = "+sourceType:hive +type:field";
+      // "+(-deleted:true) +sourceType:hive +type:field +parentPath:\\/l1_ammnprn2_mantas\\/kdd_pttrn_tag";
+
+      index = 0;
+      resultSet = extractor.extractMetadata(null, null, entityQuery, null);
+      iterator = resultSet.getEntities().iterator();
+      while (iterator.hasNext()) {
+        if (index % 1000 == 0) {
+          LOG.info("Processed {} columns", index);
+        }
+
+        Map<String, Object> obj = iterator.next();
+        String identity = (String) obj.get("identity");
+        String type = (String) obj.get("dataType");
+        String name = (String) obj.get("originalName");
+        if (name == null) {
+          continue;
+        }
+
+        String parentPath = (String) obj.get("parentPath");
+        String[] parentPaths = parentPath.split("/");
+
+        String databaseName = parentPaths[1];
+        String tableName = parentPaths[2];
+        boolean isPartitionColumn = allPartitionColumns.contains(parentPath + "/" + name);
+
+        ddlWriter.writeNext(new String[]{
+            identity, databaseName,
+            tablePathToIdentity.get(parentPath), tableName,
+            name, type, Boolean.toString(isPartitionColumn)});
+        index++;
+      }
+      LOG.info("Total processed {} columns", index);
+    }
+    finally {
+      ddlWriter.close();
+    }
+  }
+
+  private static void extractQueries(ClientConfig config, QueryExtractionConfig queryExtractionConfig, String sourceType) throws IOException {
+    String dir = queryExtractionConfig.getOutputDirectory();
+
+    Instant startDate = Instant.parse(queryExtractionConfig.getStartTime());
+    Instant endDate = Instant.parse(queryExtractionConfig.getEndTime());
+    Instant tempDate;
+
+    EntityQueryBuilder operationExecutionQueryBuilder = new EntityQueryBuilder()
+        .customQuery(queryExtractionConfig.getOperationExecutionQuery())
+        .principal(queryExtractionConfig.getPrincipal())
+        .sourceType(sourceType)
+        .type("operation_execution");
+
+    for ( ; startDate.isBefore(endDate); startDate = tempDate.plus(1)) {
+      Duration duration = getDuration(queryExtractionConfig.getDuration(), startDate);
+      tempDate = startDate.plus(duration.getMillis());
+
+      EntityQuery entityQueryObj = operationExecutionQueryBuilder
+          .startTimeMin(startDate.toString())
+          .startTimeMax(tempDate.toString())
+          .buildSolrQuery();
+
+      String sigmaFile = dir + "/" + sourceType + "/sigma/";
+      String optimizerFile = dir + "/" + sourceType + "/optimizer/";
+      String googleFile = dir + "/" + sourceType + "/goog/";
+      CSVWriter sigmaCSVWriter = null;
+      CSVWriter optimizerCsvWriter = null;
+      CSVWriter googleCsvWriter = null;
+      try {
+        sigmaCSVWriter = createCsvWriter(sigmaFile + startDate.toString() + ".csv", "\n");
+        optimizerCsvWriter = createCsvWriter(optimizerFile + startDate.toString() + ".csv", "@@@@");
+        googleCsvWriter = createCsvWriter(googleFile + startDate.toString() + ".csv", "\n");
+
+        extractOperations(config, entityQueryObj, sigmaCSVWriter, optimizerCsvWriter,
+            googleCsvWriter, sourceType);
+      }
+      finally {
+        sigmaCSVWriter.close();
+        optimizerCsvWriter.close();
+        googleCsvWriter.close();
+      }
+    }
+  }
+
+  private static void extractOperations(ClientConfig config, EntityQuery sq,
+                                        CSVWriter sigmaCSVWriter, CSVWriter optimizerCsvWriter,
+                                        CSVWriter googleCsvWriter, String sourceType) throws IOException {
+    // Initialize the API.
+    NavApiCient client = new NavApiCient(config);
+    MetadataExtractor extractor = new MetadataExtractor(client, limit);
+
+
+    // Collect all the operation executions.
+    String entityQuery = sq.toString();
+        //"sourceType:HIVE AND (type:operation_execution)";
+        //"+(+sourceType:" + sourceType + " +type:operation_execution)" + filter;
+    LOG.info("Processing query: {}", entityQuery);
 
     // GEt all the op execs and their time, user
     MetadataResultSet resultSet = null;
@@ -217,15 +428,20 @@ public class QueryExtraction {
           new OperationExecution(obj);
       opExecs.put(operationExecution.identity, operationExecution);
 
-      if (opExecs.size()%1000 == 0) {
+      if (opExecs.size() % 1000 == 0) {
         LOG.info("Processed {} operation executions", opExecs.size());
       }
     }
 
     LOG.info("Obtained {} operation executions", opExecs.size());
+    if (opExecs.size() == 0) {
+      return;
+    }
 
     // Collect MR operations so that we can collect the elapsed time.
-    collectElapsedTimes(extractor, opExecs);
+    if (sourceType.equals("hive")) {
+      collectElapsedTimes(extractor, opExecs);
+    }
 
     // Collect operation Ids.
     Map<String, Operation> operations = Maps.newHashMap();
@@ -242,10 +458,12 @@ public class QueryExtraction {
       iterator = resultSet.getRelations().iterator();
       while(iterator.hasNext()) {
         Map<String, Object> obj = iterator.next();
+        @SuppressWarnings("unchecked")
         Map<String, Object> template = (Map<String, Object>) obj.get("template");
         String opId = (String) template.get("entityId");
-
+        @SuppressWarnings("unchecked")
         Map<String, Object> instances = (Map<String, Object>) obj.get("instances");
+        @SuppressWarnings("unchecked")
         List<String> execIds = (List<String>) instances.get("entityIds");
 
         Operation operation = operations.get(opId);
@@ -268,6 +486,7 @@ public class QueryExtraction {
     partitions = Iterables.partition(operations.keySet(), 10000);
     for(List<String> partition : partitions) {
       LOG.info("Processed {} operations", index);
+
       // Get the operation Ids now.
       String entityIds = Joiner.on(",").join(partition);
       entityQuery = "{!terms f=identity}" + entityIds + ",dummy";
@@ -279,32 +498,27 @@ public class QueryExtraction {
         String identity = (String) obj.get("identity");
 
         Operation operation = operations.get(identity);
-        operation.queryText = queryText == null ? "" : queryText;
+        operation.queryText = queryText;
+        index++;
       }
     }
+    LOG.info("Total Processed {} operations", index);
 
-    String sigmaOutputFile = args[1];
-    String optimizerOutputFile = args[2];
+    Operation.writeHeaders(sigmaCSVWriter, optimizerCsvWriter, googleCsvWriter);
 
-    PrintWriter sigmaWriter = new PrintWriter(sigmaOutputFile, "UTF-8");
-    CSVWriter sigmaCSVWriter =
-        new CSVWriter(sigmaWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, "\n");
-
-    PrintWriter optimizerWriter = new PrintWriter(optimizerOutputFile, "UTF-8");
-    CSVWriter optimizerCsvWriter =
-        new CSVWriter(optimizerWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, "@@@@@");
-        //new CSVWriter(optimizerWriter, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, "\n");
-
-    Operation.writeHeaders(sigmaCSVWriter, optimizerCsvWriter);
-
+    index = 0;
     for(Operation operation : operations.values()) {
-      operation.write(index++, sigmaCSVWriter, optimizerCsvWriter);
+      operation.write(index++, sigmaCSVWriter, optimizerCsvWriter, googleCsvWriter);
     }
+  }
 
-    LOG.info("Processed {} operations", index);
+  private static CSVWriter createCsvWriter(String filepath, String seperator)
+      throws FileNotFoundException, UnsupportedEncodingException {
+    File file = new File(filepath);
+    file.getParentFile().mkdirs();
+    PrintWriter writer = new PrintWriter(file, "UTF-8");
+    return new CSVWriter(writer, CSVWriter.DEFAULT_SEPARATOR, CSVWriter.DEFAULT_QUOTE_CHARACTER, seperator);
 
-    sigmaCSVWriter.close();
-    optimizerCsvWriter.close();
   }
 
   @SuppressWarnings({ "unused", "unchecked" })
@@ -397,8 +611,7 @@ public class QueryExtraction {
   }
 
   private static String escapeQueryText(String queryText) {
-    queryText = queryText.replaceAll("\"", "\\\"");
-    return queryText.replaceAll("\n", " ");
+    return queryText.replaceAll("\"", "'");
   }
 
   private static String getQueryType(String queryText) {
@@ -414,5 +627,23 @@ public class QueryExtraction {
     } else {
       return "unknown";
     }
+  }
+
+  private static Duration getDuration(String duration, Instant startDate) {
+    switch (duration.toLowerCase()) {
+      case "monthly":
+        return new Duration(Months.ONE.toPeriod().toDurationFrom(startDate));
+      case "weekly":
+        return new Duration(Days.SEVEN.toPeriod().toDurationFrom(startDate));
+      case "biweekly":
+        return new Duration(Days.days(14).toPeriod().toDurationFrom(startDate));
+      default:
+        try {
+          return new Duration(Days.days(Integer.parseInt(duration)).toPeriod().toDurationFrom(startDate));
+        } catch (NumberFormatException e) {
+          LOG.info("Invalid duration. Valid inputs are monthly, weekly, biweekly or any integer of days");
+        }
+    }
+    return null;
   }
 }
