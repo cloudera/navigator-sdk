@@ -62,6 +62,9 @@ public class QueryExtraction {
       this.mrStartTimes.add((String) mrJobExec.get("started"));
       this.mrEndTimes.add((String) mrJobExec.get("ended"));
       numStages++;
+      if (!"hive".equals((String) mrJobExec.get("principal"))) {
+        principal = (String) mrJobExec.get("principal");
+      }
     }
 
     public void computeDuration() {
@@ -72,6 +75,11 @@ public class QueryExtraction {
         duration = maxEndTime.minus(minStartTime.getMillis()).getMillis();
       }
 
+    }
+
+    @Override
+    public String toString() {
+      return identity;
     }
   }
 
@@ -213,6 +221,12 @@ public class QueryExtraction {
 
     public void write(int i, CSVWriter sigmaCSVWriter, CSVWriter
         optimizerCsvWriter, CSVWriter googleFusionWriter) {
+      if (queryText == null) {
+        Joiner joiner = Joiner.on( "," ).skipNulls();
+        LOG.warn("Skipping {} as query text is null. Operation Execution Ids: {}",
+            identity, joiner.join(executions));
+        return;
+      }
       //writeSigmaFormat(i, sigmaCSVWriter);
       writeOptimizerFormat(i, optimizerCsvWriter);
       writeGoogleFusionFormat(i, googleFusionWriter);
@@ -226,7 +240,8 @@ public class QueryExtraction {
     String configFilePath = args[0];
     ClientConfig config = (new ClientConfigFactory())
         .readConfigurations(configFilePath);
-    extractQueries(config, args[1]);
+    extractQueries(config, args[1], "hive");
+    extractQueries(config, args[1], "impala");
 
     extractDDL(config, args[1]);
   }
@@ -315,11 +330,11 @@ public class QueryExtraction {
     ddlWriter.close();
   }
 
-  private static void extractQueries(ClientConfig config, String dir) throws IOException {
-    Instant startDate = Instant.parse("2015-06-01T00:00:00.000Z");
+  private static void   extractQueries(ClientConfig config, String dir, String sourceType) throws IOException {
+    Instant startDate = Instant.parse("2015-07-01T00:00:00.000Z");
 
     for (int i = 0; i < 12; i++) {
-      Duration duration = Months.ONE.toPeriod().toDurationFrom(startDate);
+      Duration duration = Months.TWELVE.toPeriod().toDurationFrom(startDate);
 
       Instant endDate = startDate.plus(duration.getMillis());
 
@@ -327,15 +342,18 @@ public class QueryExtraction {
           String.format(" +(started:[%s TO %s])",
               startDate.toString(), endDate.toString());
 
-      String sigmaFile = dir + "/sigma/ ";
-      String optimizerFile = dir + "/optimizer/";
-      String googleFile = dir + "/goog/";
+//      filter = filter + " +(principal:sagbcsed@jnj.com)";
+
+      String sigmaFile = dir + "/" + sourceType + "/sigma/";
+      String optimizerFile = dir + "/" + sourceType + "/optimizer/";
+      String googleFile = dir + "/" + sourceType + "/goog/";
 
       CSVWriter sigmaCSVWriter = createCsvWriter(sigmaFile + startDate.toString() + ".csv", "\n");
       CSVWriter optimizerCsvWriter = createCsvWriter(optimizerFile + startDate.toString() + ".csv", "@@@@");
       CSVWriter googleCsvWriter = createCsvWriter(googleFile + startDate.toString() + ".csv", "\n");
 
-      extractOperations(config, filter, sigmaCSVWriter, optimizerCsvWriter, googleCsvWriter);
+      extractOperations(config, filter, sigmaCSVWriter, optimizerCsvWriter,
+          googleCsvWriter, sourceType);
 
       sigmaCSVWriter.close();
       optimizerCsvWriter.close();
@@ -347,7 +365,7 @@ public class QueryExtraction {
 
   private static void extractOperations(ClientConfig config, String filter,
                                         CSVWriter sigmaCSVWriter, CSVWriter optimizerCsvWriter,
-                                        CSVWriter googleCsvWriter) throws IOException {
+                                        CSVWriter googleCsvWriter, String sourceType) throws IOException {
     // Initialize the API.
     NavApiCient client = new NavApiCient(config);
     MetadataExtractor extractor = new MetadataExtractor(client, limit);
@@ -356,7 +374,7 @@ public class QueryExtraction {
     // Collect all the operation executions.
     String entityQuery =
         //"sourceType:HIVE AND (type:operation_execution)";
-      "+(+sourceType:hive +type:operation_execution)" + filter;
+      "+(+sourceType:" + sourceType + " +type:operation_execution)" + filter;
     LOG.info("Processing query: {}", entityQuery);
 
     // GEt all the op execs and their time, user
@@ -378,9 +396,14 @@ public class QueryExtraction {
     }
 
     LOG.info("Obtained {} operation executions", opExecs.size());
+    if (opExecs.size() == 0) {
+      return;
+    }
 
     // Collect MR operations so that we can collect the elapsed time.
-    collectElapsedTimes(extractor, opExecs);
+    if (sourceType.equals("hive")) {
+      collectElapsedTimes(extractor, opExecs);
+    }
 
     // Collect operation Ids.
     Map<String, Operation> operations = Maps.newHashMap();
@@ -435,7 +458,7 @@ public class QueryExtraction {
         String identity = (String) obj.get("identity");
 
         Operation operation = operations.get(identity);
-        operation.queryText = queryText == null ? "" : queryText;
+        operation.queryText = queryText;
         index++;
       }
     }
