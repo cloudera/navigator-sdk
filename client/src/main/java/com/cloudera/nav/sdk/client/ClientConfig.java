@@ -190,4 +190,6 @@ public class ClientConfig {
   public void setSslTrustStoreType(String sslTrustStoreType) {
     this.sslTrustStoreType = sslTrustStoreType;
   }
+
+
 }
