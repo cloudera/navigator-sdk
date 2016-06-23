@@ -166,8 +166,8 @@ public class QueryExtraction {
     public static void writeHeaders(CSVWriter sigmaCSVWriter,
                                     CSVWriter optimizerCsvWriter,
                                     CSVWriter googleFusionCsvWriter) {
-      sigmaCSVWriter.writeNext(new String[] {
-          "QueryExecIdentity", "mrStartTime", "mrEndTime", "query"});
+//      sigmaCSVWriter.writeNext(new String[] {
+//          "QueryExecIdentity", "mrStartTime", "mrEndTime", "query"});
       googleFusionCsvWriter.writeNext(new String[] {
           "index", "QueryIdentity", "queryExecutionIdentity", "duration", "startTime", "endTime",
           "numStages",
@@ -386,7 +386,7 @@ public class QueryExtraction {
       CSVWriter optimizerCsvWriter = null;
       CSVWriter googleCsvWriter = null;
       try {
-        sigmaCSVWriter = createCsvWriter(sigmaFile + startDate.toString() + ".csv", "\n");
+        //sigmaCSVWriter = createCsvWriter(sigmaFile + startDate.toString() + ".csv", "\n");
         optimizerCsvWriter = createCsvWriter(optimizerFile + startDate.toString() + ".csv", "@@@@");
         googleCsvWriter = createCsvWriter(googleFile + startDate.toString() + ".csv", "\n");
 
