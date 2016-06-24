@@ -53,15 +53,36 @@ optimizer_delimiter=@@@@
 # Parameter used to generate Navigator report. See solr_stats.py
 client_name=foo
 
+# When using a secure Navigator Metadata server (HTTPS) a Java truststore (JKS)
+# is required for certificate validation in Java
+ssl_truststore_location=/usr/java/jdk1.7.0_67-cloudera/jre/lib/security/jssecacerts
+ssl_truststore_password=changeit
+
+# When using a secure Navigator Metadata server (HTTPS) a CA bundle (PEM format)
+# is required for certificate validation in Python
+#requests_verify_certificates=true
+#requests_ca_bundle=
+
 """
-URL_PATTERN = re.compile('http:\/\/(.*):([0-9]+)?\/*')
+URL_PATTERN = re.compile('(https?):\/\/(.*):([0-9]+)?\/*')
 def gen_nav_analysis(config):
     matches = URL_PATTERN.match(config.get_property('navigator_url'))
-    host = matches.group(1)
-    port = matches.group(2)
+    protocol = matches.group(1)
+    host = matches.group(2)
+    port = matches.group(3)
+
+    if config.get_property('requests_verify_certificates').lower() == 'false':
+        verify = False
+    elif config.has_property('requests_ca_bundle'):
+        verify = config.get_property('requests_ca_bundle')
+    else:
+        verify = None
 
     comp = NavSolrAnalyzer(config.get_property('client_name'), host, port,
-    config.get_property('username'), config.get_property('password'))
+        config.get_property('username'), config.get_property('password'),
+        use_tls=(protocol == 'https'),
+        verify=verify)
+
     output_dir = config.get_property('output_directory')
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -84,6 +105,9 @@ class Config(object):
 
     def get_property(self, key):
         return self.config[key]
+
+    def has_property(self, key):
+        return key in self.config.propertyNames()
 
 if __name__=='__main__':
     import sys
