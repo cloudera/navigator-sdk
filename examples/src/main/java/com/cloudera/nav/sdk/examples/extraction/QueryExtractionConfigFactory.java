@@ -18,6 +18,7 @@ public class QueryExtractionConfigFactory {
   public static final String END_TIME = "end_time";
   public static final String DURATION = "duration";
   public static final String OPERATION_EXECUTION_QUERY = "operation_execution_query";
+  public static final String OPTIMIZER_DELIMITER = "optimizer_delimiter";
 
   public QueryExtractionConfig readConfigurations(String filePath) {
     try {
@@ -29,6 +30,7 @@ public class QueryExtractionConfigFactory {
       config.setEndTime(props.getString(END_TIME));
       config.setDuration(props.getString(DURATION));
       config.setOperationExecutionQuery(props.getString(OPERATION_EXECUTION_QUERY));
+      config.setOptimizerDelimiter(props.getString(OPTIMIZER_DELIMITER, "\n"));
       return config;
     } catch (ConfigurationException e) {
       throw Throwables.propagate(e);
@@ -46,6 +48,8 @@ public class QueryExtractionConfigFactory {
         props.get(DURATION).toString() : "monthly");
     config.setOperationExecutionQuery(props.containsKey(OPERATION_EXECUTION_QUERY) ?
         props.get(OPERATION_EXECUTION_QUERY).toString() : null);
+    config.setOptimizerDelimiter(props.containsKey(OPTIMIZER_DELIMITER) ?
+        props.get(OPTIMIZER_DELIMITER).toString() : "\n");
     return config;
   }
 }

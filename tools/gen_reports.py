@@ -28,24 +28,27 @@ namespace=example
 username=user
 password=password
 
-# File path for reports. Required to run gen_reports.py
-optimizer_output_file=/tmp/opt_report.csv
-sigma_output_file=/tmp/sig_report.csv
-navigator_output_file=/tmp/nav_report.xlsx
+# Main directory for reports
+output_directory=/tmp/foo
 
 # Query parameter for OperationExecution
 principal=user
 
 # Start time range for OperationExecution query
-# Date formats can take form of 2012-07-06T9:23:43Z, NOW/DAY-5DAY, *
-# For more information, https://cwiki.apache.org/confluence/display/solr/Working+with+Dates
-start_time_min=2012-07-06T9:23:43Z
+# Date formats can take form of 2012-07-06T9:23:43Z, 2012-07-06
+start_time=2012-07-06T9:23:43Z
+end_time=2012-11-06T9:23:43Z
 
-# Matches any date
-start_time_max=*
+# The time duration per each report.
+# Can be set to monthly, weekly, biweekly, or any integer of days ie. 10
+duration=monthly
 
 # operation_execution_query will overwrite the above query parameters
 #operation_execution_query=sourceType:HIVE AND type:operation_execution
+
+# The row delimiter for optimizer. Old version of optimizer might not support \n as delimiter.
+# Default is \n
+optimizer_delimiter=@@@@
 
 # Parameter used to generate Navigator report. See solr_stats.py
 client_name=foo
