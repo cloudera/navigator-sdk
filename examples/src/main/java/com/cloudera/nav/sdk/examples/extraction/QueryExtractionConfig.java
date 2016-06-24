@@ -10,6 +10,7 @@ public class QueryExtractionConfig {
   private String duration;
   private String principal;
   private String operationExecutionQuery;
+  private String optimizerDelimiter;
 
   public String getPrincipal() {
     return principal;
@@ -57,5 +58,13 @@ public class QueryExtractionConfig {
 
   public void setDuration(String duration) {
     this.duration = duration;
+  }
+
+  public String getOptimizerDelimiter() {
+    return optimizerDelimiter;
+  }
+
+  public void setOptimizerDelimiter(String optimizerDelimiter) {
+    this.optimizerDelimiter = optimizerDelimiter;
   }
 }

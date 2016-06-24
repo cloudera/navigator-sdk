@@ -387,14 +387,14 @@ public class QueryExtraction {
       CSVWriter googleCsvWriter = null;
       try {
         //sigmaCSVWriter = createCsvWriter(sigmaFile + startDate.toString() + ".csv", "\n");
-        optimizerCsvWriter = createCsvWriter(optimizerFile + startDate.toString() + ".csv", "@@@@");
+        optimizerCsvWriter = createCsvWriter(optimizerFile + startDate.toString() + ".csv", queryExtractionConfig.getOptimizerDelimiter());
         googleCsvWriter = createCsvWriter(googleFile + startDate.toString() + ".csv", "\n");
 
         extractOperations(config, entityQueryObj, sigmaCSVWriter, optimizerCsvWriter,
             googleCsvWriter, sourceType);
       }
       finally {
-        sigmaCSVWriter.close();
+        //sigmaCSVWriter.close();
         optimizerCsvWriter.close();
         googleCsvWriter.close();
       }
