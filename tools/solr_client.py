@@ -8,7 +8,8 @@ class SolrServer(object):
     """
     Encapsulates connection to a given Solr server
     """
-    def __init__(self, host, port, user, pwd, debug=False):
+    def __init__(self, host, port, user, pwd, debug=False, use_tls=False,
+                 verify=None):
         """
         Parameters
         ----------
@@ -25,6 +26,8 @@ class SolrServer(object):
         self.port = int(port)
         self.user = user
         self.pwd = pwd
+        self.use_tls = use_tls
+        self.verify = verify
         self._debug = debug
         self._session = requests.Session()
         adapter = requests.adapters.HTTPAdapter(max_retries=10)
@@ -32,18 +35,23 @@ class SolrServer(object):
 
     @property
     def url(self):
-        return 'http://{}:{}/solr'.format(self.host, self.port)
+        if self.use_tls:
+            protocol = 'https'
+        else:
+            protocol = 'http'
+        return '{}://{}:{}/solr'.format(protocol, self.host, self.port)
 
     def post(self, url, data=None):
         if self._debug:
             print('Query: ' + str(data))
-        return self._session.post(url, auth=(self.user, self.pwd), data=data)
+        return self._session.post(url, auth=(self.user, self.pwd), data=data,
+                                  verify=self.verify)
 
     def get(self, url, params=None):
         if self._debug:
             print('Query: ' + str(params))
         return self._session.get(url, auth=(self.user, self.pwd),
-                                  params=params)
+                                 params=params, verify=self.verify)
 
     def get_core(self, core_name):
         return SolrCore(self, core_name)
@@ -56,7 +64,11 @@ class SolrServer(object):
         params={'action':'STATUS', 'wt':'json'}
         if name is not None:
             params['core'] = name
-        return self.get(self.url + '/admin/cores', params=params).json()
+        result = self.get(self.url + '/admin/cores', params=params)
+        if result.status_code == requests.codes.forbidden:
+            raise Exception('Access to Solr cores is forbidden. ' + \
+                            'Please ensure Dev Mode is enabled in Navigator.')
+        return result.json()
 
 
 

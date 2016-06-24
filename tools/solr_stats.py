@@ -105,9 +105,10 @@ class NavSolrAnalyzer(object):
     and a breakdown of entity counts
     """
 
-    def __init__(self, name, host, port, user, pwd):
+    def __init__(self, name, host, port, user, pwd, use_tls=False, verify=None):
         self.name = name
-        self.server = NavSolrServer(host, port, user, pwd)
+        self.server = NavSolrServer(host, port, user, pwd, use_tls=use_tls,
+                                    verify=verify)
         self.nav_elements = self.server.nav_elements
 
     def summary_stats(self):
