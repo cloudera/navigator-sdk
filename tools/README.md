@@ -38,6 +38,8 @@ properly.
  
  Update [query_extraction.sh](query_extraction.sh) permission by `chmod +x query_extraction.sh` from within the tools directory.
  
+ Turn on debug mode on Navigator. Type `http://<navigator_url_and_port>/debug/devMode?mode=true` in browser. 
+ 
  The script requires a configuration file. The [query-extraction-sample.conf](../examples/src/main/resources/query-extraction-sample.conf) file contains all the options that's currently supported.
  
  To run the script in the tools directory:
