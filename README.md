@@ -56,6 +56,13 @@ The Navigator API allows users to set tags and custom key-value pairs on
 metadata entities. The Navigator SDK provides an easy-to-use interface for users
  to take advantage of those APIs. The [code examples](examples/src/main/java/com/cloudera/nav/sdk/examples/tags)
  included in the SDK demonstrates setting tags for HDFS and Hive entities.
+ 
+*Workload Summary Bundle*
+
+The Navigator SDK contains various tools to further analysis on the metadata.
+Customers might want to analyze Hive/Impala queries on Navigator Optimizer, or 
+view a detail summary of Navigator. The [Workload Summary Bundle](https://github.com/cloudera/navigator-sdk/tree/cluster-analysis/tools) section under tools demonstrates the steps
+to configure and generate the bundle.
 
 
 Navigator Metadata
