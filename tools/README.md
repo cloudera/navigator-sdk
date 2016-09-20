@@ -1,26 +1,30 @@
 # Workload Summary Bundle
 
-[gen_reports.py](gen_reports.py) is a script that generates Navigator metadata
- analysis from [solr_stats.py](solr_stats.py), and input files required by Optimizer and 
- Sigma from [QueryExtraction.java](../examples/src/main/java/com/cloudera/nav/sdk/examples/extraction/QueryExtraction.java)
+[gen_reports.py](gen_reports.py) is a script that generates Workload Summary Bundle.
+
+**The bundle contains:**
+
+  Navigator Summary Report from [solr_stats.py](solr_stats.py)
  
- Dependencies:
+  Hive and Impala Query Metadata from [QueryExtraction.java](../examples/src/main/java/com/cloudera/nav/sdk/examples/extraction/QueryExtraction.java). These files can be inputs to Navigator Optimizer.
  
- Maven 3 Click [here](https://maven.apache.org/install.html) for Installation
+ **Dependencies:**
  
- Compile the SDK project in the navigator-sdk folder, type `mvn clean install`
+  Maven 3 Click [here](https://maven.apache.org/install.html) for Installation
  
- Python Modules can be installed using `pip install -r requirements.txt` from within the tools directory.
- Any missing modules can be fixed by install [Anaconda](https://www.continuum.io/downloads)
+  Compile the SDK project in the navigator-sdk folder, type `mvn clean install`
  
- Update [query_extraction.sh](query_extraction.sh) permission by `chmod +x query_extraction.sh` from within the tools directory.
+  Python Modules can be installed using `pip install -r requirements.txt` from within the tools directory.
+  Any missing modules can be fixed by install [Anaconda](https://www.continuum.io/downloads)
  
- Turn on debug mode on Navigator. Type `http://<navigator_url_and_port>/debug/devMode?mode=true` in browser. 
+  Update [query_extraction.sh](query_extraction.sh) permission by `chmod +x query_extraction.sh` from within the tools directory.
+ 
+  Turn on debug mode on Navigator. Type `http://<navigator_url_and_port>/debug/devMode?mode=true` in browser. 
  
  
- The script requires a configuration file. The [query-extraction-sample.conf](../examples/src/main/resources/query-extraction-sample.conf) file contains all the options that's currently supported.
+  The script requires a configuration file. The [query-extraction-sample.conf](../examples/src/main/resources/query-extraction-sample.conf) file contains all the options that's currently supported.
  
- To run the script in the tools directory:
+ **To run the script in the tools directory:**
  
     `python gen_reports.py <config_file_path>`
 
