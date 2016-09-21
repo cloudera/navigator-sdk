@@ -10,8 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.opencsv.CSVWriter;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,12 +24,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The program extracts hive and impala queries based on conditions set in the
- * configuration file, and outputs into Optimizer, Sigma, Google Fusion CSV data formats.
- * The CSV files are generated according to the OperationExecution startTime range
- * and duration, which can be defined in the configuration file.
- * Secondly, the program extracts Data Definition Language data into CSV format.
- * The main program takes config file path as argument.
+ * The program extracts columns for a given table in a database and
+ * prints the usage of these columns. It goes through all the lineage operaitons
+ * that are triggered from these columns and counts them.
+ *
+ * This program can be further enhanced in the future to get all the users and
+ * other statistics as well.
+ *
+ * Program Arguments:
+ *  configFile outputFile databaseName columnName
  */
 public class ColumnUsage {
   private static final Logger LOG =
@@ -44,7 +49,7 @@ public class ColumnUsage {
     ClientConfig config = (new ClientConfigFactory())
         .readConfigurations(configFilePath);
 
-    extractTable(config, args[1], args[2]);
+    extractTable(config, args[1], args[2], args[3]);
   }
 
   static class Column implements Comparable<Object> {
@@ -54,6 +59,7 @@ public class ColumnUsage {
     Set<String> destinationQueryParts = Sets.newHashSet();
     Set<String> destinationOperations = Sets.newHashSet();
     Set<String> destinationOperationInstances = Sets.newHashSet();
+    Set<String> users = Sets.newHashSet();
 
     @Override
     public boolean equals(Object o) {
@@ -83,8 +89,8 @@ public class ColumnUsage {
     }
   }
 
-  private static void extractTable(ClientConfig config,
-                                   String databaseName, String tableName) {
+  private static void extractTable(ClientConfig config, String file,
+                                   String databaseName, String tableName) throws IOException {
     NavApiCient client = new NavApiCient(config);
     MetadataExtractor extractor = new MetadataExtractor(client, limit);
 
@@ -200,13 +206,19 @@ public class ColumnUsage {
       }
     }
 
+    PrintWriter writer = new PrintWriter(file, "UTF-8");
+
+    CSVWriter csvWriter = new CSVWriter(writer);
     LOG.info("Usage for: {}/{}", databaseName, tableName);
-    LOG.info("Column Name,#uses");
+    csvWriter.writeNext(new String[] {"ColumnName, Unique Queries, Total Executions"});
+
     for(Map.Entry<String, Column> entry : columns.entrySet()) {
       Column column = entry.getValue();
-      LOG.info("{},{}",
+      csvWriter.writeNext(new String[]{
           column.name,
-          column.destinationOperationInstances.size());
+          String.valueOf(column.destinationOperations.size()),
+          String.valueOf(column.destinationOperationInstances.size())});
     }
+    csvWriter.close();
   }
 }
