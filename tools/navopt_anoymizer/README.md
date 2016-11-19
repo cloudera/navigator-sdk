@@ -1,6 +1,10 @@
 Navigator Optimizer Anonymizer
 ========
 
+-------------------------------------------------------------------
+Important: This is a BETA version of the Anonymizer tool, which is still undergoing testing before its official release. Data redaction is not 100% so do not use Anonymizer in production settings or on production data. Currently, Anonymizer is offered for testing purposes only.
+-------------------------------------------------------------------
+
 ## Synopsis
 
 Anonymizer is a tool that is designed to be used in conjunction with the Navigator Optimizer product.
