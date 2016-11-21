@@ -148,6 +148,7 @@ The following command-line options are available:
 ## Limitations
 </a>
 1. Hive and Impala queries are currently not supported. 
+
 2. Cannot anonymize alias when using the older aliasing syntax from Teradata. For example, Anonymizer cannot anonymize <code>aliasName</code> in the following query structure:
    <pre><code>SELECT sample_column (NAMED aliasName) from t1
    </code></pre>
