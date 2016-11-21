@@ -8,8 +8,19 @@ Anonymizer is a command-line tool designed to be used in conjunction with [Cloud
 * Mask all literals in the SQL queries
 * Encrypt table and column names
 
-## Prerequisites
+Continue reading:
 
+* [Prerequisites](#prerequisites)
+* [Using Anonymizer](#usinganonymizer)
+* [Anonymization Scenarios](#anonscenarios)
+* [How Anonymizer Is Used with Navigator Optimizer](#howanonusedwithnavopt)
+* [CLI Reference](#cliref)
+* [Limitations](#limitations)
+* [FAQs](#faqs)
+
+<a name="prerequisites" />
+## Prerequisites
+</a>
 * Make sure that you have a recent version of the Java JDK installed. Anonymizer  has been tested with JDK 1.7 and 1.8. After installing the JDK open a terminal window and run the following command to verify it is installed correctly:
 <pre><code>java -version</code></pre>
 If this command returns information about the installed Java JDK, you have installed it correctly. For example, the following information is returned when the JDK 1.8 is installed:
@@ -19,8 +30,9 @@ Java HotSpot(TM) 64-Bit Server VM (build 25.101-b13, mixed mode)</code></pre>
 
 * Download the <code>navopt-workload-anonymizer-0.1-SNAPSHOT.jar</code> from [https://github.com/cloudera/navigator-sdk/blob/master/tools/navopt_anoymizer/navopt-workload-anonymizer-0.1-SNAPSHOT.jar] (https://github.com/cloudera/navigator-sdk/blob/master/tools/navopt_anoymizer/navopt-workload-anonymizer-0.1-SNAPSHOT.jar) 
 
+<a name="usinganonymizer" />
 ## Using Anonymizer
-
+</a>
 ### To encrypt .sql workload files:
 
 1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
@@ -80,8 +92,9 @@ By default, Anonymizer names the .csv output files as follows:
 2. Respond to the tool prompts for database vendor and password that you originally entered when the file was encrypted.
 3. The tool processes the encrypted file and when finished writes the locations of the decrypted file, the key file, and the error output file to the terminal window.
 
-
+<a name="anonscenarios" />
 ## Anonymization Scenarios
+</a>
 
 The Anonymizer can perform two types of anonymization:
 
@@ -106,16 +119,16 @@ Sometimes database schemas contain sensitive information that is treated as IP (
 #### Example use case:
 A company uses a secret proprietary algorithm to make decisions about its customers based on public Facebook profiles. A column name titled “facebook-id” would reveal that the company is looking at Facebook information. Anonymizer ensures that this information remains confidential by encrypting all column and table names on the client side before uploading queries to Navigator Optimizer cloud service.  
 
-
+<a name="howanonusedwithnavopt" />
 ## How Anonymizer Is Used with Navigator Optimizer
-
+</a>
 1. A passcode is supplied to Anonymizer when it is used to encrypt SQL queries.  Anonymizer encrypts all sensitive information on the client. There is no data transmission over a network. The encrypted SQL queries retain their structure (SQL keywords are in plaintext) but all table names and column names are encrypted and literals are entirely dropped. Anonymizer generates a .passkey file that is necessary to recover encrypted schema information. 
 2. The encrypted workload file is uploaded to Navigator Optimizer cloud service where it is analyzed. Analysis is possible because Navigator Optimizer only uses the structure of queries to make recommendations, not the data itself. Literals are not sent to the cloud service because they are stripped out by Anonymizer on the client before uploading. Consequently, literals can not be recovered after Anonymizer is run on a workload file unless you choose the <code>-l</code> or the <code>--skip\_mask\_literals</code> option when you anonymize the file. This option prevents Anonymizer from stripping out literals from the SQL queries. 
 3. After Navigator Optimizer analyzes the workload and provides recommendations, in the client-side browser, you can decrypt the data to see column names and table names. No decryption is possible without the passcode and <code>.passkey</code> file, and they are never sent to the Navigator Optimizer service. All decryption occurs in the Javascript on the client-side browser. Click on the eye icon in the top right corner of the Navigator Optimizer application window to supply the decryption password and <code>.passkey</code> file.
 
-
+<a name="cliref" />
 ## CLI Reference
-
+</a>
 The following command-line options are available:
 
 | Option                                   | Required? | Description                                                                                                                                                                      |
@@ -131,16 +144,17 @@ The following command-line options are available:
 | <code>-sql</code>                                    |           | Specifies if the input file is an SQL file that must be split on semi-colons (;).                                                                                                |
 | <code>-t</code>, <code>--skip\_anonymize\_table\_columns</code>       |           | Prevents Anonymizer from encrypting the table and column names in the queries.                                                                                                   |
 
-
+<a name="limitations" />
 ## Limitations
-
+</a>
 1. Hive and Impala queries are currently not supported. 
 2. Cannot anonymize alias when using the older aliasing syntax from Teradata. For example, Anonymizer cannot anonymize <code>aliasName</code> in the following query structure:
    <pre><code>SELECT sample_column (NAMED aliasName) from t1
    </code></pre>
 
+<a name="faqs" />
 ## FAQs
-
+</a>
 #### How secure is Anonymizer encryption?
 Anonymizer uses AES-128, one of the most secure encryption algorithms available today. As of today, no practicable attack against AES exists. Therefore, AES remains the preferred encryption standard for governments, banks, and high security systems around the world.
 
