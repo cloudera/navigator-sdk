@@ -58,16 +58,16 @@ By default, Anonymizer names the .sql output files as follows:
 
 ### To encrypt .csv workload files:
 Before you can encrypt .csv workload files, identify which column contains the query text. Start counting from the left at 1. For example, in the following .csv file, the query text is in column 3:
-<pre><code>"SQL\_ID","CPU\_TIME","SQL\_FULLTEXT","USER","APP","REPORT"
+<pre><code>"SQL_ID","CPU_TIME","SQL_FULLTEXT","USER","APP","REPORT"
 43958,100,"select emps.id from emps where emps.name = 'Joe' group by emps.mgr, emps.id;","Alice Johnson","Finance","Manager Report"
 235,900,"select emps.name from emps where emps.num = 007 group by emps.state, emps.name;","Bill Huntington","HR","Employee Locations"
 abc1,40,"select Part.partkey, Part.name, Part.type from Part where Part.yyprice > 2095;","Carrol Robinson","Operations","Inventory"
 f58,440,"select Part.partkey, Part.name, Part.mfgr FROM Part WHERE Part.name LIKE '%red';","David Stanley","Operations","Inventory"
-345,67000,"select count(\*) as loans from account a where a.account\_state\_id in (5,9);","Anne McCaffrey","Finance","Liability Report"
+345,67000,"select count(*) as loans from account a where a.account_state_id in (5,9);","Anne McCaffrey","Finance","Liability Report"
 2341,999,"select orders.key, orders.id from orders where orders.price < 9999;","David Stanley","Sales","Revenue Report"
 5ef3,678,"select mgr.name from mgr where mgr.reports > 10 group by mgr.state;","David Stanley","HR","Manager Report"
 7676,34,"select vp.salary from vp where vp.grade = 'Alpha' group by vp.state;","Alice Johnson","Finance","Revenue Report"
-346,67053,"select count(*) as loans from account a where a.account\_state\_id in (5,9);","Alice Johnson","Finance","Liability Report"</code></pre>
+346,67053,"select count(*) as loans from account a where a.account_state_id in (5,9);","Alice Johnson","Finance","Liability Report"</code></pre>
 
 **Note:** The Anonymizer uses a .csv parser that complies with [RFC-4180] (https://www.ietf.org/rfc/rfc4180.txt).
 
