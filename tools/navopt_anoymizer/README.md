@@ -108,7 +108,7 @@ Security standards such as PCI-DSS (Payment Card Industry Data Security Standard
 
 **Important:** After Anonymizer has masked out the literal values, the values cannot be unmasked. It is an irreversible process.
 
-#### Example use case
+#### Example use case:
 A health-care organization wants to make sure all PHI data is scrubbed from the SQL queries before being sent to the Navigator Optimizer cloud service. To accomplish this, they use Anonymizer to strip all literals from their workloads before uploading them to Navigator Optimizer. Anonymizer gives peace of mind that all sensitive data is removed from workload files before uploading. 
 
 <a name="schemaobfus" />
@@ -122,8 +122,11 @@ A company uses a secret proprietary algorithm to make decisions about its custom
 <a name="howanonusedwithnavopt" />
 ## How Anonymizer Is Used with Navigator Optimizer
 </a>
-1. A passcode is supplied to Anonymizer when it is used to encrypt SQL queries.  Anonymizer encrypts all sensitive information on the client. There is no data transmission over a network. The encrypted SQL queries retain their structure (SQL keywords are in plaintext) but all table names and column names are encrypted and literals are entirely dropped. Anonymizer generates a .passkey file that is necessary to recover encrypted schema information. 
-2. The encrypted workload file is uploaded to Navigator Optimizer cloud service where it is analyzed. Analysis is possible because Navigator Optimizer only uses the structure of queries to make recommendations, not the data itself. Literals are not sent to the cloud service because they are stripped out by Anonymizer on the client before uploading. Consequently, literals can not be recovered after Anonymizer is run on a workload file unless you choose the <code>-l</code> or the <code>--skip\_mask\_literals</code> option when you anonymize the file. This option prevents Anonymizer from stripping out literals from the SQL queries. 
+
+1. A passcode is supplied to Anonymizer when it is used to encrypt SQL queries.  Anonymizer encrypts all sensitive information on the client. There is no data transmission over a network. The encrypted SQL queries retain their structure (SQL keywords are in plaintext) but all table names and column names are encrypted and literals are entirely dropped. Anonymizer generates a .passkey file that is necessary to recover encrypted schema information.
+
+2. The encrypted workload file is uploaded to Navigator Optimizer cloud service where it is analyzed. Analysis is possible because Navigator Optimizer only uses the structure of queries to make recommendations, not the data itself. Literals are not sent to the cloud service because they are stripped out by Anonymizer on the client before uploading. Consequently, literals can not be recovered after Anonymizer is run on a workload file unless you choose the <code>-l</code> or the <code>--skip\_mask\_literals</code> option when you anonymize the file. This option prevents Anonymizer from stripping out literals from the SQL queries.
+
 3. After Navigator Optimizer analyzes the workload and provides recommendations, in the client-side browser, you can decrypt the data to see column names and table names. No decryption is possible without the passcode and <code>.passkey</code> file, and they are never sent to the Navigator Optimizer service. All decryption occurs in the Javascript on the client-side browser. Click on the eye icon in the top right corner of the Navigator Optimizer application window to supply the decryption password and <code>.passkey</code> file.
 
 <a name="cliref" />
