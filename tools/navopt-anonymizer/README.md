@@ -12,6 +12,8 @@ Continue reading:
 
 * [Prerequisites](#prerequisites)
 * [Using Anonymizer](#usinganonymizer)
+     * [CSV Files](#csv_files)
+     * [SQL Files](#sql_files)
 * [Anonymization Scenarios](#anonscenarios)
 * [How Anonymizer Is Used with Navigator Optimizer](#howanonusedwithnavopt)
 * [CLI Reference](#cliref)
@@ -28,35 +30,16 @@ If this command returns information about the installed Java JDK, you have insta
 Java(TM) SE Runtime Environment (build 1.8.0_101-b13)
 Java HotSpot(TM) 64-Bit Server VM (build 25.101-b13, mixed mode)</code></pre>
 
-* Download the <code>navopt-workload-anonymizer-0.1-SNAPSHOT.jar</code> from [https://github.com/cloudera/navigator-sdk/blob/master/tools/navopt_anoymizer/navopt-workload-anonymizer-0.1-SNAPSHOT.jar] (https://github.com/cloudera/navigator-sdk/blob/master/tools/navopt_anoymizer/navopt-workload-anonymizer-0.1-SNAPSHOT.jar) 
+* To download the <code>navopt-workload-anonymizer-0.1-SNAPSHOT.jar</code>, go to [https://github.com/cloudera/navigator-sdk/blob/master/tools/navopt_anoymizer/navopt-workload-anonymizer-0.1-SNAPSHOT.jar] (https://github.com/cloudera/navigator-sdk/blob/master/tools/navopt_anoymizer/navopt-workload-anonymizer-0.1-SNAPSHOT.jar), and then click **Download** in the browser page.
+
 
 <a name="usinganonymizer" />
 ## Using Anonymizer
 </a>
-### To encrypt .sql workload files:
 
-1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
-<pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_workload_file\> -sql</code></pre>
-Where <code>-jar</code> specifies the path to the Anonymizer JAR file, <code>-i</code> specifies the path to the .sql file that contains the workload, and <code>-sql</code> specifies that the input workload file is a .sql file (not a .csv file).
-2. Respond to the tool prompts for database vendor and password. If the password you enter is not strong enough, the tool writes the password requirements to the terminal window.
-3. The tool processes the .sql file and when finished writes the locations of the encrypted file, the key file that contains credentials generated from the password you supplied, and the error output file to the terminal window.
- 
-By default, Anonymizer names the .sql output files as follows:
-
-| Input Filename 	| Encrypted Output Filename 	| Key File Name       	| Error File Name 	|
-|--------------------------	|-----------------------------	|---------------------	|-----------------	|
-| **xyz.sql**                  	| anon**xyz.sql**                 	| anon**xyz.sql**.passkey 	| anon**xyz.sql**.err 	|
-
-
-### To decrypt .sql workload files:
-
-1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
-<pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_anonymized\_workload\_file\> -sql -k \<path\_to\_passkey\_file\> -d</code></pre> Where <code>-k</code> specifies the path to the <code>.passkey</code> file created when you originally anonymized the .sql workload, and <code>-d</code> specifies that you want to decrypt the input file.
-
-2. Respond to the tool prompts for database vendor and password that you originally entered when the file was encrypted.
-3. The tool processes the encrypted file and when finished writes the locations of the decrypted file, the key file, and the error output file to the terminal window.
-
+<a name="csv_files" />
 ### To encrypt .csv workload files:
+</a>
 Before you can encrypt .csv workload files, identify which column contains the query text. Start counting from the left at 1. For example, in the following .csv file, the query text is in column 3:
 <pre><code>"SQL_ID","CPU_TIME","SQL_FULLTEXT","USER","APP","REPORT"
 43958,100,"select emps.id from emps where emps.name = 'Joe' group by emps.mgr, emps.id;","Alice Johnson","Finance","Manager Report"
@@ -75,8 +58,9 @@ f58,440,"select Part.partkey, Part.name, Part.mfgr FROM Part WHERE Part.name LIK
 1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
 <pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_workload_file\> -q \<column\_number\></code></pre>
 Where <code>-jar</code> specifies the path to the Anonymizer JAR file, <code>-i</code> specifies the path to the .csv file that contains the workload, and <code>-q</code> specifies the column that contains the query text in the .csv file. If your .csv file has more than one header row, use the <code>-h</code> parameter to specify how many header rows the file contains. When you do not specify the <code>-h</code> parameter, Anonymizer assumes the default value of 1.
-2. Respond to the tool prompts for database vendor and password. If the password you enter is not strong enough, the tool writes the password requirements to the terminal window.
-3. The tool processes the .csv file and when finished writes the locations of the encrypted file, the key file that contains credentials generated from the password you supplied, and the error output file to the terminal window.
+2. The tool asks you to identify the vendor of your database. Type the number and press **Return**.
+3. The tool asks you to enter a strong password. Type your password and press **Return**. If the password you typed is not strong enough, the tool writes the password requirements to the terminal window.
+4. The tool processes the .csv file and when finished writes the locations of the encrypted file, the key file that contains credentials generated from the password you supplied, and the error output file to the terminal window.
  
 By default, Anonymizer names the .csv output files as follows:
 
@@ -89,8 +73,38 @@ By default, Anonymizer names the .csv output files as follows:
 1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
 <pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_anonymized\_workload\_file\> -q \<column\_number\> -k \<path\_to\_passkey\_file\> -d</code></pre> Where <code>-k</code> specifies the path to the <code>.passkey</code> file created when you originally anonymized the .csv workload, and <code>-d</code> specifies that you want to decrypt the input file.
 
-2. Respond to the tool prompts for database vendor and password that you originally entered when the file was encrypted.
-3. The tool processes the encrypted file and when finished writes the locations of the decrypted file, the key file, and the error output file to the terminal window.
+2. The tool asks you to identify the vendor of your database. Type the number and press **Return**.
+3. The tool asks you to enter the password. Type the password that you originally entered when the file was encrypted, and press **Return**.
+4. The tool processes the encrypted file and when finished writes the locations of the decrypted file, the key file, and the error output file to the terminal window.
+
+<a name="sql_files" />
+### To encrypt .sql workload files:
+</a>
+1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
+<pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_workload_file\> -sql</code></pre>
+Where <code>-jar</code> specifies the path to the Anonymizer JAR file, <code>-i</code> specifies the path to the .sql file that contains the workload, and <code>-sql</code> specifies that the input workload file is a .sql file (not a .csv file).
+2. The tool asks you to identify the vendor of your database. Type the number and press **Return**.
+3. The tool asks you to enter a strong password. Type your password and press **Return**. If the password you typed is not strong enough, the tool writes the password requirements to the terminal window.
+4. The tool processes the .sql file and when finished writes the locations of the encrypted file, the key file that contains credentials generated from the password you supplied, and the error output file to the terminal window.
+ 
+By default, Anonymizer names the .sql output files as follows:
+
+| Input Filename 	| Encrypted Output Filename 	| Key File Name       	| Error File Name 	|
+|--------------------------	|-----------------------------	|---------------------	|-----------------	|
+| **xyz.sql**                  	| anon**xyz.sql**                 	| anon**xyz.sql**.passkey 	| anon**xyz.sql**.err 	|
+
+
+### To decrypt .sql workload files:
+
+1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
+<pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_anonymized\_workload\_file\> -sql -k \<path\_to\_passkey\_file\> -d</code></pre> Where <code>-k</code> specifies the path to the <code>.passkey</code> file created when you originally anonymized the .sql workload, and <code>-d</code> specifies that you want to decrypt the input file.
+
+2. The tool asks you to identify the vendor of your database. Type the number and press **Return**.
+3. The tool asks you to enter the password. Type the password that you originally entered when the file was encrypted, and press **Return**.
+4. The tool processes the encrypted file and when finished writes the locations of the decrypted file, the key file, and the error output file to the terminal window.
+
+
+
 
 <a name="anonscenarios" />
 ## Anonymization Scenarios
@@ -109,7 +123,7 @@ Security standards such as PCI-DSS (Payment Card Industry Data Security Standard
 **Important:** After Anonymizer has masked out the literal values, the values cannot be unmasked. It is an irreversible process.
 
 #### Example use case:
-A health-care organization wants to make sure all PHI data is scrubbed from the SQL queries before being sent to the Navigator Optimizer cloud service. To accomplish this, they use Anonymizer to strip all literals from their workloads before uploading them to Navigator Optimizer. Anonymizer gives peace of mind that all sensitive data is removed from workload files before uploading. 
+A healthcare organization wants to make sure all PHI data is scrubbed from the SQL queries before being sent to the Navigator Optimizer cloud service. To accomplish this, they use Anonymizer to strip all literals from their workloads before uploading them to Navigator Optimizer. Anonymizer gives peace of mind that all sensitive data is removed from workload files before uploading. 
 
 <a name="schemaobfus" />
 ### Schema obfuscation
@@ -134,18 +148,22 @@ A company uses a secret proprietary algorithm to make decisions about its custom
 </a>
 The following command-line options are available:
 
-| Option                                   | Required? | Description                                                                                                                                                                      |
-|------------------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <code>-a</code>, <code>--anonymize</code>                          |           | Encrypts the queries in the file. If both the <code>-a</code> and the <code>-d</code> options are absent, Anonymizer defaults the operation to encryption.                                                 |
-| <code>-d</code>, <code>--deanonymize</code>                        |     X     | Decrypts the queries in the file. Must be specified to decrypt a file.                                                                                                           |
-| <code>-h</code>, <code>--header\_row \<number\_of\_header\_rows\></code> |           | Applies to .csv files only. Specifies the number of header rows to be ignored from processing. When this option is absent, Anonymizer defaults to ignoring only one header row.  |
-| <code>-i</code>, <code>--input \<path\_to\_input\_file\></code>         |     X     | Specifies the path to the input file that contains the queries.                                                                                                                  |
-| <code>-k</code>, <code>--key \<path\_to\_.passkey\_file\></code>         |     X     | Specifies the path to the <code>.passkey</code> file. Must be specified to decrypt a file.                                                                                                    |
-| <code>-l</code>, <code>--skip\_mask\_literals</code>                 |           | Prevents Anonymizer from stripping out the literals from queries.                                                                                                                |
-| <code>-o</code>, <code>--output \<path\_to\_output\_file\></code>       |           | Specifies the path and name for the output file when Anonymizer encrypts or decrypts a workload file.                                                                            |
-| <code>-q</code>, <code>--query\_col\_number \<column\_position\></code> |     X     | Applies to .csv files only. Specifies the position of the column that contains queries in the .csv file. Column positions are counted from the left, starting with 1.            |
-| <code>-sql</code>                                    |           | Specifies if the input file is an SQL file that must be split on semi-colons (;).                                                                                                |
-| <code>-t</code>, <code>--skip\_anonymize\_table\_columns</code>       |           | Prevents Anonymizer from encrypting the table and column names in the queries.                                                                                                   |
+| Option                                         | Required?   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|------------------------------------------------|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <code>-a</code>, <code>--anonymize</code>                                |             | Encrypts the queries in the file. If both the <code>-a</code> and the <code>-d</code> options are absent, Anonymizer defaults the operation to encryption.                                                                                                                                                                                                                                                                                                                                                         |
+| <code>-c</code>, <code>--column\_stats \<path\_to\_column\_stats\_file\></code> | X See Note. | Specifies the path to a file that contains column statistics.  **Note:** A column statistics file (<code>-c</code>), table statistics files (<code>-y</code>), workload file (<code>-i</code>), or any combination of input files must be specified for the Anonymizer tool to run.                                                                                                                                                                                                                                                 |
+| <code>-d</code>, <code>--deanonymize</code>                              |      X      | Decrypts the queries in the file. Must be specified to decrypt a file.                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| <code>-h</code>, <code>--header\_row \<number\_of\_header\_rows\></code>       |             | Applies to .csv files only. Specifies the number of header rows to be ignored from processing. When this option is absent, Anonymizer default to ignoring only one header row.                                                                                                                                                                                                                                                                                                           |
+| <code>-i</code>, <code>--input \<path\_to\_input\_file\></code>               | X See Note. | Specifies the path to the input file that contains the queries.  **Note:** A column statistics file (<code>-c</code>), table statistics files (<code>-y</code>), workload file (<code>-i</code>), or any combination of input files must be specified for the Anonymizer tool to run.                                                                                                                                                                                                                                               |
+| <code>-k</code>, <code>--key \<path\_to\_passkey\_file\></code>               |      X      | Specifies the path to the <code>.passkey</code> file. Must be specified to decrypt a file.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| <code>-l</code>, <code>--skip\_mask\_literals</code>                       |             | Prevents Anonymizer from stripping out the literals from queries.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| <code>-o</code>, <code>--output \<path\_to\_output\_file\></code>             |             | Specifies the path and name for the output file when Anonymizer encrypts or decrypts a workload file.                                                                                                                                                                                                                                                                                                                                                                                    |
+| <code>-q</code>, <code>--query\_col\_number \<column\_position\></code>       |      X      | Applies to .csv files only. Specifies the position of the column that contains queries in the .csv file. Column positions are counted from the left, starting with 1.                                                                                                                                                                                                                                                                                                                    |
+| <code>-sql</code>                                           |             | Specifies if the input file is an SQL file that must be split on semi-colons (;).                                                                                                                                                                                                                                                                                                                                                                                                        |
+| <code>-t</code>, <code>--skip\_anonymize\_table\_columns</code>             |             | Prevents Anonymizer from encrypting the table and column names in the queries.                                                                                                   |
+| <code>-v</code>, <code>--dbvendor \<vendor\_number\></code>                 |             | Specifies the type of database from which the workload is extracted. Choose from one of the following values:    1.  Teradata    2.  Oracle    3.  Netezza    4.  DB2    5.  Greenplum    6.  MySQL    7.  PostgreSQL    8.  Informix    9.  SQL Server  10.  Sybase  11.  Access  12.  Firebird  13.  ANSISQL  14.  Generic  For example, to specify a Teradata database, use the following syntax: <code>-v 1</code>  If this parameter is not specified, Anonymizer prompts for the database type. |
+| <code>-y</code>, <code>--table\_stats \<path\_to\_table\_stats\_file\></code>   | X See Note. | Specifies the path to a file that contains table statistics.  **Note:** A column statistics file (<code>-c</code>), table statistics files (<code>-y</code>), workload file (<code>-i</code>), or any combination of input files must be specified for the Anonymizer tool to run.                                                                                                                                                                                                                                                   |
+| <code>-z</code>, <code>--anonymize\_cols \<list\_of\_columns\></code>         |             | Specifies which columns to anonymize (encrypt) by identifying the column position. Column positions are counted from the left, starting with 1. Enclose the column number in double quotation marks and separate column numbers with commas or spaces.  For example, to encrypt the first column on the left and the third and fourth columns from the left, use: <code>-z "1,3,4"</code>   Or if you do not want to use commas, insert spaces between column position identifiers: <code>-z "1 3 4"</code>        |                                                                                                  |
 
 <a name="limitations" />
 ## Limitations
