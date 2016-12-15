@@ -71,7 +71,8 @@ By default, Anonymizer names the .csv output files as follows:
 
 ### To decrypt .csv workload files:
 1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
-<pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_anonymized\_workload\_file\> -q \<column\_number\> -k \<path\_to\_passkey\_file\> -d</code></pre> Where <code>-k</code> specifies the path to the <code>.passkey</code> file created when you originally anonymized the .csv workload, and <code>-d</code> specifies that you want to decrypt the input file.
+    <pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_anonymized\_workload\_file\> -q \<column\_number\> -k \<path\_to\_passkey\_file\> -d</code></pre> 
+    Where <code>-k</code> specifies the path to the <code>.passkey</code> file created when you originally anonymized the .csv workload, and <code>-d</code> specifies that you want to decrypt the input file.
 
 2. The tool asks you to identify the vendor of your database. Type the number and press **Return**.
 3. The tool asks you to enter the password. Type the password that you originally entered when the file was encrypted, and press **Return**.
@@ -80,11 +81,17 @@ By default, Anonymizer names the .csv output files as follows:
 <a name="sql_files" />
 ### To encrypt .sql workload files:
 </a>
+
 1. Open a terminal window, navigate to the directory where the Anonymizer JAR file is located, and run the following command:
-<pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_workload_file\> -sql</code></pre>
-Where <code>-jar</code> specifies the path to the Anonymizer JAR file, <code>-i</code> specifies the path to the .sql file that contains the workload, and <code>-sql</code> specifies that the input workload file is a .sql file (not a .csv file).
+
+   <pre><code>java -jar navopt-workload-anonymizer-0.1-SNAPSHOT.jar -i \<path\_to\_workload_file\> -sql</code></pre>
+    
+   Where <code>-jar</code> specifies the path to the Anonymizer JAR file, <code>-i</code> specifies the path to the .sql       file that contains the workload, and <code>-sql</code> specifies that the input workload file is a .sql file (not a .csv     file).
+
 2. The tool asks you to identify the vendor of your database. Type the number and press **Return**.
+
 3. The tool asks you to enter a strong password. Type your password and press **Return**. If the password you typed is not strong enough, the tool writes the password requirements to the terminal window.
+
 4. The tool processes the .sql file and when finished writes the locations of the encrypted file, the key file that contains credentials generated from the password you supplied, and the error output file to the terminal window.
  
 By default, Anonymizer names the .sql output files as follows:
