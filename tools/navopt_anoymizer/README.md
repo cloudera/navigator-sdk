@@ -1,7 +1,7 @@
 Navigator Optimizer Anonymizer
 ========
 --------------------------------------------------------
-IMPORTANT: This is a BETA version of the Anonymizer tool, which is still undergoing testing before its official release. Data redaction is not 100% so do not use Anonymizer in production settings or on production data. Currently, Anonymizer is offered for testing purposes only.
+IMPORTANT: Anonymizer is in BETA testing before its official release. Its data redaction or masking is not guaranteed to be effective and at times it might not mask or redact sensitive information. Do not use Anonymizer in production settings or on production data. Currently, Anonymizer is offered for testing purposes only.
 ---------------------------------------
 Anonymizer is a command-line tool designed to be used in conjunction with [Cloudera Navigator Optimizer] (http://www.cloudera.com/products/cloudera-navigator-optimizer.html), which is a service you can use to profile and analyze the query text in SQL workloads. Use Anonymizer to protect sensitive information in the SQL workloads you analyze by using AES-128 encryption. Run Anonymizer on SQL files (.csv or semicolon-separated .sql files) to:
 
