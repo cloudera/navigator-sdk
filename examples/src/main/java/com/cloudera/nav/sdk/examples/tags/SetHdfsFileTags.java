@@ -53,8 +53,8 @@ public class SetHdfsFileTags {
     HdfsEntity dir = new HdfsEntity("/user/hdfs/hacky8", EntityType
         .DIRECTORY,
         fs.getIdentity());
-    dir.setTags(Sets.newHashSet("HELLO",
-        "AADARSH"));
+    dir.setTags(Sets.newHashSet("ASJHJSA",
+        "WHOHOH"));
 
     //dir.setIdAttrs(attrs);
 

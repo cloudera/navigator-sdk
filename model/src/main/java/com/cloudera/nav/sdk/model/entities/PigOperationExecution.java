@@ -2,13 +2,10 @@ package com.cloudera.nav.sdk.model.entities;
 
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
-import com.cloudera.nav.sdk.model.annotations.MProperty;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.cloudera.nav.sdk.model.annotations.MEndPoint;
 
-import java.util.Map;
 
-import org.apache.commons.configuration.MapConfiguration;
-
+@MEndPoint
 @MClass(model="pig_op_exec", validTypes = {EntityType.OPERATION_EXECUTION})
 public class PigOperationExecution extends Entity {
 

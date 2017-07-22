@@ -19,7 +19,6 @@ package com.cloudera.nav.sdk.examples.lineage;
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.PigOperation;
 import com.cloudera.nav.sdk.model.entities.PigOperationExecution;
@@ -73,26 +72,15 @@ public class CustomLineageCreator {
     plugin.registerModels(getClass().getPackage().getName());
     NavApiCient client = plugin.getClient();
 
-    //IdAttrs entityAttrs = new IdAttrs();
-    //entityAttrs.setLogicalPlanHash("44894c17c795256cc930b44702c40a0e");
-    //entityAttrs.setJobName("PigLatin:id.pig");
-
-    // Create the template
-    //setPigOperationId("123");
     PigOperation pigOperation = new PigOperation(
         "44894c17c795256cc930b44702c40a0e",
         "PigLatin:id.pig");
     StetsonScript script = createStetsonScript(pigOperation);
 
-    //PigOperation p = new PigOperation("123");
-    //StetsonScript script = createStetsonScript(p);
 
     PigOperationExecution pigExecution = new PigOperationExecution(
         "1f802d86-fdd8-4bd9-a4ef-d82683da9fe5",
         "PigLatin:id.pig");
-
-
-    // Create the instance
     StetsonExecution exec = createExecution(pigExecution);
 
     // Connect the template and instance
