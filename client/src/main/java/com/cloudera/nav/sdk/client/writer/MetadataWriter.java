@@ -125,9 +125,7 @@ public abstract class MetadataWriter {
         entity.getClass());
     for (MRelationEntry relEntry : relationAttrs) {
       for(Entity other : relEntry.getConnectedEntities(entity)) {
-        if (!(other instanceof EndPointProxy)) {
-          getAllMClasses(other, graph);
-        }
+        getAllMClasses(other, graph);
       }
       // add Relation after doing the getAllMClasses call so the connected
       // entity id's have all been generated if necessary

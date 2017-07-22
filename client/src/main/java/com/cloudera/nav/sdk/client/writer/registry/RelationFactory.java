@@ -15,6 +15,8 @@
  */
 package com.cloudera.nav.sdk.client.writer.registry;
 
+import com.cloudera.nav.sdk.model.IdAttrs;
+import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.relations.DataFlowRelation;
 import com.cloudera.nav.sdk.model.relations.InstanceOfRelation;
@@ -26,6 +28,7 @@ import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.cloudera.nav.sdk.model.relations.RelationType;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import java.util.Collection;
 
@@ -106,16 +109,25 @@ public class RelationFactory {
   private Relation createLogicalPhysicalRelation(
       RelationRole roleOfOther, Entity entity,
       Collection<? extends Entity> other, String namespace) {
+    Collection<IdAttrs> entityAtts = Lists.newArrayList();
+    for (Entity en:other) {
+      if (!en.getIsIdGenerated()) {
+        IdAttrs at = new IdAttrs();
+        en.populateIdAttrs(at);
+        entityAtts.add(at);
+      }
+    }
+
     LogicalPhysicalRelation.Builder builder = LogicalPhysicalRelation.builder();
     if (roleOfOther == RelationRole.LOGICAL) {
       Preconditions.checkArgument(other.size() == 1,
           "Only 1 logical allowed in each logical-physical relationship");
-      builder.physical(entity).logical(Iterables.getOnlyElement(other));
+      builder.physical(entity).logical(Iterables.getOnlyElement(other))
+          .ep1Attributes(entityAtts);
     } else {
-      builder.logical(entity).physical(other);
+      builder.logical(entity).physical(other).ep2Attributes(entityAtts);
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();
   }
-
 }

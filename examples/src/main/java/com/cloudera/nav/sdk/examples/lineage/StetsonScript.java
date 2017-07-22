@@ -16,6 +16,7 @@
 
 package com.cloudera.nav.sdk.examples.lineage;
 
+import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
@@ -23,8 +24,12 @@ import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
+import com.cloudera.nav.sdk.model.entities.PigOperation;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -35,7 +40,7 @@ import org.apache.commons.lang.StringUtils;
 public class StetsonScript extends Entity {
 
   @MRelation(role = RelationRole.PHYSICAL)
-  private EndPointProxy pigOperation;
+  private Entity pigOperation;
 
   public StetsonScript(String namespace) {
     // Because the namespace is given to input/output we ensure it
@@ -49,8 +54,13 @@ public class StetsonScript extends Entity {
    */
   @Override
   public String generateId() {
-    return CustomIdGenerator.generateIdentity(getNamespace(),
-        getPigOperation().getIdentity());
+    if (!Strings.isNullOrEmpty(getPigOperation().getIdentity())) {
+      return CustomIdGenerator.generateIdentity(getNamespace(),
+          getPigOperation().getIdentity());
+    } else {
+      return CustomIdGenerator.generateIdentity(getNamespace(),
+          UUID.randomUUID().toString());
+    }
   }
 
   @Override
@@ -75,8 +85,7 @@ public class StetsonScript extends Entity {
     return pigOperation;
   }
 
-  public void setPigOperation(String pigOperationId) {
-    this.pigOperation = new EndPointProxy(pigOperationId, SourceType.PIG,
-        EntityType.OPERATION);
+  public void setPigOperation(Entity pigOperation) {
+    this.pigOperation = pigOperation;
   }
 }

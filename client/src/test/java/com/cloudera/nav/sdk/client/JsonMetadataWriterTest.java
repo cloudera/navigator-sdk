@@ -70,7 +70,7 @@ public class JsonMetadataWriterTest {
         "http://ns1", 0L);
     HdfsEntity entity = new HdfsEntity();
     entity.setSourceId(source.getIdentity());
-    entity.setFileSystemPath("/user/test");
+    //entity.setFileSystemPath("/user/test");
     entity.setEntityType(EntityType.DIRECTORY);
     entity.setTags(ImmutableList.of("foo", "bar"));
     Map<String, String> props = Maps.newHashMap();
@@ -87,7 +87,7 @@ public class JsonMetadataWriterTest {
         Map.class).get("entities")).get(0);
     assertEquals(values.get("identity"), entity.getIdentity());
     assertEquals(values.get("internalType"), "fselement");
-    assertEquals(values.get("fileSystemPath"), entity.getFileSystemPath());
+    //assertEquals(values.get("fileSystemPath"), entity.getFileSystemPath());
     assertEquals(values.get("sourceId"), source.getIdentity());
     assertEquals(values.get("sourceType"), SourceType.HDFS.name());
     assertEquals(values.get("type"), EntityType.DIRECTORY.name());

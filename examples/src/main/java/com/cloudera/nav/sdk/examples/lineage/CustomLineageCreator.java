@@ -16,8 +16,13 @@
 
 package com.cloudera.nav.sdk.examples.lineage;
 
+import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
+import com.cloudera.nav.sdk.model.IdAttrs;
+import com.cloudera.nav.sdk.model.entities.Entity;
+import com.cloudera.nav.sdk.model.entities.PigOperation;
+import com.cloudera.nav.sdk.model.entities.PigOperationExecution;
 
 import org.joda.time.Instant;
 
@@ -52,8 +57,6 @@ public class CustomLineageCreator {
    */
   public static void main(String[] args) {
     CustomLineageCreator lineageCreator = new CustomLineageCreator(args[0]);
-    lineageCreator.setPigOperationId(args[1]);
-    lineageCreator.setPigExecutionId(args[2]);
     lineageCreator.run();
   }
 
@@ -68,10 +71,30 @@ public class CustomLineageCreator {
   public void run() {
     // register all models in example
     plugin.registerModels(getClass().getPackage().getName());
+    NavApiCient client = plugin.getClient();
+
+    //IdAttrs entityAttrs = new IdAttrs();
+    //entityAttrs.setLogicalPlanHash("44894c17c795256cc930b44702c40a0e");
+    //entityAttrs.setJobName("PigLatin:id.pig");
+
     // Create the template
-    StetsonScript script = createStetsonScript();
+    //setPigOperationId("123");
+    PigOperation pigOperation = new PigOperation(
+        "44894c17c795256cc930b44702c40a0e",
+        "PigLatin:id.pig");
+    StetsonScript script = createStetsonScript(pigOperation);
+
+    //PigOperation p = new PigOperation("123");
+    //StetsonScript script = createStetsonScript(p);
+
+    PigOperationExecution pigExecution = new PigOperationExecution(
+        "1f802d86-fdd8-4bd9-a4ef-d82683da9fe5",
+        "PigLatin:id.pig");
+
+
     // Create the instance
-    StetsonExecution exec = createExecution();
+    StetsonExecution exec = createExecution(pigExecution);
+
     // Connect the template and instance
     script.setIdentity(script.generateId());
     exec.setTemplate(script);
@@ -99,18 +122,18 @@ public class CustomLineageCreator {
     this.pigExecutionId = pigExecutionId;
   }
 
-  protected StetsonScript createStetsonScript() {
+  protected StetsonScript createStetsonScript(Entity pigOperaion) {
     StetsonScript script = new StetsonScript(plugin.getNamespace());
-    script.setPigOperation(getPigOperationId());
+    script.setPigOperation(pigOperaion);
     script.setName("Stetson Script");
     script.setOwner("Chang");
     script.setDescription("I am a custom operation template");
     return script;
   }
 
-  protected StetsonExecution createExecution() {
+  protected StetsonExecution createExecution(Entity pigExecution) {
     StetsonExecution exec = new StetsonExecution(plugin.getNamespace());
-    exec.setPigExecution(getPigExecutionId());
+    exec.setPigExecution(pigExecution);
     exec.setName("Stetson Execution");
     exec.setDescription("I am a custom operation instance");
     exec.setLink("http://hasthelargehadroncolliderdestroyedtheworldyet.com/");
