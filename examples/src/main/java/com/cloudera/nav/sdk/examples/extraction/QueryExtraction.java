@@ -48,6 +48,7 @@ public class QueryExtraction {
     String identity;
     long duration;
     Instant startTime;
+    Instant endTime;
     String principal;
     private Instant minStartTime;
     private Instant maxEndTime;
@@ -60,6 +61,14 @@ public class QueryExtraction {
       Object started = obj.get("started");
       if (started != null) {
         startTime = Instant.parse((String) obj.get("started"));
+      }
+      Object ended = obj.get("ended");
+      if (ended != null) {
+        endTime = Instant.parse((String) obj.get("ended"));
+      }
+
+      if (startTime != null && endTime != null) {
+        duration = endTime.minus(startTime.getMillis()).getMillis();
       }
       principal = (String) obj.get("principal");
     }
@@ -79,8 +88,12 @@ public class QueryExtraction {
       if (startTime == null) {
         startTime = minStartTime;
       }
-      if (minStartTime != null && maxEndTime != null) {
-        duration = maxEndTime.minus(minStartTime.getMillis()).getMillis();
+      if (endTime == null) {
+        endTime = maxEndTime;
+      }
+
+      if (startTime != null && endTime != null) {
+        duration = endTime.minus(startTime.getMillis()).getMillis();
       }
 
     }
@@ -446,14 +459,18 @@ public class QueryExtraction {
     // Collect operation Ids.
     Map<String, Operation> operations = Maps.newHashMap();
 
+    LOG.info("Getting operations for {} operation executions from relations", opExecs.size());
+
     int index = 0;
     Iterable<List<String>> partitions = Iterables.partition
-        (opExecs.keySet(), 10000);
+        (opExecs.keySet(), 1000);
     for(List<String> partition : partitions) {
-      LOG.info("Processed {} operation executions", index);
+      if (partition.isEmpty()) {
+        break;
+      }
 
       String entityIds = Joiner.on(",").join(partition);
-      String relationsQuery = "type:INSTANCE_OF AND {!terms f=endpoint2Ids}" + entityIds + ",dummy";
+      String relationsQuery = "type:INSTANCE_OF AND {!terms f=ep2Ids}" + entityIds;
       resultSet = extractor.extractMetadata(null, null, null, relationsQuery);
       iterator = resultSet.getRelations().iterator();
       while(iterator.hasNext()) {
@@ -475,6 +492,7 @@ public class QueryExtraction {
 
         index++;
       }
+      LOG.info("Processed {} operation executions", index);
     }
 
     for (Operation operation : operations.values()) {
@@ -483,13 +501,17 @@ public class QueryExtraction {
 
     index = 0;
     LOG.info("Obtained {} operations", operations.size());
-    partitions = Iterables.partition(operations.keySet(), 10000);
+
+    LOG.info("Getting metadata for {} operations", operations.size());
+    partitions = Iterables.partition(operations.keySet(), 1000);
     for(List<String> partition : partitions) {
-      LOG.info("Processed {} operations", index);
+      if (partition.isEmpty()) {
+        break;
+      }
 
       // Get the operation Ids now.
       String entityIds = Joiner.on(",").join(partition);
-      entityQuery = "{!terms f=identity}" + entityIds + ",dummy";
+      entityQuery = "{!terms f=id}" + entityIds;
       resultSet = extractor.extractMetadata(null, null, entityQuery, null);
       iterator = resultSet.getEntities().iterator();
       while(iterator.hasNext()) {
@@ -501,6 +523,7 @@ public class QueryExtraction {
         operation.queryText = queryText;
         index++;
       }
+      LOG.info("Processed {} operations", index);
     }
     LOG.info("Total Processed {} operations", index);
 
@@ -531,12 +554,14 @@ public class QueryExtraction {
 
     int index = 0;
     Iterable<List<String>> partitions = Iterables.partition
-        (opExecs.keySet(), 10000);
+        (opExecs.keySet(), 1000);
     for(List<String> partition : partitions) {
-      LOG.info("Processed {} operation executions", index);
+      if (partition.isEmpty()) {
+        break;
+      }
 
       String entityIds = Joiner.on(",").join(partition);
-      String relationsQuery = "type:LOGICAL_PHYSICAL AND {!terms f=endpoint1Ids}" + entityIds + ",dummy";
+      String relationsQuery = "type:LOGICAL_PHYSICAL AND {!terms f=ep1Ids}" + entityIds;
 
       MetadataResultSet resultSet = extractor.extractMetadata(null, null,
           null, relationsQuery);
@@ -554,18 +579,19 @@ public class QueryExtraction {
         }
         index++;
       }
+      LOG.info("Processed {} operation executions", index);
     }
 
     LOG.info("Obtained {} MR job executions", mrIdToOpExecs.size());
 
     index = 0;
     // Now collect all the entities for these MRIds.
-    partitions = Iterables.partition(mrIdToOpExecs.keySet(), 10000);
+    partitions = Iterables.partition(mrIdToOpExecs.keySet(), 1000);
     for(List<String> partition : partitions) {
       LOG.info("Processed {} Mr job executions", index);
 
       String entityIds = Joiner.on(",").join(partition);
-      String entitisQuery = "{!terms f=identity}" + entityIds + ",dummy";
+      String entitisQuery = "{!terms f=id}" + entityIds;
       MetadataResultSet resultSet = extractor.extractMetadata(null, null,
           entitisQuery, null);
       MetadataResultIterator iterator = resultSet.getEntities().iterator();

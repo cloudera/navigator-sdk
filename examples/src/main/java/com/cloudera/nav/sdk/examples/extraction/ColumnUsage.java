@@ -101,6 +101,7 @@ public class ColumnUsage {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static void extractTable(ClientConfig config, QueryExtractionConfig queryExtractionConfig,
                                    String databaseName, String tableName) throws IOException {
     NavApiCient client = new NavApiCient(config);
