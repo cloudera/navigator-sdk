@@ -171,7 +171,7 @@ public class LineageExport {
     } catch (IOException ioe) {
       Throwables.propagate(ioe);
     } finally {
-      IOUtils.close(connection);
+//      IOUtils.close(connection);
     }
   }
 
