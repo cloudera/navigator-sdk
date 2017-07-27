@@ -18,6 +18,7 @@ package com.cloudera.nav.sdk.client;
 import com.cloudera.nav.sdk.model.MetadataModel;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
+import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -27,6 +28,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -52,6 +55,7 @@ import org.springframework.web.client.RestTemplate;
  * metadata models
  */
 public class NavApiCient {
+  private final String charset = StandardCharsets.UTF_8.name();
 
   private static final Logger LOG = LoggerFactory.getLogger(NavApiCient.class);
   private static final String SOURCE_QUERY = "type:SOURCE";
@@ -98,6 +102,36 @@ public class NavApiCient {
     ResponseEntity<? extends T> response = restTemplate.exchange(url, method,
         request, resultClass);
     return response.getBody();
+  }
+
+  /**
+   * Call the Navigator API and retrieve all available sources
+   *
+   * @return a collection of available sources
+   */
+  public EntityAttrs findEntity(String sourceId, String parentPath, String originalName, EntityType type) throws UnsupportedEncodingException {
+    String query =
+            String.format("+(srcId:%s) +(parentPath:\"%s\") +(originalName:%s) +(type:%s)", sourceId, parentPath, originalName, type);
+    String entitiesUrl = joinUrlPath(getApiUrl(), "entities");
+    String url =
+            String.format("%s?query=%s", entitiesUrl, query);
+
+    EntityAttrs[] entities = sendRequest(url, HttpMethod.GET, EntityAttrs[].class);
+    if (entities.length > 1) {
+      throw new IllegalArgumentException("More than one entities matched");
+    } else if (entities.length == 0) {
+      return null;
+    } else {
+      return entities[0];
+    }
+  }
+
+  public EntityAttrs updateEntity(String identity, EntityUpdateAttrs attrs) {
+    String entitiesUrl = joinUrlPath(getApiUrl(), "entities");
+    String url =
+            String.format("%s/%s", entitiesUrl, identity);
+
+    return sendRequest(url, HttpMethod.PUT, EntityAttrs.class, attrs);
   }
 
   /**
