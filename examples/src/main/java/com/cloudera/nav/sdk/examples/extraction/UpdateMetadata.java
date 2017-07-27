@@ -29,7 +29,7 @@ import java.util.Set;
  * All custom properties should appear before managed metadata
  */
 public class UpdateMetadata {
-  private static final Logger LOG =
+  private static final   Logger LOG =
       LoggerFactory.getLogger(UpdateMetadata.class);
   private static final int CUSTOM_METADATA_START_INDEX = 7;
 

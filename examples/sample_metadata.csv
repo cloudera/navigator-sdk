@@ -1,3 +1,3 @@
 SoureName, Type, ParentPath, originalName, Name, Description, tags, CM.prop1, MM.ims.MM
-Hive, TABLE, /devl_gbl_dt2, fcc_fsl_4weeks_tx_7_33b62db2,NewName 1,NewDesc 1,"a1,boo1",cmpropval,MM_Val
-Hive, TABLE, /devl_gbl_dt2, fcc_fsl_4weeks_tx_7_b54e43e6,NewName 2,NewDesc 2,"a2,boo2",cmpropval2,MM_Val2
+Hive, TABLE, /db1, table1,NewName 1,NewDesc 1,"a1,boo1",cmpropval,MM_Val
+Hive, TABLE, /db2, table2,NewName 2,NewDesc 2,"a2,boo2",cmpropval2,MM_Val2
