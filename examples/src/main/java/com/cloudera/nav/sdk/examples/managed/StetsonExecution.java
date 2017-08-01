@@ -139,6 +139,7 @@ public class StetsonExecution extends Entity {
 
   public void setPigExecution(Entity pigExecution) {
     this.pigExecution = pigExecution;
+    this.pigExecution.setIsEndPoint(true);
   }
 
   public void setStarted(Instant started) {

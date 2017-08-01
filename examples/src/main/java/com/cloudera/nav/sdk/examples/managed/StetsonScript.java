@@ -85,5 +85,6 @@ public class StetsonScript extends Entity {
 
   public void setPigOperation(Entity pigOperation) {
     this.pigOperation = pigOperation;
+    this.pigOperation.setIsEndPoint(true);
   }
 }

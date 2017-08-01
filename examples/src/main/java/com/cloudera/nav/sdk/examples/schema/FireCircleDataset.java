@@ -62,5 +62,6 @@ public class FireCircleDataset extends Dataset {
     Preconditions.checkArgument(hdfsDir.getEntityType() ==
         EntityType.DIRECTORY);
     this.dataContainer = hdfsDir;
+    this.dataContainer.setIsEndPoint(true);
   }
 }
