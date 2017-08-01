@@ -34,7 +34,6 @@ public class HdfsEntity extends Entity {
     setSourceId(sourceId);
     setFileSystemPath(fileSystemPath);
     setEntityType(type);
-    setIsIdGenerated(false);
   }
 
   public HdfsEntity(String id) {

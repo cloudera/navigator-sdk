@@ -79,7 +79,7 @@ public class CustomLineageCreator {
 
 
     PigOperationExecution pigExecution = new PigOperationExecution(
-        "1f802d86-fdd8-4bd9-a4ef-d82683da9fe5",
+        "7401ad45-3a54-4d75-8be4-d60963fe8d99",
         "PigLatin:id.pig");
     StetsonExecution exec = createExecution(pigExecution);
 

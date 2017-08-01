@@ -75,7 +75,7 @@ public class Entity extends IdAttrs {
   @MProperty
   private String parentPath;
 
-  private Boolean isIdGenerated = true;
+  private Boolean isEndPoint = false;
 
   public String generateId() {
     return identity;
@@ -352,9 +352,9 @@ public class Entity extends IdAttrs {
     return identity.hashCode();
   }
 
-  public Boolean getIsIdGenerated() { return isIdGenerated; }
+  public Boolean getIsEndPoint() { return isEndPoint; }
 
-  public void setIsIdGenerated(Boolean isIdGenerated) {
-    this.isIdGenerated = isIdGenerated;
+  public void setIsEndPoint(Boolean isEndPoint) {
+    this.isEndPoint = isEndPoint;
   }
 }

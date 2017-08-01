@@ -26,10 +26,13 @@ import com.cloudera.nav.sdk.model.relations.RelationIdGenerator;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.cloudera.nav.sdk.model.relations.RelationType;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.util.Collection;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Creates Relation instances from the information in MRelationEntry
@@ -129,7 +132,7 @@ public class RelationFactory {
       Collection<? extends Entity> other) {
     Collection<IdAttrs> idAttrsList = Lists.newArrayList();
     for (Entity en : other) {
-      if (!en.getIsIdGenerated()) {
+      if (Strings.isNullOrEmpty(en.getIdentity())) {
         IdAttrs at = new IdAttrs();
         en.populateIdAttrs(at);
         idAttrsList.add(at);

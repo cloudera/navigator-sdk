@@ -34,6 +34,7 @@ import com.cloudera.nav.sdk.model.relations.Relation;
 import com.cloudera.nav.sdk.model.relations.RelationIdGenerator;
 import com.cloudera.nav.sdk.model.relations.RelationType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -171,7 +172,7 @@ public class JsonMetadataWriterTest {
     inputData.setTags(ImmutableList.of("foo", "bar"));
 
     Collection<IdAttrs> ep1IdAttrsList = Lists.newArrayList();
-    if (!inputData.getIsIdGenerated()) {
+    if (Strings.isNullOrEmpty(inputData.getIdentity())) {
       IdAttrs at = new IdAttrs();
       inputData.populateIdAttrs(at);
       ep1IdAttrsList.add(at);
@@ -182,7 +183,7 @@ public class JsonMetadataWriterTest {
     outputData.setTags(ImmutableList.of("foo", "bar"));
 
     Collection<IdAttrs> ep2IdAttrsList = Lists.newArrayList();
-    if (!outputData.getIsIdGenerated()) {
+    if (Strings.isNullOrEmpty(outputData.getIdentity())) {
       IdAttrs at = new IdAttrs();
       inputData.populateIdAttrs(at);
       ep2IdAttrsList.add(at);

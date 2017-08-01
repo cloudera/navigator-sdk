@@ -19,7 +19,6 @@ package com.cloudera.nav.sdk.client;
 import com.cloudera.nav.sdk.model.MD5IdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
-import com.cloudera.nav.sdk.model.annotations.MEndPoint;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.entities.Entity;
@@ -67,6 +66,7 @@ public class CustomOperationExecution extends Entity {
 
   public void setPigExecution(Entity pigExecution) {
     this.pigExecution = pigExecution;
+    this.pigExecution.setIsEndPoint(true);
   }
 
   public Long getStartTime() {
