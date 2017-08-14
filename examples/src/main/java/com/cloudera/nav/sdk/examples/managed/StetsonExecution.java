@@ -17,7 +17,6 @@
 package com.cloudera.nav.sdk.examples.managed;
 
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
@@ -177,4 +176,7 @@ public class StetsonExecution extends Entity {
   public void setGroup(String group) {
     this.group = group;
   }
+
+  @Override
+  public void validateEntity() {}
 }

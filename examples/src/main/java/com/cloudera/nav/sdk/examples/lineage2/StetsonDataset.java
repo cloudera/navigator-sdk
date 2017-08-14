@@ -16,7 +16,6 @@
 
 package com.cloudera.nav.sdk.examples.lineage2;
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
@@ -74,4 +73,7 @@ public class StetsonDataset extends Entity {
                             String path) {
     hdfsEntity = new HdfsEntity(path, EntityType.DIRECTORY, sourceId);
   }
+
+  @Override
+  public void validateEntity() {}
 }

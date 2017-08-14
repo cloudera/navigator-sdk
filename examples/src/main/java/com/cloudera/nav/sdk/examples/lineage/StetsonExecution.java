@@ -158,4 +158,7 @@ public class StetsonExecution extends Entity {
   public void setSteward(String steward) {
     this.steward = steward;
   }
+
+  @Override
+  public void validateEntity() {}
 }

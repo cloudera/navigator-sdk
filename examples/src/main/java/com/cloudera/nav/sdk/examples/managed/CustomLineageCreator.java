@@ -18,7 +18,6 @@ package com.cloudera.nav.sdk.examples.managed;
 
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.PigOperation;
 import com.cloudera.nav.sdk.model.entities.PigOperationExecution;
@@ -59,13 +58,13 @@ public class CustomLineageCreator {
     // Create the template
 
     PigOperation pigOperation = new PigOperation(
-        "24477434f5464a93c84c7bdc2115981f",
+        "44894c17c795256cc930b44702c40a0e",
         "PigLatin:id.pig");
 
     StetsonScript script = createStetsonScript(pigOperation);
 
     PigOperationExecution pigOperationExecution = new PigOperationExecution(
-        "345ca493-ba49-4c58-9780-fd60d8c037e0",
+        "5f759154-eb2a-4ab9-9dca-db12aa2eb413",
         "PigLatin:id.pig");
 
     // Create the instance

@@ -16,14 +16,12 @@
 
 package com.cloudera.nav.sdk.examples.lineage;
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
-import com.cloudera.nav.sdk.model.entities.PigOperation;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -88,4 +86,7 @@ public class StetsonScript extends Entity {
     this.pigOperation = pigOperation;
     this.pigOperation.setIsEndPoint(true);
   }
+
+  @Override
+  public void validateEntity() {}
 }

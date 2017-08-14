@@ -87,4 +87,7 @@ public class StetsonScript extends Entity {
     this.pigOperation = pigOperation;
     this.pigOperation.setIsEndPoint(true);
   }
+
+  @Override
+  public void validateEntity() {}
 }

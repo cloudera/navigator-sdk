@@ -64,4 +64,7 @@ public class FireCircleDataset extends Dataset {
     this.dataContainer = hdfsDir;
     this.dataContainer.setIsEndPoint(true);
   }
+
+  @Override
+  public void validateEntity() {}
 }

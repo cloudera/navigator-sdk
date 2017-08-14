@@ -54,8 +54,6 @@ public class CustomLineageCreator2 extends CustomLineageCreator {
    */
   public static void main(String[] args) {
     CustomLineageCreator2 lineageCreator = new CustomLineageCreator2(args[0]);
-    //lineageCreator.setPigOperationId("bfe554798ad45fd3a169d874768fe2e1");
-    //lineageCreator.setPigExecutionId("6b7f61fdce562d2d7825e9eb9dd6d683");
     lineageCreator.setInputPath("/hbase");
     lineageCreator.setOutputPath("/solr");
     lineageCreator.run();

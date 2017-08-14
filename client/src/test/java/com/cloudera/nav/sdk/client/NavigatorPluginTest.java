@@ -109,5 +109,8 @@ public class NavigatorPluginTest {
     public String generateId() {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public void validateEntity() {};
   }
 }

@@ -18,8 +18,8 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
 
 /**
- * Used for deserializing custom entities. We use this as an intermediary
- * so that we can handle the changesets for tags/UDPs
+ * Used for specifying the attributes needed for generation of entity id's at
+ * the server side.
  */
 public class IdAttrs {
 

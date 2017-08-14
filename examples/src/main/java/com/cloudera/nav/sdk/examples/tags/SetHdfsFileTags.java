@@ -46,22 +46,11 @@ public class SetHdfsFileTags {
     Source fs = client.getSourcesForType(SourceType.HDFS).iterator().next();
 
     // send tags for multiple entities to Navigator
-    /*HdfsEntity dir = new HdfsEntity("/user/oozie/share/lib", EntityType
-        .DIRECTORY,EnT
-        fs.getIdentity());*/
-
-    HdfsEntity dir = new HdfsEntity("/user/hdfs/hacky8", EntityType
+    HdfsEntity dir = new HdfsEntity("/user/hdfs", EntityType
         .DIRECTORY,
         fs.getIdentity());
-    dir.setTags(Sets.newHashSet("ASJHJSA",
-        "WHOHOH"));
-
-    //dir.setIdAttrs(attrs);
-
-    //IdAttrs attrs = new IdAttrs();
-    //attrs.setFileSystemPath("/user/hdfs/hackathon");
-    //dir.setIdAttrs(attrs);
-    //String id = client.getEntityId(dir);
+    dir.setTags(Sets.newHashSet("TAG_1",
+        "TAG_2"));
 
     // Write metadata
     ResultSet results = plugin.write(dir);

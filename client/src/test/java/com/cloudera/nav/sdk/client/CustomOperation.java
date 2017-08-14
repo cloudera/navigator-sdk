@@ -67,4 +67,8 @@ public class CustomOperation extends Entity {
   public void setScript(String script) {
     this.script = script;
   }
+
+  @Override
+  public void validateEntity() {
+  }
 }

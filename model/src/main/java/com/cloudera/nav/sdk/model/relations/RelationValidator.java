@@ -61,4 +61,15 @@ public class RelationValidator {
       }
     }
   }
+
+  public void validatateRelation(Relation relation) {
+    Preconditions.checkArgument(
+        CollectionUtils.isNotEmpty(relation.getEp1Ids()) ||
+        CollectionUtils.isNotEmpty(relation.getEp1Attributes()),
+        "Either ep1Ids or ep1Attributes must be present" );
+    Preconditions.checkArgument(
+        CollectionUtils.isNotEmpty(relation.getEp2Ids()) ||
+            CollectionUtils.isNotEmpty(relation.getEp2Attributes()),
+        "Either ep2Ids or ep2Attributes must be present" );
+  }
 }

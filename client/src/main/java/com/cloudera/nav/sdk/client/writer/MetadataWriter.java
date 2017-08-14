@@ -111,6 +111,7 @@ public abstract class MetadataWriter {
       entity.setIdentity(entity.generateId());
     }
 
+    entity.validateEntity();
     registry.validateRequiredMProperties(entity);
     if (!graph.hasEntity(entity)) {
       graph.addEntity(entity);

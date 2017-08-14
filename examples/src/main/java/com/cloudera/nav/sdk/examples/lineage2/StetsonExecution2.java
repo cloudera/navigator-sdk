@@ -17,7 +17,6 @@
 package com.cloudera.nav.sdk.examples.lineage2;
 
 import com.cloudera.nav.sdk.examples.lineage.StetsonExecution;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.relations.RelationRole;

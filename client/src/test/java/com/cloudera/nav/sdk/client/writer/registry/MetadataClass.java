@@ -80,4 +80,7 @@ public class MetadataClass extends Entity {
   public String generateId() {
     return null;
   }
+
+  @Override
+  public void validateEntity() {};
 }

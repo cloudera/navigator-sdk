@@ -34,4 +34,7 @@ public class FireCircleField extends DatasetField {
     setName(name);
     setDataType(type);
   }
+
+  @Override
+  public void validateEntity() {}
 }

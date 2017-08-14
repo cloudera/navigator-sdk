@@ -91,4 +91,6 @@ public class HiveColumn extends Entity {
     setName(columnName);
   }
 
+  @Override
+  public void validateEntity() {}
 }

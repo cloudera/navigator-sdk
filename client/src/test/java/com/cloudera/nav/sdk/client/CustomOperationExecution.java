@@ -84,4 +84,8 @@ public class CustomOperationExecution extends Entity {
   public void setEndTime(Long endTime) {
     this.endTime = endTime;
   }
+
+  @Override
+  public void validateEntity() {
+  }
 }

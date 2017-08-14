@@ -36,7 +36,7 @@ import org.joda.time.Instant;
  * Hadoop component Entities will inherit from Entity while custom application
  * entities should inherit from CustomEntity
  */
-public class Entity extends IdAttrs {
+public abstract class Entity extends IdAttrs {
 
   public static final CharSequence ID_SEPARATOR = "##";
 
@@ -357,4 +357,6 @@ public class Entity extends IdAttrs {
   public void setIsEndPoint(Boolean isEndPoint) {
     this.isEndPoint = isEndPoint;
   }
+
+  public abstract void validateEntity();
 }

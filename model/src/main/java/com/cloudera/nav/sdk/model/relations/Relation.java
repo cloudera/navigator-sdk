@@ -222,16 +222,6 @@ public abstract class Relation {
 
 
   protected Relation(Builder<?> builder) {
-    /*Preconditions.checkState(builder.identity != null ||
-        builder.idGenerator != null);
-    if (builder.identity != null) {
-      this.identity = builder.identity;
-    } else {
-      this.identity = builder.idGenerator.generateRelationIdentity(
-          builder.ep1Ids, builder.ep1SourceType,
-          builder.ep2Ids, builder.ep2SourceType, builder.type,
-          builder.namespace);
-    }*/
     this.identity = UUID.randomUUID().toString();
     this.type = builder.type;
     this.namespace = builder.namespace;
@@ -247,6 +237,7 @@ public abstract class Relation {
     this.ep1Attributes = builder.ep1Attributes;
     this.ep2Attributes = builder.ep2Attributes;
     validator.validateRequiredMProperties(this);
+    validator.validatateRelation(this);
   }
 
   /**

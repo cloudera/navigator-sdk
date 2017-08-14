@@ -142,8 +142,10 @@ public class MetadataExtractor {
     HashMap<String, Long> newMarker = Maps. newHashMap();
     for (Source source : sources) {
       String id = source.getIdentity();
-      Long sourceExtractIteration = (current) ?
-          source.getSourceExtractIteration() : 0;
+      Long sourceExtractIteration = source.getSourceExtractIteration();
+      if (sourceExtractIteration == null) {
+        sourceExtractIteration = 0L;
+      }
       newMarker.put(id, sourceExtractIteration);
     }
     return newMarker;
