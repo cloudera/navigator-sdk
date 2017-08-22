@@ -18,13 +18,12 @@ package com.cloudera.nav.sdk.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import com.cloudera.nav.sdk.client.writer.JsonMetadataWriter;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
-import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.cloudera.nav.sdk.model.entities.HdfsEntity;
 import com.cloudera.nav.sdk.model.entities.PigOperation;
@@ -37,7 +36,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -47,7 +45,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -171,22 +168,18 @@ public class JsonMetadataWriterTest {
         EntityType.DIRECTORY, source.getIdentity());
     inputData.setTags(ImmutableList.of("foo", "bar"));
 
-    Collection<IdAttrs> ep1IdAttrsList = Lists.newArrayList();
+    Collection<Map<String, String>> ep1IdAttrsList = Lists.newArrayList();
     if (Strings.isNullOrEmpty(inputData.getIdentity())) {
-      IdAttrs at = new IdAttrs();
-      inputData.populateIdAttrs(at);
-      ep1IdAttrsList.add(at);
+      ep1IdAttrsList.add(inputData.getIdAttrsMap());
     }
 
     HdfsEntity outputData = new HdfsEntity("/user/test/output",
         EntityType.DIRECTORY, source.getIdentity());
     outputData.setTags(ImmutableList.of("foo", "bar"));
 
-    Collection<IdAttrs> ep2IdAttrsList = Lists.newArrayList();
+    Collection<Map<String, String>> ep2IdAttrsList = Lists.newArrayList();
     if (Strings.isNullOrEmpty(outputData.getIdentity())) {
-      IdAttrs at = new IdAttrs();
-      inputData.populateIdAttrs(at);
-      ep2IdAttrsList.add(at);
+      ep2IdAttrsList.add(outputData.getIdAttrsMap());
     }
 
     Relation rel = DataFlowRelation.builder()

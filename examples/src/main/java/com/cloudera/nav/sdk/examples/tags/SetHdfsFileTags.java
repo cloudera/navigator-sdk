@@ -19,7 +19,6 @@ package com.cloudera.nav.sdk.examples.tags;
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.entities.EntityType;

@@ -16,7 +16,6 @@
 package com.cloudera.nav.sdk.model.relations;
 
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.cloudera.nav.sdk.model.entities.Entity;
@@ -26,6 +25,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -45,7 +45,7 @@ public abstract class Relation {
     private String namespace;
     private String identity;
     private Collection<String> ep1Ids;
-    private Collection<IdAttrs> ep1Attributes;
+    private Collection<Map<String, String>> ep1Attributes;
     private EntityType ep1Type;
     private SourceType ep1SourceType;
     private String ep1SourceId;
@@ -53,7 +53,7 @@ public abstract class Relation {
     private EntityType ep2Type;
     private SourceType ep2SourceType;
     private String ep2SourceId;
-    private Collection<IdAttrs> ep2Attributes;
+    private Collection<Map<String, String>> ep2Attributes;
     private boolean userSpecified;
     private RelationIdGenerator idGenerator;
 
@@ -63,12 +63,12 @@ public abstract class Relation {
 
     protected abstract T self();
 
-    public T ep1Attributes(Collection<IdAttrs> ep1Attributes) {
+    public T ep1Attributes(Collection<Map<String, String>> ep1Attributes) {
       this.ep1Attributes = ep1Attributes;
       return self();
     }
 
-    public T ep2Attributes(Collection<IdAttrs> ep2Attributes) {
+    public T ep2Attributes(Collection<Map<String, String>> ep2Attributes) {
       this.ep2Attributes = ep2Attributes;
       return self();
     }
@@ -215,10 +215,10 @@ public abstract class Relation {
   private boolean userSpecified;
 
   @MProperty
-  private Collection<IdAttrs> ep1Attributes;
+  private Collection<Map<String, String>> ep1Attributes;
 
   @MProperty
-  private Collection<IdAttrs> ep2Attributes;
+  private Collection<Map<String, String>> ep2Attributes;
 
 
   protected Relation(Builder<?> builder) {
@@ -303,7 +303,9 @@ public abstract class Relation {
     return userSpecified;
   }
 
-  public Collection<IdAttrs> getEp1Attributes() { return ep1Attributes; }
+  public Collection<Map<String, String>> getEp1Attributes() {
+    return ep1Attributes; }
 
-  public Collection<IdAttrs> getEp2Attributes() { return ep2Attributes; }
+  public Collection<Map<String, String>> getEp2Attributes() {
+    return ep2Attributes; }
 }

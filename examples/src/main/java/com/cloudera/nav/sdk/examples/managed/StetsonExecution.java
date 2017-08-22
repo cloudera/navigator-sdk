@@ -176,7 +176,4 @@ public class StetsonExecution extends Entity {
   public void setGroup(String group) {
     this.group = group;
   }
-
-  @Override
-  public void validateEntity() {}
 }

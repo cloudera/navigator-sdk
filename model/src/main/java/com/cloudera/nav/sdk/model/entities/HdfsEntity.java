@@ -17,7 +17,11 @@ package com.cloudera.nav.sdk.model.entities;
 
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
+import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
 
 /**
  * A concrete entity that represents HDFS directories or files. Note that the
@@ -25,6 +29,8 @@ import com.google.common.base.Strings;
  */
 @MClass(model="fselement", validTypes = {EntityType.DIRECTORY, EntityType.FILE})
 public class HdfsEntity extends Entity {
+  @MProperty
+  private String fileSystemPath;
 
   public HdfsEntity() {
     setSourceType(SourceType.HDFS);
@@ -50,5 +56,18 @@ public class HdfsEntity extends Entity {
           "Either the Entity Id or file system path used" +
               " to generate the id must be present");
     }
+  }
+
+  public void setFileSystemPath(String fileSystemPath) {
+    this.fileSystemPath = fileSystemPath;
+  }
+
+  public String getFileSystemPath() {
+    return this.fileSystemPath;
+  }
+
+  @Override
+  public Map<String, String> getIdAttrsMap() {
+    return ImmutableMap.of("fileSystemPath", this.getFileSystemPath());
   }
 }

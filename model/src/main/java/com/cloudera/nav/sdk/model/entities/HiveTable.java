@@ -76,9 +76,4 @@ public class HiveTable extends Entity {
   public void setTableName(String tableName) {
     setName(tableName);
   }
-
-  @Override
-  public void validateEntity() {
-
-  }
 }

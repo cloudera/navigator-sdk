@@ -73,7 +73,4 @@ public class StetsonDataset extends Entity {
                             String path) {
     hdfsEntity = new HdfsEntity(path, EntityType.DIRECTORY, sourceId);
   }
-
-  @Override
-  public void validateEntity() {}
 }

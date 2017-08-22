@@ -17,7 +17,6 @@
 package com.cloudera.nav.sdk.examples.managed;
 
 import com.cloudera.nav.sdk.model.CustomIdGenerator;
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
@@ -87,7 +86,4 @@ public class StetsonScript extends Entity {
     this.pigOperation = pigOperation;
     this.pigOperation.setIsEndPoint(true);
   }
-
-  @Override
-  public void validateEntity() {}
 }

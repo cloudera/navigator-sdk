@@ -15,7 +15,6 @@
  */
 package com.cloudera.nav.sdk.model.relations;
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.MD5IdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.google.common.base.Joiner;
@@ -24,8 +23,6 @@ import com.google.common.collect.Lists;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
 
 /**
  * This class exposes methods that are used to generate identities for

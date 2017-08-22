@@ -15,7 +15,6 @@
  */
 package com.cloudera.nav.sdk.client.writer.registry;
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.relations.DataFlowRelation;
 import com.cloudera.nav.sdk.model.relations.InstanceOfRelation;
@@ -31,8 +30,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.util.Collection;
-
-import org.apache.commons.lang.StringUtils;
+import java.util.Map;
 
 /**
  * Creates Relation instances from the information in MRelationEntry
@@ -64,7 +62,7 @@ public class RelationFactory {
                                           Collection<? extends Entity> other,
                                           String namespace) {
     DataFlowRelation.Builder builder = DataFlowRelation.builder();
-    Collection<IdAttrs> idAttrsList = getIdAttrsList(other);
+    Collection<Map<String, String>> idAttrsList = getIdAttrsList(other);
 
     if (roleOfOther == RelationRole.SOURCE) {
       builder.target(entity).sources(other).ep1Attributes(idAttrsList);
@@ -114,7 +112,7 @@ public class RelationFactory {
       RelationRole roleOfOther, Entity entity,
       Collection<? extends Entity> other, String namespace) {
 
-    Collection<IdAttrs> idAttrsList = getIdAttrsList(other);
+    Collection<Map<String, String>> idAttrsList = getIdAttrsList(other);
     LogicalPhysicalRelation.Builder builder = LogicalPhysicalRelation.builder();
     if (roleOfOther == RelationRole.LOGICAL) {
       Preconditions.checkArgument(other.size() == 1,
@@ -128,14 +126,12 @@ public class RelationFactory {
         .namespace(namespace).build();
   }
 
-  private Collection<IdAttrs> getIdAttrsList(
+  private Collection<Map<String, String>> getIdAttrsList(
       Collection<? extends Entity> other) {
-    Collection<IdAttrs> idAttrsList = Lists.newArrayList();
+    Collection<Map<String, String>> idAttrsList = Lists.newArrayList();
     for (Entity en : other) {
       if (Strings.isNullOrEmpty(en.getIdentity())) {
-        IdAttrs at = new IdAttrs();
-        en.populateIdAttrs(at);
-        idAttrsList.add(at);
+        idAttrsList.add(en.getIdAttrsMap());
       }
     }
 

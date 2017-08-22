@@ -16,7 +16,6 @@
 
 package com.cloudera.nav.sdk.examples.schema;
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.DatasetIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
@@ -64,7 +63,4 @@ public class FireCircleDataset extends Dataset {
     this.dataContainer = hdfsDir;
     this.dataContainer.setIsEndPoint(true);
   }
-
-  @Override
-  public void validateEntity() {}
 }

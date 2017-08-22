@@ -90,7 +90,4 @@ public class HiveColumn extends Entity {
   public void setColumnName(String columnName) {
     setName(columnName);
   }
-
-  @Override
-  public void validateEntity() {}
 }

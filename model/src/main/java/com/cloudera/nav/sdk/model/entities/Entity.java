@@ -15,13 +15,13 @@
  */
 package com.cloudera.nav.sdk.model.entities;
 
-import com.cloudera.nav.sdk.model.IdAttrs;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.joda.time.Instant;
@@ -36,7 +36,7 @@ import org.joda.time.Instant;
  * Hadoop component Entities will inherit from Entity while custom application
  * entities should inherit from CustomEntity
  */
-public abstract class Entity extends IdAttrs {
+public abstract class Entity {
 
   public static final CharSequence ID_SEPARATOR = "##";
 
@@ -358,5 +358,9 @@ public abstract class Entity extends IdAttrs {
     this.isEndPoint = isEndPoint;
   }
 
-  public abstract void validateEntity();
+  public Map<String, String> getIdAttrsMap() {
+    return Collections.emptyMap();
+  }
+
+  public void validateEntity() {}
 }

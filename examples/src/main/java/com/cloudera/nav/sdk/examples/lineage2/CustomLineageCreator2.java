@@ -18,8 +18,6 @@ package com.cloudera.nav.sdk.examples.lineage2;
 
 import com.cloudera.nav.sdk.client.NavApiCient;
 import com.cloudera.nav.sdk.examples.lineage.CustomLineageCreator;
-import com.cloudera.nav.sdk.model.IdAttrs;
-import com.cloudera.nav.sdk.model.MD5IdGenerator;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.entities.Entity;
