@@ -210,8 +210,10 @@ public class JsonMetadataWriterTest {
     assertEquals(values.get("endpoint1Type"), EntityType.DIRECTORY.name());
     assertEquals(values.get("endpoint2Type"), EntityType.DIRECTORY.name());
     assertTrue(Boolean.valueOf(values.get("userSpecified").toString()));
-
-    //TODO Need to assert the values of ep1Attributes and ep2Attributes
+    assertEquals(CollectionUtils.get(values.get("ep1Attributes"), 0),
+        CollectionUtils.get(rel.getEp1Attributes(), 0));
+    assertEquals(CollectionUtils.get(values.get("ep2Attributes"), 0),
+        CollectionUtils.get(rel.getEp2Attributes(), 0));
   }
 
   @SuppressWarnings("unchecked")

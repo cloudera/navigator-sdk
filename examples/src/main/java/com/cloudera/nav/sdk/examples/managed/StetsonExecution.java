@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
@@ -77,14 +76,7 @@ public class StetsonExecution extends Entity {
    */
   @Override
   public String generateId() {
-    if (!Strings.isNullOrEmpty(getPigExecution().getIdentity())) {
-      return CustomIdGenerator.generateIdentity(getNamespace(),
-          getTemplate().getIdentity(),
-          getPigExecution().getIdentity());
-    } else {
-      return CustomIdGenerator.generateIdentity(getNamespace(),
-          getTemplate().getIdentity());
-    }
+    return CustomIdGenerator.generateIdentity(getNamespace(), getName());
   }
 
   @Override

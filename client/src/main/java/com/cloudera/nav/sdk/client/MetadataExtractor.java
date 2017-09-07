@@ -140,12 +140,10 @@ public class MetadataExtractor {
   private Map<String, Long> getNavMarker(boolean current) {
     Collection<Source> sources = client.getAllSources();
     HashMap<String, Long> newMarker = Maps. newHashMap();
+
     for (Source source : sources) {
       String id = source.getIdentity();
-      Long sourceExtractIteration = source.getSourceExtractIteration();
-      if (sourceExtractIteration == null) {
-        sourceExtractIteration = 0L;
-      }
+      Long sourceExtractIteration = current ? source.getSourceExtractIteration() : 0L;
       newMarker.put(id, sourceExtractIteration);
     }
     return newMarker;

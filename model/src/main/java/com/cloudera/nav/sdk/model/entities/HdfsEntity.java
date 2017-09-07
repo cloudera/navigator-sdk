@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ public class HdfsEntity extends Entity {
   @MProperty
   private String fileSystemPath;
 
+  private final String FILE_SYSTEM_PATH = "fileSystemPath";
+
   public HdfsEntity() {
     setSourceType(SourceType.HDFS);
   }
@@ -48,13 +50,19 @@ public class HdfsEntity extends Entity {
     setIdentity(id);
   }
 
+  /**
+   * Either the entity id must be present or the file system path must be
+   * present for an HdfsEntity to be valid. The source id must also be
+   * present for the HdfsEntity to be valid.
+   */
   @Override
   public void validateEntity() {
-    if (Strings.isNullOrEmpty(this.getIdentity()) &&
-        Strings.isNullOrEmpty(this.getFileSystemPath())) {
+    if ((Strings.isNullOrEmpty(this.getIdentity()) &&
+        Strings.isNullOrEmpty(this.getFileSystemPath())) ||
+        Strings.isNullOrEmpty(this.getSourceId())) {
       throw new IllegalArgumentException(
           "Either the Entity Id or file system path used" +
-              " to generate the id must be present");
+              " to generate the id must be present along with the source id");
     }
   }
 
@@ -68,6 +76,6 @@ public class HdfsEntity extends Entity {
 
   @Override
   public Map<String, String> getIdAttrsMap() {
-    return ImmutableMap.of("fileSystemPath", this.getFileSystemPath());
+    return ImmutableMap.of(FILE_SYSTEM_PATH, this.getFileSystemPath());
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.cloudera.nav.sdk.model.entities.HdfsEntity;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
-
-import java.util.UUID;
 
 /**
  * This is a custom logical dataset that is physically backed by an
@@ -65,8 +63,7 @@ public class StetsonDataset extends Entity {
 
   @Override
   public String generateId() {
-    return CustomIdGenerator.generateIdentity(getName(), getNamespace(),
-        UUID.randomUUID().toString());
+    return CustomIdGenerator.generateIdentity(getName(), getNamespace());
   }
 
   public void setHdfsEntity(String sourceId,

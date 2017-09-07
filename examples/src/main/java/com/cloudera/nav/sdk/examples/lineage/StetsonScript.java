@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-
-import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -47,17 +44,11 @@ public class StetsonScript extends Entity {
   }
 
   /**
-   * The script template is uniquely defined by the name and the owner
+   * The script template is uniquely defined by the namespace and the name
    */
   @Override
   public String generateId() {
-    if (!Strings.isNullOrEmpty(getPigOperation().getIdentity())) {
-      return CustomIdGenerator.generateIdentity(getNamespace(),
-          getPigOperation().getIdentity());
-    } else {
-      return CustomIdGenerator.generateIdentity(getNamespace(),
-          UUID.randomUUID().toString());
-    }
+    return CustomIdGenerator.generateIdentity(getNamespace(), getName());
   }
 
   @Override

@@ -48,8 +48,8 @@ public class SetHdfsFileTags {
     HdfsEntity dir = new HdfsEntity("/user/hdfs", EntityType
         .DIRECTORY,
         fs.getIdentity());
-    dir.setTags(Sets.newHashSet("TAG_1",
-        "TAG_2"));
+    dir.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
+        "CONTAINS_SOME_SUPER_SECRET_STUFF"));
 
     // Write metadata
     ResultSet results = plugin.write(dir);
