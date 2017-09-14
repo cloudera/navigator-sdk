@@ -99,6 +99,7 @@ public class MClassRegistry {
             "property %s null or empty", prop.getField().getName()));
       }
     }
+
     for (MRelationEntry prop : getRelations(en.getClass())) {
       if (prop.required()) {
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(prop

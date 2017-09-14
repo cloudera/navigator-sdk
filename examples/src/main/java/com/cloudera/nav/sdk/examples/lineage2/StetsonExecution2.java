@@ -19,6 +19,8 @@ package com.cloudera.nav.sdk.examples.lineage2;
 import com.cloudera.nav.sdk.examples.lineage.StetsonExecution;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
+import com.cloudera.nav.sdk.model.entities.EntityType;
+import com.cloudera.nav.sdk.model.entities.HdfsEntity;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.collect.Lists;
 
@@ -95,7 +97,12 @@ public class StetsonExecution2 extends
     if (inputs == null) {
       inputs = Lists.newArrayList();
     }
-    inputs.add(new StetsonDataset(name, getNamespace(), path, sourceId));
+
+    HdfsEntity hdfsEntity = new HdfsEntity("638");
+    hdfsEntity.setEntityType(EntityType.DIRECTORY);
+    hdfsEntity.setSourceId(sourceId);
+
+    inputs.add(new StetsonDataset(name, getNamespace(), hdfsEntity));
   }
 
   /**
@@ -108,6 +115,8 @@ public class StetsonExecution2 extends
     if (outputs == null) {
       outputs = Lists.newArrayList();
     }
-    outputs.add(new StetsonDataset(name, getNamespace(), path, sourceId));
+
+    outputs.add(new StetsonDataset(name, getNamespace(),
+        new HdfsEntity(path, EntityType.DIRECTORY, sourceId)));
   }
 }

@@ -18,6 +18,7 @@ package com.cloudera.nav.sdk.client.writer;
 import com.cloudera.nav.sdk.client.ClientConfig;
 import com.cloudera.nav.sdk.client.writer.registry.MClassRegistry;
 import com.cloudera.nav.sdk.client.writer.registry.MRelationEntry;
+import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.relations.Relation;
 import com.google.common.base.Preconditions;
@@ -125,10 +126,11 @@ public abstract class MetadataWriter {
         entity.getClass());
     for (MRelationEntry relEntry : relationAttrs) {
       for(Entity other : relEntry.getConnectedEntities(entity)) {
-        if (!other.getIsEndPoint()) {
+        if (!(other instanceof EndPointProxy)) {
           getAllMClasses(other, graph);
         }
       }
+
       // add Relation after doing the getAllMClasses call so the connected
       // entity id's have all been generated if necessary
       graph.addRelation(relEntry.buildRelation(entity, config.getNamespace()));

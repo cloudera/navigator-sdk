@@ -21,6 +21,7 @@ import com.cloudera.nav.sdk.examples.lineage.CustomLineageCreator;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.entities.Entity;
+import com.cloudera.nav.sdk.model.entities.PigOperationExecution;
 
 import org.joda.time.Instant;
 
@@ -65,7 +66,7 @@ public class CustomLineageCreator2 extends CustomLineageCreator {
   }
 
   @Override
-  protected StetsonExecution2 createExecution(Entity attrs) {
+  protected StetsonExecution2 createExecution(PigOperationExecution attrs) {
     StetsonExecution2 exec = new StetsonExecution2(plugin.getNamespace());
     exec.setPigExecution(attrs);
     exec.setName("Stetson Execution");

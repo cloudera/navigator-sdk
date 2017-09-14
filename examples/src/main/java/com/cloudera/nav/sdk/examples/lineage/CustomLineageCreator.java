@@ -73,13 +73,13 @@ public class CustomLineageCreator {
     NavApiCient client = plugin.getClient();
 
     PigOperation pigOperation = new PigOperation(
-        "44894c17c795256cc930b44702c40a0e",
+        "15d2f8dd6420f69dff73679386e88fc6",
         "PigLatin:id.pig");
     StetsonScript script = createStetsonScript(pigOperation);
 
 
     PigOperationExecution pigExecution = new PigOperationExecution(
-        "c13b843d-6bee-43eb-bf03-3b537cc154e8",
+        "7e53ba38-2f8f-4698-8ec1-b306e9305f73",
         "PigLatin:id.pig");
     StetsonExecution exec = createExecution(pigExecution);
 
@@ -110,7 +110,7 @@ public class CustomLineageCreator {
     this.pigExecutionId = pigExecutionId;
   }
 
-  protected StetsonScript createStetsonScript(Entity pigOperaion) {
+  protected StetsonScript createStetsonScript(PigOperation pigOperaion) {
     StetsonScript script = new StetsonScript(plugin.getNamespace());
     script.setPigOperation(pigOperaion);
     script.setName("Stetson Script");
@@ -119,7 +119,7 @@ public class CustomLineageCreator {
     return script;
   }
 
-  protected StetsonExecution createExecution(Entity pigExecution) {
+  protected StetsonExecution createExecution(PigOperationExecution pigExecution) {
     StetsonExecution exec = new StetsonExecution(plugin.getNamespace());
     exec.setPigExecution(pigExecution);
     exec.setName("Stetson Execution");

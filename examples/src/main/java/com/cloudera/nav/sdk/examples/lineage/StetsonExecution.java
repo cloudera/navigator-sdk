@@ -21,10 +21,14 @@ import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
 import com.cloudera.nav.sdk.model.annotations.MRelation;
+import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
+import com.cloudera.nav.sdk.model.entities.PigOperationExecution;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
+
+import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
@@ -116,9 +120,10 @@ public class StetsonExecution extends Entity {
     this.template = template;
   }
 
-  public void setPigExecution(Entity pigExecution) {
-    this.pigExecution = pigExecution;
-    this.pigExecution.setIsEndPoint(true);
+  public void setPigExecution(PigOperationExecution pigExecution) {
+    this.pigExecution = new EndPointProxy(
+        pigExecution.getIdAttrsMap(), pigExecution.getSourceType(),
+        pigExecution.getEntityType());
   }
 
   public void setStarted(Instant started) {

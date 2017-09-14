@@ -75,8 +75,6 @@ public abstract class Entity {
   @MProperty
   private String parentPath;
 
-  private Boolean isEndPoint = false;
-
   public String generateId() {
     return identity;
   }
@@ -350,12 +348,6 @@ public abstract class Entity {
   @Override
   public int hashCode() {
     return identity.hashCode();
-  }
-
-  public Boolean getIsEndPoint() { return isEndPoint; }
-
-  public void setIsEndPoint(Boolean isEndPoint) {
-    this.isEndPoint = isEndPoint;
   }
 
   public Map<String, String> getIdAttrsMap() {

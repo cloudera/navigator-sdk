@@ -58,13 +58,13 @@ public class CustomLineageCreator {
     // Create the template
 
     PigOperation pigOperation = new PigOperation(
-        "44894c17c795256cc930b44702c40a0e",
+        "15d2f8dd6420f69dff73679386e88fc6",
         "PigLatin:id.pig");
 
     StetsonScript script = createStetsonScript(pigOperation);
 
     PigOperationExecution pigOperationExecution = new PigOperationExecution(
-        "5f759154-eb2a-4ab9-9dca-db12aa2eb413",
+        "7e53ba38-2f8f-4698-8ec1-b306e9305f73",
         "PigLatin:id.pig");
 
     // Create the instance
@@ -111,7 +111,7 @@ public class CustomLineageCreator {
     this.pigExecutionId = pigExecutionId;
   }
 
-  protected StetsonScript createStetsonScript(Entity pigOperation) {
+  protected StetsonScript createStetsonScript(PigOperation pigOperation) {
     StetsonScript script = new StetsonScript(plugin.getNamespace());
     script.setPigOperation(pigOperation);
     script.setName("Stetson Script");
@@ -120,7 +120,7 @@ public class CustomLineageCreator {
     return script;
   }
 
-  protected StetsonExecution createExecution(Entity pigExecution) {
+  protected StetsonExecution createExecution(PigOperationExecution pigExecution) {
     StetsonExecution exec = new StetsonExecution(plugin.getNamespace());
     exec.setPigExecution(pigExecution);
     exec.setName("Stetson Execution");

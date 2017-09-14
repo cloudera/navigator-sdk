@@ -143,7 +143,9 @@ public class MetadataExtractor {
 
     for (Source source : sources) {
       String id = source.getIdentity();
-      Long sourceExtractIteration = current ? source.getSourceExtractIteration() : 0L;
+      Long sourceExtractIteration = !current ? 0L :
+          source.getSourceExtractIteration() != null ?
+          source.getSourceExtractIteration() : 0L;
       newMarker.put(id, sourceExtractIteration);
     }
     return newMarker;
