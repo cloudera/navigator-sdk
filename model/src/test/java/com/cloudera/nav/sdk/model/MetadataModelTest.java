@@ -74,9 +74,5 @@ public class MetadataModelTest {
 
   @MClass(model="dataset")
   private static class TestDataset extends Dataset {
-    @Override
-    public String generateId() {
-      throw new UnsupportedOperationException();
-    }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,11 @@ import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
+import com.cloudera.nav.sdk.model.entities.PigOperation;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
+
+import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -35,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
 public class StetsonScript extends Entity {
 
   @MRelation(role = RelationRole.PHYSICAL)
-  private EndPointProxy pigOperation;
+  private Entity pigOperation;
 
   public StetsonScript(String namespace) {
     // Because the namespace is given to input/output we ensure it
@@ -45,12 +48,12 @@ public class StetsonScript extends Entity {
   }
 
   /**
-   * The script template is uniquely defined by the name and the owner
+   * The script is uniquely identified by the the namespace and
+   * the unique name given to the script
    */
   @Override
   public String generateId() {
-    return CustomIdGenerator.generateIdentity(getNamespace(),
-        getPigOperation().getIdentity());
+    return CustomIdGenerator.generateIdentity(getNamespace(), getName());
   }
 
   @Override
@@ -75,8 +78,9 @@ public class StetsonScript extends Entity {
     return pigOperation;
   }
 
-  public void setPigOperation(String pigOperationId) {
-    this.pigOperation = new EndPointProxy(pigOperationId, SourceType.PIG,
-        EntityType.OPERATION);
+  public void setPigOperation(PigOperation pigOperation) {
+    this.pigOperation = new EndPointProxy(
+        pigOperation.getIdAttrsMap(), pigOperation.getSourceType(),
+        pigOperation.getEntityType());
   }
 }

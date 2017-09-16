@@ -45,7 +45,8 @@ public class SetHdfsFileTags {
     Source fs = client.getSourcesForType(SourceType.HDFS).iterator().next();
 
     // send tags for multiple entities to Navigator
-    HdfsEntity dir = new HdfsEntity("/user/hdfs", EntityType.DIRECTORY,
+    HdfsEntity dir = new HdfsEntity("/user/hdfs", EntityType
+        .DIRECTORY,
         fs.getIdentity());
     dir.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
         "CONTAINS_SOME_SUPER_SECRET_STUFF"));

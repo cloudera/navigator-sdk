@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,11 @@ import com.cloudera.nav.sdk.model.annotations.MRelation;
 import com.cloudera.nav.sdk.model.entities.EndPointProxy;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
+import com.cloudera.nav.sdk.model.entities.PigOperationExecution;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.google.common.base.Preconditions;
+
+import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.Instant;
@@ -60,14 +63,12 @@ public class StetsonExecution extends Entity {
   }
 
   /**
-   * The execution is uniquely identified by the the template's id and
-   * the external application's identifier
+   * The execution is uniquely identified by the the template's namespace and
+   * the unique name given to each execution
    */
   @Override
   public String generateId() {
-    return CustomIdGenerator.generateIdentity(getNamespace(),
-        getTemplate().getIdentity(),
-        getPigExecution().getIdentity());
+    return CustomIdGenerator.generateIdentity(getNamespace(), getName());
   }
 
   @Override
@@ -119,9 +120,10 @@ public class StetsonExecution extends Entity {
     this.template = template;
   }
 
-  public void setPigExecution(String pigExecutionId) {
-    this.pigExecution = new EndPointProxy(pigExecutionId, SourceType.PIG,
-        EntityType.OPERATION_EXECUTION);
+  public void setPigExecution(PigOperationExecution pigExecution) {
+    this.pigExecution = new EndPointProxy(
+        pigExecution.getIdAttrsMap(), pigExecution.getSourceType(),
+        pigExecution.getEntityType());
   }
 
   public void setStarted(Instant started) {

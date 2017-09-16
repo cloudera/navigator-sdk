@@ -17,9 +17,11 @@ package com.cloudera.nav.sdk.model.entities;
 
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.joda.time.Instant;
@@ -39,10 +41,12 @@ public abstract class Entity {
   public static final CharSequence ID_SEPARATOR = "##";
 
   // required properties
-  @MProperty(required=true)
+  @MProperty
   private String identity;
   @MProperty(required=true)
   private SourceType sourceType;
+
+  @JsonProperty("type")
   @MProperty(required=true, attribute = "type")
   private EntityType entityType;
 
@@ -71,8 +75,9 @@ public abstract class Entity {
   @MProperty
   private String parentPath;
 
-
-  public abstract String generateId();
+  public String generateId() {
+    return identity;
+  }
 
   /**
    * @return id for this custom entity
@@ -344,4 +349,10 @@ public abstract class Entity {
   public int hashCode() {
     return identity.hashCode();
   }
+
+  public Map<String, String> getIdAttrsMap() {
+    return Collections.emptyMap();
+  }
+
+  public void validateEntity() {}
 }

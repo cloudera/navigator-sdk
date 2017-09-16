@@ -26,9 +26,12 @@ import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 
+import java.util.Collections;
+
 /**
  * Represents a template defined by a script in a custom DSL
  */
+
 @MClass(model="cust_op")
 public class CustomOperation extends Entity {
 
@@ -55,13 +58,10 @@ public class CustomOperation extends Entity {
     return pigOperation;
   }
 
-  public String getPigOperationEntityId() {
-    return pigOperation.getIdentity();
-  }
-
-  public void setPigOperationId(String pigOperationId) {
-    this.pigOperation = new EndPointProxy(pigOperationId,
-        SourceType.PIG, EntityType.OPERATION);
+  public void setPigOperation(Entity pigOperation) {
+    this.pigOperation = new EndPointProxy(
+        pigOperation.getIdAttrsMap(),
+        pigOperation.getSourceType(), pigOperation.getEntityType());
   }
 
   public String getScript() {

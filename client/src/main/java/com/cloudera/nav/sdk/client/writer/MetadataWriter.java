@@ -112,6 +112,7 @@ public abstract class MetadataWriter {
       entity.setIdentity(entity.generateId());
     }
 
+    entity.validateEntity();
     registry.validateRequiredMProperties(entity);
     if (!graph.hasEntity(entity)) {
       graph.addEntity(entity);
@@ -129,6 +130,7 @@ public abstract class MetadataWriter {
           getAllMClasses(other, graph);
         }
       }
+
       // add Relation after doing the getAllMClasses call so the connected
       // entity id's have all been generated if necessary
       graph.addRelation(relEntry.buildRelation(entity, config.getNamespace()));

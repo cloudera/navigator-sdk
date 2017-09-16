@@ -25,9 +25,12 @@ import com.cloudera.nav.sdk.model.relations.RelationIdGenerator;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 import com.cloudera.nav.sdk.model.relations.RelationType;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Creates Relation instances from the information in MRelationEntry
@@ -59,10 +62,12 @@ public class RelationFactory {
                                           Collection<? extends Entity> other,
                                           String namespace) {
     DataFlowRelation.Builder builder = DataFlowRelation.builder();
+    Collection<Map<String, String>> idAttrsList = getIdAttrsList(other);
+
     if (roleOfOther == RelationRole.SOURCE) {
-      builder.target(entity).sources(other);
+      builder.target(entity).sources(other).ep1Attributes(idAttrsList);
     } else {
-      builder.source(entity).targets(other);
+      builder.source(entity).targets(other).ep2Attributes(idAttrsList);
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();
@@ -106,16 +111,30 @@ public class RelationFactory {
   private Relation createLogicalPhysicalRelation(
       RelationRole roleOfOther, Entity entity,
       Collection<? extends Entity> other, String namespace) {
+
+    Collection<Map<String, String>> idAttrsList = getIdAttrsList(other);
     LogicalPhysicalRelation.Builder builder = LogicalPhysicalRelation.builder();
     if (roleOfOther == RelationRole.LOGICAL) {
       Preconditions.checkArgument(other.size() == 1,
           "Only 1 logical allowed in each logical-physical relationship");
-      builder.physical(entity).logical(Iterables.getOnlyElement(other));
+      builder.physical(entity).logical(Iterables.getOnlyElement(other))
+          .ep1Attributes(idAttrsList);
     } else {
-      builder.logical(entity).physical(other);
+      builder.logical(entity).physical(other).ep2Attributes(idAttrsList);
     }
     return builder.idGenerator(new RelationIdGenerator())
         .namespace(namespace).build();
   }
 
+  private Collection<Map<String, String>> getIdAttrsList(
+      Collection<? extends Entity> other) {
+    Collection<Map<String, String>> idAttrsList = Lists.newArrayList();
+    for (Entity en : other) {
+      if (Strings.isNullOrEmpty(en.getIdentity())) {
+        idAttrsList.add(en.getIdAttrsMap());
+      }
+    }
+
+    return idAttrsList;
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Cloudera, Inc.
+ * Copyright (c) 2017 Cloudera, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  */
 package com.cloudera.nav.sdk.model.entities;
 
-import com.cloudera.nav.sdk.model.HdfsIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Map;
 
 /**
  * A concrete entity that represents HDFS directories or files. Note that the
@@ -29,9 +29,10 @@ import org.apache.commons.lang.StringUtils;
  */
 @MClass(model="fselement", validTypes = {EntityType.DIRECTORY, EntityType.FILE})
 public class HdfsEntity extends Entity {
-
   @MProperty
   private String fileSystemPath;
+
+  private final String FILE_SYSTEM_PATH = "fileSystemPath";
 
   public HdfsEntity() {
     setSourceType(SourceType.HDFS);
@@ -42,37 +43,39 @@ public class HdfsEntity extends Entity {
     setSourceId(sourceId);
     setFileSystemPath(fileSystemPath);
     setEntityType(type);
-    setIdentity(generateId());
+  }
+
+  public HdfsEntity(String id) {
+    this();
+    setIdentity(id);
   }
 
   /**
-   * An HDFS file/directory can be uniquely identified by the path and
-   * the Source id
-   *
-   * @return
+   * Either the entity id must be present or the file system path must be
+   * present for an HdfsEntity to be valid. The source id must also be
+   * present for the HdfsEntity to be valid.
    */
   @Override
-  public String generateId() {
-    return HdfsIdGenerator.generateHdfsEntityId(getSourceId(),
-        getFileSystemPath());
-  }
-
-  /**
-   * @return the full path for this file or directory
-   */
-  public String getFileSystemPath() {
-    return fileSystemPath;
-  }
-
-  /**
-   * Set the full path of this file or directory
-   * @param fileSystemPath
-   */
-  public void setFileSystemPath(String fileSystemPath) {
-    Preconditions.checkArgument(StringUtils.isNotEmpty(fileSystemPath));
-    if (fileSystemPath.endsWith("/")) {
-      fileSystemPath = fileSystemPath.substring(0, fileSystemPath.length() - 1);
+  public void validateEntity() {
+    if ((Strings.isNullOrEmpty(this.getIdentity()) &&
+        Strings.isNullOrEmpty(this.getFileSystemPath())) ||
+        Strings.isNullOrEmpty(this.getSourceId())) {
+      throw new IllegalArgumentException(
+          "Either the Entity Id or file system path used" +
+              " to generate the id must be present along with the source id");
     }
+  }
+
+  public void setFileSystemPath(String fileSystemPath) {
     this.fileSystemPath = fileSystemPath;
+  }
+
+  public String getFileSystemPath() {
+    return this.fileSystemPath;
+  }
+
+  @Override
+  public Map<String, String> getIdAttrsMap() {
+    return ImmutableMap.of(FILE_SYSTEM_PATH, this.getFileSystemPath());
   }
 }

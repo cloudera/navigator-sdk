@@ -26,9 +26,12 @@ import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.EntityType;
 import com.cloudera.nav.sdk.model.relations.RelationRole;
 
+import java.util.Collections;
+
 /**
  * Represents a specific execution of a StetsonScript
  */
+
 @MClass(model="cust_op_exec")
 public class CustomOperationExecution extends Entity {
 
@@ -49,8 +52,7 @@ public class CustomOperationExecution extends Entity {
 
   @Override
   public String generateId() {
-    return MD5IdGenerator.generateIdentity(getTemplate().getIdentity(),
-        getPigExecutionId());
+    return MD5IdGenerator.generateIdentity(getTemplate().getIdentity());
   }
 
   public CustomOperation getTemplate() {
@@ -65,13 +67,10 @@ public class CustomOperationExecution extends Entity {
     return pigExecution;
   }
 
-  public String getPigExecutionId() {
-    return pigExecution.getIdentity();
-  }
-
-  public void setPigExecutionId(String pigExecutionId) {
-    this.pigExecution = new EndPointProxy(pigExecutionId, SourceType.PIG,
-        EntityType.OPERATION_EXECUTION);
+  public void setPigExecution(Entity pigExecution) {
+    this.pigExecution = new EndPointProxy(
+        pigExecution.getIdAttrsMap(),
+        pigExecution.getSourceType(), pigExecution.getEntityType());
   }
 
   public Long getStartTime() {
