@@ -19,6 +19,10 @@ import com.cloudera.nav.sdk.model.HiveIdGenerator;
 import com.cloudera.nav.sdk.model.SourceType;
 import com.cloudera.nav.sdk.model.annotations.MClass;
 import com.cloudera.nav.sdk.model.annotations.MProperty;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
 
 /**
  * Represents a Hive table; uniquely identified by the source id, database name,
@@ -27,8 +31,14 @@ import com.cloudera.nav.sdk.model.annotations.MProperty;
 @MClass(model = "hv_table")
 public class HiveTable extends Entity {
 
+  private final String DATABASE_NAME = "databaseName";
+  private final String TABLE_NAME = "tableName";
+
   @MProperty
   private String databaseName;
+
+  @MProperty
+  private String tableName;
 
   public HiveTable() {
     setSourceType(SourceType.HIVE);
@@ -40,18 +50,11 @@ public class HiveTable extends Entity {
     setSourceId(sourceId);
     setDatabaseName(db);
     setTableName(table);
-    setIdentity(generateId());
   }
 
-  /**
-   * A Hive table is identified by the source id, database name, and table name
-   *
-   * @return the entity id for this Hive table
-   */
-  @Override
-  public String generateId() {
-    return HiveIdGenerator.generateTableId(getSourceId(), getDatabaseName(),
-        getTableName());
+  public HiveTable(String id) {
+    this();
+    setIdentity(id);
   }
 
   public String getDatabaseName() {
@@ -66,7 +69,7 @@ public class HiveTable extends Entity {
    * @return the table name. This aliases getName
    */
   public String getTableName() {
-    return getName();
+    return tableName;
   }
 
   /**
@@ -74,6 +77,13 @@ public class HiveTable extends Entity {
    * @param tableName
    */
   public void setTableName(String tableName) {
-    setName(tableName);
+    this.tableName = tableName;
+  }
+
+  @Override
+  public Map<String, String> getIdAttrsMap() {
+    return ImmutableMap.of(
+        DATABASE_NAME, this.getDatabaseName(),
+        TABLE_NAME, this.getTableName());
   }
 }

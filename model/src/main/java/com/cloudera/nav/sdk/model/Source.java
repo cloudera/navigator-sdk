@@ -29,7 +29,7 @@ public class Source {
   private final String sourceUrl;
   private final String identity;
   private final Long sourceExtractIteration;
-
+  private Boolean sourceTemplate;
 
   /**
    * @param name
@@ -47,6 +47,19 @@ public class Source {
     this.sourceUrl = sourceUrl;
     this.identity = identity;
     this.sourceExtractIteration = sourceExtractIteration;
+  }
+
+  public Source(String name, SourceType sourceType, String clusterName,
+                String sourceUrl, String identity, Long sourceExtractIteration,
+                Boolean sourceTemplate) {
+    Preconditions.checkNotNull(identity);
+    this.name = name;
+    this.sourceType = sourceType;
+    this.clusterName = clusterName;
+    this.sourceUrl = sourceUrl;
+    this.identity = identity;
+    this.sourceExtractIteration = sourceExtractIteration;
+    this.sourceTemplate = sourceTemplate;
   }
 
   public Source(String name, SourceType sourceType,
@@ -118,5 +131,11 @@ public class Source {
     return identity.hashCode();
   }
 
+  public Boolean getSourceTemplate() {
+    return sourceTemplate;
+  }
 
+  public void setSourceTemplate(Boolean sourceTemplate) {
+    this.sourceTemplate = sourceTemplate;
+  }
 }

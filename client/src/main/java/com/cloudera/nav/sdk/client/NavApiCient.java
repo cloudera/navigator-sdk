@@ -118,6 +118,57 @@ public class NavApiCient {
   }
 
   /**
+   * In the recent releases of Navigator, Hive can have multiple sources.
+   * The HMS Source is for Hive tables, databases, columns. In case we are on
+   * an older version of Navigator which does not have multiple sources of
+   * HIVE, we return the only source found for Hive.
+   * @return HMS Source object
+   */
+  public Source getHMSSource() {
+    Source hiveSource = null;
+    Collection<Source> hiveSources = getSourcesForType(SourceType.HIVE);
+
+    if (hiveSources.size() > 1) {
+      for (Source source : hiveSources) {
+        if (source.getSourceTemplate() != null &&
+            source.getSourceTemplate() == true) {
+          hiveSource = source;
+          break;
+        }
+      }
+    } else {
+      hiveSource = Iterables.getOnlyElement(hiveSources);
+    }
+
+    return hiveSource;
+  }
+
+  /**
+   * In the recent releases of Navigator, Hive can have multiple sources.
+   * The Hive Source is for Hive Operations and Operation Executions. In case
+   * we are on an older version of Navigator which does not have multiple
+   * sources of HIVE, we return the only source found for Hive.
+   * @return
+   */
+  public Source getHiveSource() {
+    Source hiveSource = null;
+    Collection<Source> hiveSources = getSourcesForType(SourceType.HIVE);
+
+    if (hiveSources.size() > 1) {
+      for (Source source : hiveSources) {
+        if (source.getSourceTemplate() == null) {
+          hiveSource = source;
+          break;
+        }
+      }
+    } else {
+      hiveSource = Iterables.getOnlyElement(hiveSources);
+    }
+
+    return hiveSource;
+  }
+
+  /**
    * Constructs relation API call from query, and cursorMark.Returns a batch of
    * results that satisfy the query, starting from the cursorMark.
    * Called in next() of IncrementalExtractIterator()

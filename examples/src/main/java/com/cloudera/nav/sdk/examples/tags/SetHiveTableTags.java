@@ -21,18 +21,23 @@ import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
 import com.cloudera.nav.sdk.model.Source;
 import com.cloudera.nav.sdk.model.SourceType;
-import com.cloudera.nav.sdk.model.entities.HiveColumn;
+import com.cloudera.nav.sdk.model.entities.HiveTable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
+import java.util.Collection;
+
+import org.apache.commons.collections.CollectionUtils;
+
 /**
- * Tagging Hive columns
+ * Tagging Hive Tables
  *
  * Tags is an important part of business metadata. This example uses the
  * Navigator plugin to tag a Hive column as sensitive.
  * Users and applications can then the tags to trigger actions such as
  * encryption, masking, and/or restrictions to permissions.
  */
-public class SetHiveTags {
+public class SetHiveTableTags {
 
   public static void main(String[] args) {
 
@@ -40,22 +45,19 @@ public class SetHiveTags {
     NavigatorPlugin plugin = NavigatorPlugin.fromConfigFile(args[0]);
 
     // send tags for multiple entities to Navigator
-    HiveColumn column = new HiveColumn();
-    column.setDatabaseName("default");
-    column.setTableName("sample_07");
-    column.setColumnName("code");
-    column.setTags(Sets.newHashSet("HAS_SENSITIVE_FILES",
-        "CONTAINS_SOME_SUPER_SECRET_STUFF"));
+    HiveTable table = new HiveTable();
+    table.setDatabaseName("default_2");
+    table.setTableName("customers_2");
+    table.setTags(Sets.newHashSet("prereg",
+        "hivetable"));
 
+    // Note how we are getting the Hive Source here
     NavApiCient client = plugin.getClient();
-
-    // For the example we just take the first one without checking
-    Source hive = client.getSourcesForType(SourceType.HIVE).iterator().next();
-
-    column.setSourceId(hive.getIdentity());
+    Source hiveSource = client.getHMSSource();
+    table.setSourceId(hiveSource.getIdentity());
 
     // Write metadata
-    ResultSet results = plugin.write(column);
+    ResultSet results = plugin.write(table);
 
     if (results.hasErrors()) {
       throw new RuntimeException(results.toString());
