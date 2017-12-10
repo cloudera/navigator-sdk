@@ -24,10 +24,10 @@ def return_custom_properties(customProperties, main_map, prefix, index = 0):
 		customProp[prefix + property[index:]] = return_value_if_key_exists(property.split('.', 1)[-1], main_map)
 	return customProp
 
-def get_managed_properties(hostname, port, class_name):
+def get_managed_properties(hostname, port, class_name, username, password):
 	url = "http://" + hostname + ":" + str(port) + "/api/v9/models/packages/nav/classes/" + class_name + "/properties"
 	headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-	r = requests.get(url, headers=headers)
+	r = requests.get(url, headers=headers, auth=(username, password))
 	properties = r.json()
 	propertiesList = []
 	for property in properties:
@@ -35,10 +35,10 @@ def get_managed_properties(hostname, port, class_name):
 		propertiesList.append(property_name)
 	return propertiesList
 
-def get_managed_properties_without_type(hostname, port, class_name):
+def get_managed_properties_without_type(hostname, port, class_name, username, password):
 	url = "http://" + hostname + ":" + str(port) + "/api/v9/models/packages/nav/classes/" + class_name + "/properties"
 	headers = {'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
-	r = requests.get(url, headers=headers)
+	r = requests.get(url, headers=headers, auth=(username, password))
 	properties = r.json()
 	propertiesList = []
 	for property in properties:
@@ -63,9 +63,9 @@ if __name__ == "__main__":
 	username = sys.argv[3]
 	password = sys.argv[4]
 	csvfile_name = sys.argv[5]
-	server = SolrServer(hostname, port, username, password)
+	server = SolrServer(hostname, port, username, password, debug=True)
 	core = SolrCore(server, "nav_elements")
-	managed_properties = get_managed_properties(hostname, port, "hv_table")
+	managed_properties = get_managed_properties(hostname, port, "hv_table", username, password)
 	managed = ",".join(managed_properties)
 	params = {}
 	custom_properties_headers = get_all_custom_properties_keys(core)
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 	headers2 = ['name', 'description', 'tags']
 
 	headers = headers1 + headers2 + custom_properties_headers_modified + managed_properties_headers
-	params['fl'] = ",".join(headers1 + headers2 + custom_properties_headers + get_managed_properties_without_type(hostname, port, "hv_table"))
+	params['fl'] = ",".join(headers1 + headers2 + custom_properties_headers + get_managed_properties_without_type(hostname, port, "hv_table", username, password))
 
 	with open(csvfile_name, 'wb') as csvfile:
 		csvwriter = csv.DictWriter(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL, fieldnames = headers)

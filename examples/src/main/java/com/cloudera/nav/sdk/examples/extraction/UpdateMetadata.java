@@ -57,7 +57,10 @@ public class UpdateMetadata {
     Collection<Source> sources = client.getAllSources();
     Map<String, Source> sourceMap = Maps.newHashMap();
     for(Source source : sources) {
-      sourceMap.put(source.getSourceType().toString().toUpperCase(), source);
+      if (source.getSourceTemplate() != null && source.getSourceTemplate() ==
+          Boolean.TRUE) {
+        sourceMap.put(source.getSourceType().toString().toUpperCase(), source);
+      }
     }
 
     CSVReader reader =  new CSVReader(new FileReader(args[1]));

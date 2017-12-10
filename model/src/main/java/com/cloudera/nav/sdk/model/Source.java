@@ -31,6 +31,11 @@ public class Source {
   private final Long sourceExtractIteration;
 
 
+  private Boolean sourceTemplate;
+  private String hmsDbHost;
+  private String hmsDbName;
+  private String hmsDbPort;
+  private String hmsDbUser;
   /**
    * @param name
    * @param clusterName
@@ -39,7 +44,9 @@ public class Source {
    */
   public Source(String name, SourceType sourceType,
                 String clusterName, String sourceUrl,
-                String identity, Long sourceExtractIteration) {
+                String identity, Long sourceExtractIteration,
+                Boolean sourceTemplate, String hmsDbHost, String hmsDbName,
+                String hmsDbPort, String hmsDbUser) {
     Preconditions.checkNotNull(identity);
     this.name = name;
     this.sourceType = sourceType;
@@ -47,12 +54,22 @@ public class Source {
     this.sourceUrl = sourceUrl;
     this.identity = identity;
     this.sourceExtractIteration = sourceExtractIteration;
+    this.sourceTemplate = sourceTemplate;
+    this.hmsDbHost = hmsDbHost;
+    this.hmsDbName = hmsDbName;
+    this.hmsDbPort = hmsDbPort;
+    this.hmsDbUser = hmsDbUser;
   }
 
   public Source(String name, SourceType sourceType,
-                String clusterName, String sourceUrl, Long sourceExtractIteration) {
+                String clusterName, String sourceUrl, Long
+                    sourceExtractIteration,
+                Boolean sourceTemplate, String hmsDbHost, String hmsDbName,
+                String hmsDbPort, String hmsDbUser) {
     this(name, sourceType, clusterName, sourceUrl,
-        SourceIdGenerator.generateSourceId(clusterName, name), sourceExtractIteration);
+        SourceIdGenerator.generateSourceId(clusterName, name),
+        sourceExtractIteration, sourceTemplate, hmsDbHost, hmsDbName,
+        hmsDbPort, hmsDbUser);
   }
 
 
@@ -118,5 +135,7 @@ public class Source {
     return identity.hashCode();
   }
 
-
+  public Boolean getSourceTemplate() {
+    return sourceTemplate;
+  }
 }

@@ -33,6 +33,12 @@ class SourceAttrs {
   private String identity;
   private Long sourceExtractIteration;
 
+  private Boolean sourceTemplate;
+  private String hmsDbHost;
+  private String hmsDbName;
+  private String hmsDbPort;
+  private String hmsDbUser;
+
   public String getClusterName() {
     return clusterName;
   }
@@ -81,8 +87,51 @@ class SourceAttrs {
     this.sourceExtractIteration = sourceExtractIteration;
   }
 
+  public Boolean getSourceTemplate() {
+    return sourceTemplate;
+  }
+
+  public void setSourceTemplate(Boolean sourceTemplate) {
+    this.sourceTemplate = sourceTemplate;
+  }
+
+  public String getHmsDbHost() {
+    return hmsDbHost;
+  }
+
+  public void setHmsDbHost(String hmsDbHost) {
+    this.hmsDbHost = hmsDbHost;
+  }
+
+  public String getHmsDbName() {
+    return hmsDbName;
+  }
+
+  public void setHmsDbName(String hmsDbName) {
+    this.hmsDbName = hmsDbName;
+  }
+
+  public String getHmsDbPort() {
+    return hmsDbPort;
+  }
+
+  public void setHmsDbPort(String hmsDbPort) {
+    this.hmsDbPort = hmsDbPort;
+  }
+
+  public String getHmsDbUser() {
+    return hmsDbUser;
+  }
+
+  public void setHmsDbUser(String hmsDbUser) {
+    this.hmsDbUser = hmsDbUser;
+  }
+
   public Source createSource() {
     return new Source(getOriginalName(), getSourceType(),
-        getClusterName(), getSourceUrl(), getIdentity(), getSourceExtractIteration());
+        getClusterName(), getSourceUrl(), getIdentity(),
+        getSourceExtractIteration(),
+        getSourceTemplate(), getHmsDbHost(), getHmsDbName(), getHmsDbPort(),
+        getHmsDbUser());
   }
 }
