@@ -46,10 +46,6 @@ public class CustomLineageCreator2 extends CustomLineageCreator {
 
   /**
    * @param args 1. config file path
-   *             2. Pig operation id
-   *             3. Pig execution id
-   *             4. hdfs file system path of input
-   *             5. hdfs file system path of output
    */
   public static void main(String[] args) {
     CustomLineageCreator2 lineageCreator = new CustomLineageCreator2(args[0]);

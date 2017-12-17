@@ -53,7 +53,8 @@ public class StetsonScript extends Entity {
    */
   @Override
   public String generateId() {
-    return CustomIdGenerator.generateIdentity(getNamespace(), getName());
+    return CustomIdGenerator.generateIdentity(getNamespace(), getName(),
+        pigOperation.getIdAttrsMap().toString());
   }
 
   @Override

@@ -47,7 +47,7 @@ public class FireCircleDataset extends Dataset {
   @Override
   public String generateId() {
     return DatasetIdGenerator.datasetId(getDataContainer().getIdentity(),
-        getNamespace(), getName());
+        getNamespace(), getName(), dataContainer.getIdAttrsMap().toString());
   }
 
   /**

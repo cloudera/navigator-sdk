@@ -98,9 +98,7 @@ public class StetsonExecution2 extends
       inputs = Lists.newArrayList();
     }
 
-    HdfsEntity hdfsEntity = new HdfsEntity("638");
-    hdfsEntity.setEntityType(EntityType.DIRECTORY);
-    hdfsEntity.setSourceId(sourceId);
+    HdfsEntity hdfsEntity = new HdfsEntity(path, EntityType.DIRECTORY, sourceId);
 
     inputs.add(new StetsonDataset(name, getNamespace(), hdfsEntity));
   }

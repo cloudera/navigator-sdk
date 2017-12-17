@@ -21,9 +21,9 @@ public class DatasetIdGenerator {
   public static final String delimiter = "/";
 
   public static String datasetId(String parentId, String namespace,
-                                 String datasetName) {
+                                 String datasetName, String idAttrsMap) {
     return MD5IdGenerator.generateIdentity(parentId, "%NAMESPACE%", namespace,
-        "%DATASET%", datasetName);
+        "%DATASET%", datasetName, idAttrsMap);
   }
 
   public static String fieldId(String parentId, String fieldName) {

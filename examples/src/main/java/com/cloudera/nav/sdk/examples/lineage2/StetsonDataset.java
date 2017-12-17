@@ -69,14 +69,13 @@ public class StetsonDataset extends Entity {
    */
   @Override
   public String generateId() {
-    return CustomIdGenerator.generateIdentity(getName(), getNamespace());
+    return CustomIdGenerator.generateIdentity(getName(), getNamespace(),
+        hdfsEntity.getIdAttrsMap().toString());
   }
 
   public void setHdfsEntity(HdfsEntity hdfsEntity) {
-    this.hdfsEntity = new EndPointProxy(hdfsEntity.getIdentity(), hdfsEntity
-        .getSourceType(),
-        hdfsEntity
-        .getEntityType());
+    this.hdfsEntity = new EndPointProxy(hdfsEntity.getIdAttrsMap(), hdfsEntity
+        .getSourceType(), hdfsEntity.getEntityType());
 
     // HDFS EndPoint requires a source id to be present
     this.hdfsEntity.setSourceId(hdfsEntity.getSourceId());
