@@ -34,9 +34,10 @@ public class HiveOperation extends Entity {
     setEntityType(EntityType.OPERATION);
   }
 
-  public HiveOperation(String queryText) {
+  public HiveOperation(String sourceId, String queryText) {
     this();
     setQueryText(queryText);
+    setSourceId(sourceId);
   }
 
   public String getQueryText() {

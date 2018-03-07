@@ -5,6 +5,7 @@ import com.cloudera.nav.sdk.client.NavigatorPlugin;
 import com.cloudera.nav.sdk.client.writer.ResultSet;
 import com.cloudera.nav.sdk.model.entities.Entity;
 import com.cloudera.nav.sdk.model.entities.HiveDatabase;
+import com.cloudera.nav.sdk.model.entities.HiveOperation;
 import com.cloudera.nav.sdk.model.entities.HiveTable;
 
 public class CustomHiveLineageCreator {
@@ -25,7 +26,7 @@ public class CustomHiveLineageCreator {
     // register all models in example
     plugin.registerModels(getClass().getPackage().getName());
 
-    R2D2Script script = createR2D2Script(createHiveTable("db_cjmexitter",
+    /*R2D2Script script = createR2D2Script(createHiveTable("db_cjmexitter",
         "tbl_cjmexitter_1"),"temp_table");
     script.setIdentity(script.generateId());
 
@@ -40,6 +41,16 @@ public class CustomHiveLineageCreator {
         "db_cjmexitter"), "temp_database");
 
     results = plugin.write(script2);
+
+    if (results.hasErrors()) {
+      throw new RuntimeException(results.toString());
+    }*/
+
+    R2D2Script script3 = createR2D2Script(createHiveOperation("select " +
+        "description from sample_08 where salary > 20"), "Hive OP1");
+
+    ResultSet results = plugin.write(script3);
+
     if (results.hasErrors()) {
       throw new RuntimeException(results.toString());
     }
@@ -75,5 +86,16 @@ public class CustomHiveLineageCreator {
   private Entity createHiveDatabase(String databaseName) {
     return new HiveDatabase(plugin.getClient().getHMSSource().getIdentity(),
         databaseName);
+  }
+
+
+  /**
+   * This method returns a Hive Database
+   * @param databaseName
+   * @return
+   */
+  private Entity createHiveOperation(String queryText) {
+    return new HiveOperation(plugin.getClient().getHMSSource().getIdentity(),
+        queryText);
   }
 }
