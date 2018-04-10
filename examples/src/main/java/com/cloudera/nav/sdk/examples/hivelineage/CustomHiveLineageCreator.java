@@ -44,7 +44,7 @@ public class CustomHiveLineageCreator {
     results = plugin.write(script2);
 
     if (results.hasErrors()) {
-      throw new RuntimeException(results.toString());*/
+      throw new RuntimeException(results.toString());
     }
 
     R2D2Script script3 = createR2D2Script(createHiveOperation("select " +
