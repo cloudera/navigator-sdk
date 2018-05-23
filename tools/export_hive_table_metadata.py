@@ -6,9 +6,9 @@ import sys
 
 
 USAGE = """
-Usage: export_hive_table_metadata hostname port user password csvfilename
+Usage: export_hive_table_metadata hostname port user password csvfilename databaseName
 e.g.,
-    localhost 7187 user password sample_data.csv
+    localhost 7187 user password sample_data.csv default
 """
 
 def return_value_if_key_exists(keyname, customProperties):
@@ -63,6 +63,9 @@ if __name__ == "__main__":
 	username = sys.argv[3]
 	password = sys.argv[4]
 	csvfile_name = sys.argv[5]
+	databaseName = ""
+	if len(sys.argv) > 6:
+		databaseName = sys.argv[6]
 	server = SolrServer(hostname, port, username, password, debug=True)
 	core = SolrCore(server, "nav_elements")
 	managed_properties = get_managed_properties(hostname, port, "hv_table", username, password)
@@ -77,10 +80,13 @@ if __name__ == "__main__":
 	headers = headers1 + headers2 + custom_properties_headers_modified + managed_properties_headers
 	params['fl'] = ",".join(headers1 + headers2 + custom_properties_headers + get_managed_properties_without_type(hostname, port, "hv_table", username, password))
 
+	queryString = 'sourceType:HIVE AND type:TABLE'
+	if databaseName != "":
+		queryString = queryString + " AND parentPath:\"/" + databaseName + "\""
 	with open(csvfile_name, 'wb') as csvfile:
 		csvwriter = csv.DictWriter(csvfile, delimiter=',', quoting=csv.QUOTE_MINIMAL, fieldnames = headers)
 		csvwriter.writeheader()
-		for x in core.get_docs(q='sourceType:HIVE AND type:TABLE', sort='identity asc', params=params):
+		for x in core.get_docs(q=queryString, sort='identity asc', params=params):
 			name = return_value_if_key_exists("name", x)
 			description = return_value_if_key_exists("description", x)
 			tags = return_value_if_key_exists("tags", x)
@@ -94,5 +100,17 @@ if __name__ == "__main__":
 			customProperties = return_custom_properties(custom_properties_headers, x, "CM.", 3)
 			temp = dict(temp, **customProperties)
 			managedprop = return_custom_properties(managed_properties, x, "MM.")
+			hasCustomProp = False
+			hasManagedProp = False
+			for p in customProperties.values():
+				if p != '':
+					hasCustomProp = True
+					break
+			for p in managedprop.values():
+				if p != '':
+					hasManagedProp = True
+					break
 			temp = dict(temp, **managedprop)
-			csvwriter.writerow(temp)
+			if temp['name'] or temp['description'] or temp['tags'] or \
+					hasCustomProp or hasManagedProp:
+				csvwriter.writerow(temp)

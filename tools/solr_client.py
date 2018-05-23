@@ -43,14 +43,12 @@ class SolrServer(object):
 
     def post(self, url, data=None):
         if self._debug:
-            print('Query: ' + str(data))
-        return self._session.post(url, auth=(self.user, self.pwd), data=data,
+            return self._session.post(url, auth=(self.user, self.pwd), data=data,
                                   verify=self.verify)
 
     def get(self, url, params=None):
         if self._debug:
-            print('Query: ' + str(params))
-        return self._session.get(url, auth=(self.user, self.pwd),
+            return self._session.get(url, auth=(self.user, self.pwd),
                                  params=params, verify=self.verify)
 
     def get_core(self, core_name):
