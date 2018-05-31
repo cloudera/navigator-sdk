@@ -12,18 +12,20 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.opencsv.CSVReader;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.joda.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This program imports metadata from a CSV file and applies to the items entities in Navigator.
@@ -41,6 +43,8 @@ public class UpdateMetadata {
   private static Map<Integer, String> managedMetadataNameSpaces = Maps.newHashMap();
   private static Map<Integer, String> managedMetadataPropNames = Maps.newHashMap();
   private static Map<Integer, String> managedMetadataPropTypes = Maps.newHashMap();
+  private static Map<Integer, Boolean> managedMetadataPropMultiValued = Maps
+      .newHashMap();
 
   @SuppressWarnings("unchecked")
   public static void main(String[] args) throws IOException {
@@ -57,10 +61,7 @@ public class UpdateMetadata {
     Collection<Source> sources = client.getAllSources();
     Map<String, Source> sourceMap = Maps.newHashMap();
     for(Source source : sources) {
-      if (source.getSourceTemplate() != null && source.getSourceTemplate() ==
-          Boolean.TRUE) {
-        sourceMap.put(source.getSourceType().toString().toUpperCase(), source);
-      }
+      sourceMap.put(source.getSourceType().toString().toUpperCase(), source);
     }
 
     CSVReader reader =  new CSVReader(new FileReader(args[1]));
@@ -146,6 +147,7 @@ public class UpdateMetadata {
       managedMetadataPropTypes.put(i, split[1]);
       managedMetadataNameSpaces.put(i, split[2]);
       managedMetadataPropNames.put(i, split[3]);
+      managedMetadataPropMultiValued.put(i, Boolean.valueOf(split[4]));
     }
   }
 
@@ -183,7 +185,11 @@ public class UpdateMetadata {
         properties.put(nameSpace, namespaceVals);
         if (StringUtils.equals(managedMetadataPropTypes.get(entry.getKey()),
             "TEXT")) {
-          namespaceVals.put(propName, line[entry.getKey()].trim());
+          if (managedMetadataPropMultiValued.get(entry.getKey())) {
+            namespaceVals.put(propName, getMMDValue(line[entry.getKey()].trim()));
+          } else {
+            namespaceVals.put(propName, line[entry.getKey()].trim());
+          }
         } else if (StringUtils.equals(managedMetadataPropTypes.get(entry
             .getKey()), "INTEGER")) {
           namespaceVals.put(propName, Integer.valueOf(line[entry.getKey()]
@@ -228,5 +234,19 @@ public class UpdateMetadata {
         ret.add(tag.trim());
     }
     return ret;
+  }
+
+  private static Object getMMDValue(String value) {
+    if (value.charAt(0) == '[' && value.charAt(value.length()-1) == ']') {
+      value = value.substring(1, value.length()-1);
+      String[] vals = value.split(",", 20);
+      List<String> listOfStrings = new ArrayList<>();
+      for (String val : vals) {
+        listOfStrings.add(val.substring(2, val.length()-1));
+      }
+      return listOfStrings;
+    }
+
+    return value;
   }
 }
