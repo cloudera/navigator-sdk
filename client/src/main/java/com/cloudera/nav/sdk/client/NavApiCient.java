@@ -110,8 +110,15 @@ public class NavApiCient {
    * @return a collection of available sources
    */
   public EntityAttrs findEntity(String sourceId, String parentPath, String originalName, EntityType type) throws UnsupportedEncodingException {
-    String query =
-            String.format("+(srcId:%s) +(parentPath:\"%s\") +(originalName:%s) +(type:%s)", sourceId, parentPath, originalName, type);
+    String query;
+    if (parentPath.isEmpty()) {
+      query = String.format("+(srcId:%s) +(originalName:%s) +(type:%s)",
+          sourceId, originalName, type);
+    } else {
+      query =
+          String.format("+(srcId:%s) +(parentPath:\"%s\") +(originalName:%s) +(type:%s)", sourceId, parentPath, originalName, type);
+    }
+    
     String entitiesUrl = joinUrlPath(getApiUrl(), "entities");
     String url =
             String.format("%s?query=%s", entitiesUrl, query);
